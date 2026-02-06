@@ -11,13 +11,13 @@
 #
 # NEVER commit actual secrets to this file!
 
-name = "opennotes-api-gateway"
+name = "opennotes-gateway"
 main = "index.js"
 compatibility_date = "2024-01-01"
 
 # Production settings
 [env.production]
-name = "opennotes-api-gateway"
+name = "opennotes-gateway"
 routes = [
   { pattern = "api.yourdomain.com/*", zone_name = "yourdomain.com" }
 ]

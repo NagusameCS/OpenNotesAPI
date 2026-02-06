@@ -99,7 +99,7 @@ const CONFIG = {
   SUBMIT_URL: 'https://open-notes.tebby2008-li.workers.dev/upload/submit',
   NOTES_RAW_BASE: 'https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes',
   FALLBACK_THUMBNAIL: 'https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/fallback.svg',
-  GATEWAY_URL: 'https://opennotes-api-gateway.tebby2008-li.workers.dev',
+  GATEWAY_URL: 'https://opennotes-gateway.wkohara.workers.dev',
   DESKTOP_APP_SECRET: 'opennotes-desktop-v1',
   APP_TOKEN: '', // Set via secrets
   STORAGE_KEY: 'opennotes_desktop',
