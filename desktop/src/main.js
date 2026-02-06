@@ -1760,6 +1760,36 @@ async function init() {
   console.log('[INIT] User Agent:', navigator.userAgent);
   console.log('[INIT] window.__TAURI__:', typeof window.__TAURI__, window.__TAURI__);
   
+  // CRITICAL: Set up auth handlers FIRST, before anything else can fail
+  // This ensures the sign-in button always works even if other init fails
+  console.log('[INIT] Setting up auth handlers...');
+  const signinBtn = document.getElementById('google-signin-btn');
+  const logoutBtn = document.getElementById('logout-btn');
+  
+  if (signinBtn) {
+    signinBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      console.log('[AUTH] Sign-in button clicked');
+      handleGoogleSignIn();
+    });
+    console.log('[INIT] Sign-in button handler attached');
+  } else {
+    console.error('[INIT] Sign-in button not found!');
+  }
+  
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', handleLogout);
+  }
+  
+  // Check authentication state immediately
+  if (!checkAuth()) {
+    showAuthModal();
+    console.log('[INIT] User not authenticated, showing sign-in modal');
+  } else {
+    hideAuthModal();
+    console.log('[INIT] User authenticated:', state.user?.name || state.user?.email);
+  }
+  
   try {
     // Load secrets from Tauri store first
     console.log('[INIT] Loading secrets...');
@@ -1923,21 +1953,6 @@ async function init() {
   // Load initial data
   console.log('[INIT] Loading initial notes...');
   console.log('[INIT] API Base URL:', api.getBaseUrl());
-  
-  // Check authentication
-  console.log('[INIT] Checking authentication...');
-  if (!checkAuth()) {
-    // Show auth modal if not signed in
-    showAuthModal();
-    console.log('[INIT] User not authenticated, showing sign-in modal');
-  } else {
-    console.log('[INIT] User authenticated:', state.user?.name || state.user?.email);
-    hideAuthModal();
-  }
-  
-  // Auth event listeners
-  document.getElementById('google-signin-btn')?.addEventListener('click', handleGoogleSignIn);
-  document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
   
   loadNotes();
   
