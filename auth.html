@@ -22,7 +22,7 @@
       border-radius: 16px;
       padding: 48px;
       text-align: center;
-      max-width: 520px;
+      max-width: 480px;
       width: 90%;
       box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     }
@@ -93,103 +93,6 @@
     }
     .btn-copy:hover { background: #16a34a; }
     .btn-copy.copied { background: #3b82f6; }
-
-    /* Step 2 token extraction UI */
-    .step-section {
-      display: none;
-      margin-top: 28px;
-      text-align: left;
-    }
-    .step-section.visible { display: block; }
-    .step-title {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: #e2e8f0;
-    }
-    .step-desc {
-      font-size: 0.85rem;
-      color: #94a3b8;
-      margin-bottom: 16px;
-      line-height: 1.5;
-    }
-    .token-input-group {
-      display: flex;
-      gap: 8px;
-    }
-    .token-input {
-      flex: 1;
-      padding: 12px 14px;
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 8px;
-      background: rgba(0,0,0,0.3);
-      color: #fff;
-      font-family: 'Courier New', monospace;
-      font-size: 0.875rem;
-    }
-    .token-input:focus { outline: none; border-color: #3b82f6; }
-    .token-input::placeholder { color: #4b5563; }
-    .btn-submit {
-      padding: 12px 20px;
-      background: #3b82f6;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background 0.2s;
-    }
-    .btn-submit:hover { background: #2563eb; }
-    .btn-submit:disabled { background: #4b5563; cursor: not-allowed; }
-    .bookmarklet-section {
-      margin-top: 20px;
-      padding: 16px;
-      background: rgba(59, 130, 246, 0.1);
-      border: 1px dashed rgba(59, 130, 246, 0.3);
-      border-radius: 10px;
-    }
-    .bookmarklet-title {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #93c5fd;
-      margin-bottom: 8px;
-    }
-    .bookmarklet-link {
-      display: inline-block;
-      padding: 8px 18px;
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      color: white;
-      font-weight: 600;
-      border-radius: 6px;
-      text-decoration: none;
-      cursor: grab;
-      font-size: 0.85rem;
-      margin: 8px 0;
-    }
-    .bookmarklet-link:active { cursor: grabbing; }
-    .bookmarklet-steps {
-      font-size: 0.78rem;
-      color: #64748b;
-      line-height: 1.6;
-      margin-top: 8px;
-    }
-    .bookmarklet-steps ol { padding-left: 16px; }
-    .or-divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 20px 0;
-      color: #4b5563;
-      font-size: 0.8rem;
-    }
-    .or-divider::before, .or-divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: rgba(255,255,255,0.1);
-    }
-    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -198,51 +101,18 @@
     <h1>Welcome to OpenNotes</h1>
     <p class="subtitle">Sign in to access your notes and sync across devices</p>
     
-    <!-- Step 1: Sign In Button -->
-    <div id="step-signin">
-      <button class="btn-google" id="google-signin-btn" onclick="startAuth()">
-        <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
-          <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
-          <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
-        </svg>
-        Sign in with Google
-      </button>
-    </div>
+    <button class="btn-google" id="google-signin-btn" onclick="startAuth()">
+      <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+        <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+        <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+      </svg>
+      Sign in with Google
+    </button>
     
     <div id="status" class="status"></div>
     
-    <!-- Step 2: Token Extraction (shown after sign-in popup closes) -->
-    <div id="step-token" class="step-section">
-      <div class="step-title">Almost there! Get your sign-in code:</div>
-      
-      <div class="bookmarklet-section">
-        <div class="bookmarklet-title">Quick Method — Drag this button to your bookmarks bar:</div>
-        <a id="bookmarklet-btn" class="bookmarklet-link" href="#" onclick="return false;">📋 Get Desktop Code</a>
-        <div class="bookmarklet-steps">
-          <ol>
-            <li>Drag the button above to your bookmarks bar</li>
-            <li>Go to the OpenNotes tab where you just signed in</li>
-            <li>Click the "Get Desktop Code" bookmark</li>
-            <li>A 6-digit code will appear — enter it in the desktop app</li>
-          </ol>
-        </div>
-      </div>
-      
-      <div class="or-divider">or paste your token manually</div>
-      
-      <div class="step-desc">
-        On the OpenNotes tab, open DevTools (F12) → Console, and run: 
-        <code style="background:rgba(0,0,0,0.3); padding:2px 6px; border-radius:4px; font-size:0.8rem;">copy(localStorage.getItem('auth_token_fallback'))</code>
-      </div>
-      <div class="token-input-group">
-        <input type="text" id="token-input" class="token-input" placeholder="Paste token here...">
-        <button class="btn-submit" id="submit-token" onclick="submitToken()">Get Code</button>
-      </div>
-    </div>
-    
-    <!-- Step 3: Code Display -->
     <div id="code-box" class="code-box">
       <div class="code-label">Enter this code in the OpenNotes Desktop app:</div>
       <div id="code-value" class="code-value"></div>
@@ -260,27 +130,21 @@
     
     let expiryTimer = null;
     let expiryTime = 0;
-    let authPopup = null;
     
-    // Build the bookmarklet href
-    const bookmarkletCode = `javascript:void((function(){var t=localStorage.getItem('auth_token_fallback');if(!t){alert('Not signed in yet. Please sign in on OpenNotes first.');return;}fetch('${GATEWAY_URL}/auth/code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:t})}).then(function(r){return r.json()}).then(function(d){if(d.error){alert('Error: '+d.error);return;}var o=document.createElement('div');o.style='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:system-ui,sans-serif;';o.innerHTML='<div style=\"color:#94a3b8;font-size:14px;margin-bottom:12px\">Your Desktop Sign-In Code:</div><div style=\"color:white;font-size:64px;font-weight:bold;letter-spacing:0.3em;font-family:monospace;background:linear-gradient(135deg,#3b82f6,#8b5cf6);padding:20px 40px;border-radius:12px\">'+d.code+'</div><div style=\"color:#64748b;font-size:13px;margin-top:16px\">Enter this in the OpenNotes Desktop app</div><div style=\"color:#4b5563;font-size:12px;margin-top:8px\">Click anywhere to close</div>';o.onclick=function(){o.remove()};document.body.appendChild(o);}).catch(function(e){alert('Error: '+e.message)})})())`;
-    
-    document.getElementById('bookmarklet-btn').href = bookmarkletCode;
-    
-    // Check if we're receiving a callback with auth data
+    // On page load, check if we're returning from OAuth with a token
     async function checkCallback() {
       const params = new URLSearchParams(window.location.search);
-      const hash = new URLSearchParams(window.location.hash.slice(1));
-      
-      const token = params.get('token') || hash.get('token');
-      const error = params.get('error') || hash.get('error');
+      const token = params.get('token');
+      const error = params.get('error');
       
       if (error) {
-        showStatus('error', 'Sign in failed: ' + error);
+        showStatus('error', 'Sign in failed: ' + decodeURIComponent(error));
         return;
       }
       
       if (token) {
+        // Clean the URL
+        history.replaceState(null, '', window.location.pathname);
         await generateCode(token);
       }
     }
@@ -309,9 +173,7 @@
     }
     
     function showCode(code, expiresIn) {
-      document.getElementById('step-signin').classList.add('hidden');
-      document.getElementById('step-token').classList.remove('visible');
-      document.getElementById('step-token').style.display = 'none';
+      document.getElementById('google-signin-btn').style.display = 'none';
       document.getElementById('status').style.display = 'none';
       document.getElementById('code-box').classList.add('visible');
       document.getElementById('code-value').textContent = code;
@@ -344,46 +206,12 @@
     }
     
     function startAuth() {
-      showStatus('loading', 'Opening Google Sign-In...');
-      
-      // Open the gateway's auth/login proxy in a new tab 
-      // Use noopener so opennotes.pages.dev won't auto-close the tab
-      const loginUrl = GATEWAY_URL + '/auth/login';
-      const link = document.createElement('a');
-      link.href = loginUrl;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      link.click();
-      
-      // Show the token extraction step after a short delay
-      setTimeout(() => {
-        showStatus('success', 'Sign-in opened in a new tab. Complete it, then come back here.');
-        document.getElementById('step-token').classList.add('visible');
-      }, 2000);
+      showStatus('loading', 'Redirecting to Google Sign-In...');
+      // Redirect to gateway /auth/login which handles Google OAuth
+      // After sign-in, gateway redirects back here with ?token=...
+      const returnUrl = encodeURIComponent(window.location.origin + window.location.pathname);
+      window.location.href = GATEWAY_URL + '/auth/login?return=' + returnUrl;
     }
-    
-    async function submitToken() {
-      const input = document.getElementById('token-input').value.trim();
-      if (!input) return;
-      
-      const btn = document.getElementById('submit-token');
-      btn.disabled = true;
-      btn.textContent = 'Generating...';
-      
-      try {
-        await generateCode(input);
-      } catch (e) {
-        showStatus('error', 'Failed: ' + e.message);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Get Code';
-      }
-    }
-    
-    // Handle Enter key in token input
-    document.getElementById('token-input').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') submitToken();
-    });
     
     function copyCode() {
       const code = document.getElementById('code-value').textContent;
@@ -413,7 +241,6 @@
       });
     }
     
-    // Check for callback on page load
     checkCallback();
   </script>
 </body>

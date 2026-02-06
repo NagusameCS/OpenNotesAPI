@@ -596,11 +596,15 @@ function handleHealth() {
 }
 
 /**
- * Proxy the upstream /auth/login endpoint with the correct Referer header.
- * The upstream API only accepts requests with Referer from opennotes.pages.dev.
- * This proxy adds that Referer so the browser gets the Google OAuth redirect.
+ * Proxy the upstream /auth/login endpoint.
+ * Gets the Google OAuth URL from the upstream, but rewrites the redirect_uri
+ * to point to our own /auth/callback so we can intercept the token.
  */
 async function handleAuthLoginProxy(request) {
+  const reqUrl = new URL(request.url);
+  const returnUrl = reqUrl.searchParams.get('return') || 'https://nagusamecs.github.io/OpenNotesAPI/auth.html';
+  const gatewayOrigin = reqUrl.origin; // e.g. https://opennotes-gateway.wkohara.workers.dev
+  
   try {
     const resp = await fetch(`${UPSTREAM_API}/auth/login`, {
       method: 'GET',
@@ -608,33 +612,93 @@ async function handleAuthLoginProxy(request) {
         'Referer': 'https://opennotes.pages.dev/',
         'User-Agent': request.headers.get('User-Agent') || 'Mozilla/5.0',
       },
-      redirect: 'manual', // Don't follow the redirect, return it to the browser
+      redirect: 'manual',
     });
 
-    // The upstream returns a 302 redirect to Google OAuth
     if (resp.status === 302 || resp.status === 301) {
       const location = resp.headers.get('Location');
+      const googleUrl = new URL(location);
+      
+      // Rewrite redirect_uri to point to OUR gateway callback
+      googleUrl.searchParams.set('redirect_uri', gatewayOrigin + '/auth/callback');
+      
+      // Pack the return URL into state so we get it back from Google
+      googleUrl.searchParams.set('state', returnUrl);
+      
       return new Response(null, {
         status: 302,
-        headers: {
-          'Location': location,
-          ...corsHeaders,
-        },
+        headers: { 'Location': googleUrl.toString(), ...corsHeaders },
       });
     }
 
-    // If the upstream returned something unexpected, pass it through
     return new Response(resp.body, {
       status: resp.status,
-      headers: {
-        'Content-Type': resp.headers.get('Content-Type') || 'text/plain',
-        ...corsHeaders,
-      },
+      headers: { 'Content-Type': resp.headers.get('Content-Type') || 'text/plain', ...corsHeaders },
     });
   } catch (e) {
     return new Response(JSON.stringify({ error: 'Auth proxy failed', message: e.message }), {
       status: 502,
       headers: { 'Content-Type': 'application/json', ...corsHeaders },
+    });
+  }
+}
+
+/**
+ * Handle the OAuth callback from Google.
+ * Gets the auth code from Google, forwards it to the upstream /auth/callback
+ * (server-side) to exchange for a token, then redirects the browser to auth.html
+ * with the token in the URL.
+ */
+async function handleAuthCallback(request) {
+  const url = new URL(request.url);
+  const code = url.searchParams.get('code') || '';
+  const returnUrl = url.searchParams.get('state') || 'https://nagusamecs.github.io/OpenNotesAPI/auth.html';
+  const error = url.searchParams.get('error');
+  
+  if (error) {
+    return new Response(null, {
+      status: 302,
+      headers: { 'Location': returnUrl + '?error=' + encodeURIComponent(error), ...corsHeaders },
+    });
+  }
+  
+  try {
+    // Forward the code to the upstream's callback (server-side fetch)
+    const upstreamUrl = `${UPSTREAM_API}/auth/callback?code=${encodeURIComponent(code)}`;
+    const resp = await fetch(upstreamUrl, {
+      method: 'GET',
+      headers: {
+        'Referer': 'https://opennotes.pages.dev/',
+        'User-Agent': request.headers.get('User-Agent') || 'Mozilla/5.0',
+      },
+      redirect: 'manual',
+    });
+    
+    // Upstream responds with a 302 to opennotes.pages.dev/?login_success=true&t=TOKEN
+    const location = resp.headers.get('Location') || '';
+    let token = '';
+    
+    if (location) {
+      try {
+        const locUrl = new URL(location);
+        token = locUrl.searchParams.get('t') || '';
+      } catch (e) { /* ignore */ }
+    }
+    
+    if (token) {
+      const redirectTarget = returnUrl + (returnUrl.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(token);
+      return new Response(null, { status: 302, headers: { 'Location': redirectTarget, ...corsHeaders } });
+    }
+    
+    // Fallback
+    return new Response(null, {
+      status: 302,
+      headers: { 'Location': returnUrl + '?error=no_token', ...corsHeaders },
+    });
+  } catch (e) {
+    return new Response(null, {
+      status: 302,
+      headers: { 'Location': returnUrl + '?error=' + encodeURIComponent(e.message), ...corsHeaders },
     });
   }
 }
@@ -1062,6 +1126,11 @@ export default {
     // Auth login proxy - proxies upstream auth/login with correct Referer
     if (path === '/auth/login' && request.method === 'GET') {
       return handleAuthLoginProxy(request);
+    }
+    
+    // Auth callback - intercepts upstream OAuth callback, extracts token, redirects to auth.html
+    if (path === '/auth/callback' && request.method === 'GET') {
+      return handleAuthCallback(request);
     }
     
     // Auth code endpoints (for desktop app authentication)
