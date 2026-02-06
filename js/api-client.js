@@ -182,7 +182,7 @@ class OpenNotesAPIClient {
         
         // Add authorization if API key is provided
         if (this.apiKey) {
-            fetchOptions.headers['X-Api-Key'] = this.apiKey;
+            fetchOptions.headers['Authorization'] = this.apiKey;
         }
 
         if (body && method !== 'GET') {
