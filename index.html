@@ -565,16 +565,16 @@
             
             // Show success state
             const modalBody = document.getElementById('access-modal-form');
-            modalBody.innerHTML = \`
+            modalBody.innerHTML = `
                 <div class="flex flex-col items-center justify-center py-8 text-center">
                     <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                         <span class="material-symbols-rounded text-green-600 text-3xl">check_circle</span>
                     </div>
                     <h3 class="text-xl font-semibold text-gray-900 mb-2">Request Submitted!</h3>
-                    <p class="text-gray-600">Thank you, \${name}! We'll review your request and send your API key to <strong>\${email}</strong> within 24-48 hours.</p>
-                    <p class="text-sm text-gray-500 mt-4">Selected tier: <strong>\${tier.charAt(0).toUpperCase() + tier.slice(1)}</strong></p>
+                    <p class="text-gray-600">Thank you, ${name}! We'll review your request and send your API key to <strong>${email}</strong> within 24-48 hours.</p>
+                    <p class="text-sm text-gray-500 mt-4">Selected tier: <strong>${tier.charAt(0).toUpperCase() + tier.slice(1)}</strong></p>
                 </div>
-            \`;
+            `;
             
             // Update buttons
             document.getElementById('access-cancel-btn').style.display = 'none';
@@ -677,7 +677,7 @@
                 
                 // Update panels
                 document.querySelectorAll('.tab-panel').forEach(panel => {
-                    panel.classList.toggle('hidden', panel.id !== \`panel-\${tabId}\`);
+                    panel.classList.toggle('hidden', panel.id !== `panel-${tabId}`);
                 });
                 
                 // Update page title
