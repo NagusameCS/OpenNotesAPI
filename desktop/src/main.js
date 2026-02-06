@@ -1528,10 +1528,42 @@ function hideAuthModal() {
 
 async function handleGoogleSignIn() {
   try {
-    // Open the auth URL
+    console.log('[AUTH] Starting Google Sign In...');
+    
+    // For Tauri, use shell plugin to open in system browser
+    if (window.__TAURI__) {
+      try {
+        const { open } = await import('@tauri-apps/plugin-shell');
+        console.log('[AUTH] Opening auth URL in system browser via Tauri shell');
+        await open(CONFIG.AUTH_URL);
+        
+        // Show a message that auth will complete in browser
+        showToast('Complete sign-in in your browser', 'info');
+        
+        // Poll for auth completion (browser will set localStorage via callback page)
+        const pollAuth = setInterval(() => {
+          if (checkAuth()) {
+            clearInterval(pollAuth);
+            hideAuthModal();
+            showToast('Successfully signed in!', 'success');
+          }
+        }, 1000);
+        
+        // Stop polling after 5 minutes
+        setTimeout(() => {
+          clearInterval(pollAuth);
+        }, 300000);
+        
+        return;
+      } catch (shellErr) {
+        console.warn('[AUTH] Tauri shell not available, falling back to window.open:', shellErr);
+      }
+    }
+    
+    // Fallback for browser environment
     const authWindow = window.open(CONFIG.AUTH_URL, 'Google Sign In', 'width=500,height=600');
     
-    // Listen for the auth callback
+    // Listen for the auth callback via postMessage
     const handleMessage = (event) => {
       console.log('[AUTH] Received message:', event.origin);
       
@@ -1557,7 +1589,7 @@ async function handleGoogleSignIn() {
     
     window.addEventListener('message', handleMessage);
     
-    // Fallback: Check for token in URL hash after redirect
+    // Fallback: Check for token via polling
     const checkForToken = setInterval(() => {
       try {
         if (authWindow && authWindow.closed) {

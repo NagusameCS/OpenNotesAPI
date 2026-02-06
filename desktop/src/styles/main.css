@@ -78,6 +78,13 @@ body {
   color: var(--text);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Transparent background for Tauri window corners */
+html {
+  background: transparent;
 }
 
 a {
@@ -102,6 +109,9 @@ input, select, textarea {
   display: flex;
   height: 100vh;
   overflow: hidden;
+  border-radius: 12px;
+  background: var(--bg);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), var(--shadow-lg);
 }
 
 /* ==================== SIDEBAR ==================== */
@@ -114,6 +124,7 @@ input, select, textarea {
   flex-shrink: 0;
   transition: transform 0.3s ease;
   z-index: 100;
+  border-radius: 12px 0 0 12px;
 }
 
 .sidebar-header {
@@ -1444,9 +1455,9 @@ input, select, textarea {
 }
 
 .auth-logo {
-  width: 80px;
-  height: 80px;
-  margin-bottom: 24px;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 32px;
 }
 
 .auth-modal-body h2 {

@@ -23,7 +23,7 @@
         "center": true,
         "devtools": true,
         "decorations": false,
-        "transparent": false
+        "transparent": true
       }
     ],
     "security": {
