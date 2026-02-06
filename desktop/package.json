@@ -9,7 +9,12 @@
     "preview": "vite preview",
     "tauri": "tauri"
   },
-  "keywords": ["notes", "education", "desktop", "tauri"],
+  "keywords": [
+    "notes",
+    "education",
+    "desktop",
+    "tauri"
+  ],
   "author": "NagusameCS",
   "license": "MIT",
   "devDependencies": {
@@ -19,6 +24,7 @@
   },
   "dependencies": {
     "@tauri-apps/plugin-fs": "^2.0.0",
+    "@tauri-apps/plugin-http": "^2.5.7",
     "@tauri-apps/plugin-store": "^2.0.0"
   }
 }

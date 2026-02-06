@@ -13,6 +13,40 @@ const CONFIG = {
   NOTES_PER_PAGE: 20, // Match API default
 };
 
+// HTTP client - uses Tauri plugin if available, falls back to fetch
+let httpClient = null;
+
+async function initHttpClient() {
+  try {
+    if (window.__TAURI__) {
+      const { fetch: tauriFetch } = await import('@tauri-apps/plugin-http');
+      httpClient = tauriFetch;
+      console.log('Using Tauri HTTP client');
+    }
+  } catch (e) {
+    console.log('Tauri HTTP not available, using browser fetch');
+  }
+}
+
+async function httpFetch(url, options = {}) {
+  // Add required headers for API access
+  const headers = {
+    'Content-Type': 'application/json',
+    'Origin': 'https://nagusamecs.github.io',
+    'Referer': 'https://nagusamecs.github.io/OpenNotesAPI/',
+    ...options.headers,
+  };
+  
+  if (httpClient) {
+    // Use Tauri HTTP client (can set any headers)
+    const response = await httpClient(url, { ...options, headers });
+    return response;
+  } else {
+    // Browser fallback (Origin header will be ignored)
+    return fetch(url, { ...options, headers, mode: 'cors' });
+  }
+}
+
 // Load secrets from Tauri store
 async function loadSecrets() {
   try {
@@ -60,7 +94,7 @@ const api = {
   },
   
   getHeaders() {
-    const headers = { 'Content-Type': 'application/json' };
+    const headers = {};
     if (CONFIG.APP_TOKEN && CONFIG.GATEWAY_URL) {
       headers['X-App-Token'] = CONFIG.APP_TOKEN;
     }
@@ -78,10 +112,10 @@ const api = {
       });
       // Note: API ignores limit param and always returns up to 20 items
       
-      const response = await fetch(`${this.getBaseUrl()}?${queryParams}`, {
-        headers: this.getHeaders()
+      const response = await httpFetch(`${this.getBaseUrl()}?${queryParams}`, {
+        headers: this.getHeaders(),
       });
-      if (!response.ok) throw new Error('Failed to fetch notes');
+      if (!response.ok) throw new Error(`Failed to fetch notes: ${response.status}`);
       const data = await response.json();
       
       const items = data.items || data.notes || data.data || [];
@@ -124,7 +158,7 @@ const api = {
         type: 'note',
         noteId: id,
       });
-      const response = await fetch(`${this.getBaseUrl()}?${queryParams}`, {
+      const response = await httpFetch(`${this.getBaseUrl()}?${queryParams}`, {
         headers: this.getHeaders()
       });
       if (!response.ok) throw new Error('Note not found');
@@ -146,7 +180,7 @@ const api = {
         noteId: name,
         counter: 'views',
       });
-      await fetch(`${this.getBaseUrl()}?${queryParams}`, {
+      await httpFetch(`${this.getBaseUrl()}?${queryParams}`, {
         method: 'POST',
         headers: this.getHeaders(),
       });
@@ -162,7 +196,7 @@ const api = {
         noteId: name,
         counter: 'downloads',
       });
-      await fetch(`${this.getBaseUrl()}?${queryParams}`, {
+      await httpFetch(`${this.getBaseUrl()}?${queryParams}`, {
         method: 'POST',
         headers: this.getHeaders(),
       });
@@ -204,7 +238,7 @@ const storage = {
     
     // Download and cache the file
     try {
-      const response = await fetch(note.dl);
+      const response = await httpFetch(note.dl);
       const blob = await response.blob();
       const base64 = await this.blobToBase64(blob);
       
@@ -1096,6 +1130,9 @@ async function init() {
   
   // Load secrets from Tauri store first
   await loadSecrets();
+  
+  // Initialize HTTP client for API calls (to set custom headers)
+  await initHttpClient();
   
   // Initialize theme
   initTheme();
