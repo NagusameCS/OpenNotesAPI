@@ -41,6 +41,7 @@
   
   --header-height: 64px;
   --sidebar-width: 260px;
+  --titlebar-height: 38px;
   
   --transition: all 0.2s ease;
 }
@@ -57,6 +58,79 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* ==================== CUSTOM TITLE BAR ==================== */
+#titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--titlebar-height);
+  background: var(--bg-sidebar);
+  padding: 0 8px 0 12px;
+  user-select: none;
+  -webkit-user-select: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+}
+
+.titlebar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.titlebar-icon {
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+
+.titlebar-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-sidebar);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.titlebar-controls {
+  display: flex;
+  gap: 2px;
+}
+
+.titlebar-btn {
+  width: 36px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-sidebar);
+  border-radius: var(--radius-xs);
+  transition: background 0.15s ease;
+}
+
+.titlebar-btn .material-symbols-rounded {
+  font-size: 16px;
+}
+
+.titlebar-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.titlebar-btn.titlebar-close:hover {
+  background: var(--danger);
+  color: white;
+}
+
+/* Adjust app container for titlebar */
+#app {
+  padding-top: var(--titlebar-height);
 }
 
 /* ==================== BASE RESET ==================== */
@@ -1069,6 +1143,10 @@ input, select, textarea {
   box-shadow: var(--shadow-lg);
 }
 
+.modal-content.modal-large {
+  max-width: 900px;
+}
+
 .modal-header {
   display: flex;
   align-items: center;
@@ -1121,11 +1199,55 @@ input, select, textarea {
 
 .modal-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 12px;
   padding: 16px 24px;
   border-top: 1px solid var(--border);
   background: var(--bg);
+  flex-wrap: wrap;
+}
+
+.modal-actions-left,
+.modal-actions-right {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Modal Preview */
+.modal-preview-container {
+  width: 100%;
+  margin-bottom: 20px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.modal-preview-frame {
+  width: 100%;
+  height: 400px;
+  border: none;
+  background: white;
+}
+
+.modal-preview-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.modal-preview-fallback .material-symbols-rounded {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.modal-preview-fallback p {
+  margin-bottom: 16px;
 }
 
 /* ==================== TOAST ==================== */

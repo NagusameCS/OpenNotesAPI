@@ -27,6 +27,25 @@
   <link rel="stylesheet" href="/src/styles/main.css">
 </head>
 <body>
+  <!-- Custom Title Bar -->
+  <div id="titlebar" data-tauri-drag-region>
+    <div class="titlebar-left" data-tauri-drag-region>
+      <img src="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png" alt="" class="titlebar-icon">
+      <span class="titlebar-title">OpenNotes Desktop</span>
+    </div>
+    <div class="titlebar-controls">
+      <button class="titlebar-btn" id="titlebar-minimize">
+        <span class="material-symbols-rounded">remove</span>
+      </button>
+      <button class="titlebar-btn" id="titlebar-maximize">
+        <span class="material-symbols-rounded">crop_square</span>
+      </button>
+      <button class="titlebar-btn titlebar-close" id="titlebar-close">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </div>
+  </div>
+
   <div id="app">
     <!-- Sidebar -->
     <aside id="sidebar" class="sidebar">
@@ -357,7 +376,7 @@
   <!-- Note Detail Modal -->
   <div id="note-modal" class="modal hidden">
     <div class="modal-backdrop"></div>
-    <div class="modal-content">
+    <div class="modal-content modal-large">
       <div class="modal-header">
         <h2 id="modal-title">Note Title</h2>
         <button class="icon-btn" id="modal-close">
@@ -365,6 +384,19 @@
         </button>
       </div>
       <div class="modal-body">
+        <!-- Preview Frame -->
+        <div id="modal-preview-container" class="modal-preview-container hidden">
+          <iframe id="modal-preview-frame" class="modal-preview-frame"></iframe>
+          <div id="modal-preview-fallback" class="modal-preview-fallback hidden">
+            <span class="material-symbols-rounded">preview</span>
+            <p>Preview not available for this file type</p>
+            <button class="btn btn-secondary" id="preview-download-instead">
+              <span class="material-symbols-rounded">download</span>
+              Download Instead
+            </button>
+          </div>
+        </div>
+        <!-- Thumbnail (shown when preview hidden) -->
         <img id="modal-thumbnail" src="" alt="" class="modal-thumbnail">
         <div class="modal-info">
           <div class="info-grid">
@@ -392,14 +424,30 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" id="modal-save-offline">
-          <span class="material-symbols-rounded">bookmark</span>
-          Save Offline
-        </button>
-        <button class="btn btn-primary" id="modal-download">
-          <span class="material-symbols-rounded">download</span>
-          Download
-        </button>
+        <div class="modal-actions-left">
+          <button class="btn btn-secondary" id="modal-preview">
+            <span class="material-symbols-rounded">visibility</span>
+            Preview
+          </button>
+          <button class="btn btn-secondary" id="modal-open-external">
+            <span class="material-symbols-rounded">open_in_new</span>
+            Open External
+          </button>
+          <button class="btn btn-secondary" id="modal-share">
+            <span class="material-symbols-rounded">share</span>
+            Share
+          </button>
+        </div>
+        <div class="modal-actions-right">
+          <button class="btn btn-secondary" id="modal-save-offline">
+            <span class="material-symbols-rounded">bookmark</span>
+            Save Offline
+          </button>
+          <button class="btn btn-primary" id="modal-download">
+            <span class="material-symbols-rounded">download</span>
+            Download
+          </button>
+        </div>
       </div>
     </div>
   </div>

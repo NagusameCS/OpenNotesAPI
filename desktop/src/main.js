@@ -81,7 +81,8 @@ const devConsole = {
 // Initialize console interceptor immediately
 devConsole.init();
 
-function toggleDevConsole() {
+// Expose to window for inline HTML handlers
+window.toggleDevConsole = function() {
   const panel = document.getElementById('dev-console');
   if (panel) {
     panel.classList.toggle('hidden');
@@ -89,7 +90,7 @@ function toggleDevConsole() {
       devConsole.render();
     }
   }
-}
+};
 
 // ==================== CONFIGURATION ====================
 const CONFIG = {
@@ -546,31 +547,39 @@ function renderNotesGrid(notes, containerId = 'notes-grid') {
 function createNoteCard(note) {
   const format = getFileFormat(note.name);
   const isSaved = storage.isNoteSaved(note.name);
+  // API uses: thumb (not img), auth (not author), v (not views), d (not downloads)
+  const thumbnail = note.thumb || note.img || '';
+  const author = note.auth || note.author || 'Unknown';
+  const views = note.v || note.views || 0;
+  const downloads = note.d || note.downloads || 0;
   
   return `
     <article class="note-card" data-note-id="${escapeHtml(note.name)}">
       <div class="note-thumbnail">
-        <img src="${note.img || 'https://via.placeholder.com/320x200?text=No+Preview'}" 
-             alt="${escapeHtml(note.name)}" 
-             loading="lazy"
-             onerror="this.src='https://via.placeholder.com/320x200?text=No+Preview'">
+        ${thumbnail ? 
+          `<img src="${thumbnail}" 
+               alt="${escapeHtml(note.name)}" 
+               loading="lazy"
+               onerror="this.parentElement.innerHTML='<div class=\\'no-thumb\\'><span class=\\'material-symbols-rounded\\'>description</span></div>'">` :
+          `<div class="no-thumb"><span class="material-symbols-rounded">description</span></div>`
+        }
         <span class="format-badge ${format}">${format.toUpperCase()}</span>
       </div>
       <div class="note-content">
-        <h3 class="note-title">${escapeHtml(note.name)}</h3>
+        <h3 class="note-title">${escapeHtml(note.title || note.name)}</h3>
         <div class="note-meta">
           <span class="note-author">
             <span class="material-symbols-rounded">person</span>
-            ${escapeHtml(note.author || 'Unknown')}
+            ${escapeHtml(author)}
           </span>
           <div class="note-stats">
             <span class="note-stat">
               <span class="material-symbols-rounded">visibility</span>
-              ${formatNumber(note.views || 0)}
+              ${formatNumber(views)}
             </span>
             <span class="note-stat">
               <span class="material-symbols-rounded">download</span>
-              ${formatNumber(note.downloads || 0)}
+              ${formatNumber(downloads)}
             </span>
           </div>
         </div>
@@ -835,13 +844,18 @@ async function openNoteModal(noteId) {
   
   state.currentNote = note;
   
-  // Populate modal
+  // Populate modal (use API field names with fallbacks)
+  const thumbnail = note.thumb || note.img || 'https://via.placeholder.com/600x400?text=No+Preview';
+  const author = note.auth || note.author || 'Unknown';
+  const views = note.v || note.views || 0;
+  const downloads = note.d || note.downloads || 0;
+  
   document.getElementById('modal-title').textContent = note.name;
-  document.getElementById('modal-thumbnail').src = note.img || 'https://via.placeholder.com/600x400?text=No+Preview';
-  document.getElementById('modal-author').textContent = note.author || 'Unknown';
+  document.getElementById('modal-thumbnail').src = thumbnail;
+  document.getElementById('modal-author').textContent = author;
   document.getElementById('modal-format').textContent = getFileFormat(note.name).toUpperCase();
-  document.getElementById('modal-views').textContent = formatNumber(note.views || 0);
-  document.getElementById('modal-downloads').textContent = formatNumber(note.downloads || 0);
+  document.getElementById('modal-views').textContent = formatNumber(views);
+  document.getElementById('modal-downloads').textContent = formatNumber(downloads);
   document.getElementById('modal-size').textContent = note.size ? formatBytes(parseInt(note.size)) : '--';
   
   // Update save button
@@ -861,7 +875,132 @@ async function openNoteModal(noteId) {
 function closeNoteModal() {
   const modal = document.getElementById('note-modal');
   if (modal) modal.classList.add('hidden');
+  
+  // Hide preview when closing
+  const previewContainer = document.getElementById('modal-preview-container');
+  const thumbnail = document.getElementById('modal-thumbnail');
+  if (previewContainer) previewContainer.classList.add('hidden');
+  if (thumbnail) thumbnail.classList.remove('hidden');
+  
   state.currentNote = null;
+}
+
+// Toggle document preview in modal
+function toggleNotePreview() {
+  const note = state.currentNote;
+  if (!note) return;
+  
+  const previewContainer = document.getElementById('modal-preview-container');
+  const previewFrame = document.getElementById('modal-preview-frame');
+  const previewFallback = document.getElementById('modal-preview-fallback');
+  const thumbnail = document.getElementById('modal-thumbnail');
+  const previewBtn = document.getElementById('modal-preview');
+  
+  if (!previewContainer) return;
+  
+  const isHidden = previewContainer.classList.contains('hidden');
+  
+  if (isHidden) {
+    // Show preview
+    const format = getFileFormat(note.name).toLowerCase();
+    const previewUrl = note.dl || note.thumb || note.img;
+    
+    // Check if format supports preview
+    const previewableFormats = ['pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'txt', 'html'];
+    const canPreview = previewableFormats.includes(format) && previewUrl;
+    
+    if (canPreview) {
+      previewFrame.src = previewUrl;
+      previewFrame.classList.remove('hidden');
+      previewFallback.classList.add('hidden');
+    } else {
+      previewFrame.classList.add('hidden');
+      previewFallback.classList.remove('hidden');
+    }
+    
+    previewContainer.classList.remove('hidden');
+    thumbnail.classList.add('hidden');
+    previewBtn.innerHTML = `
+      <span class="material-symbols-rounded">visibility_off</span>
+      Hide Preview
+    `;
+  } else {
+    // Hide preview
+    previewContainer.classList.add('hidden');
+    previewFrame.src = '';
+    thumbnail.classList.remove('hidden');
+    previewBtn.innerHTML = `
+      <span class="material-symbols-rounded">visibility</span>
+      Preview
+    `;
+  }
+}
+
+// Open note in external application
+async function openNoteExternal(note) {
+  if (!note.dl) {
+    showToast('Download URL not available', 'error');
+    return;
+  }
+  
+  try {
+    // Check if we have it saved offline first
+    const savedNote = state.savedNotes.find(n => n.name === note.name);
+    
+    if (savedNote && savedNote.cachedFile) {
+      // Open from cached file
+      const blob = storage.base64ToBlob(savedNote.cachedFile);
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } else {
+      // Open directly from URL
+      window.open(note.dl, '_blank');
+    }
+    
+    showToast('Opening in external app...', 'success');
+  } catch (err) {
+    console.error('[OPEN] Error:', err);
+    showToast('Failed to open file', 'error');
+  }
+}
+
+// Share note
+function shareNote(note) {
+  if (!note) return;
+  
+  const shareUrl = `https://nagusamecs.github.io/OpenNotesAPI/?note=${encodeURIComponent(note.name)}`;
+  const shareText = `Check out "${note.name}" on OpenNotes!`;
+  
+  // Try native share API first
+  if (navigator.share) {
+    navigator.share({
+      title: note.name,
+      text: shareText,
+      url: shareUrl
+    }).catch(() => {
+      // Fallback to clipboard
+      copyToClipboard(shareUrl);
+    });
+  } else {
+    // Fallback to clipboard
+    copyToClipboard(shareUrl);
+  }
+}
+
+// Copy to clipboard helper
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Link copied to clipboard!', 'success');
+  }).catch(() => {
+    // Fallback for older browsers
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    showToast('Link copied to clipboard!', 'success');
+  });
 }
 
 function openOfflineNote(name) {
@@ -1316,6 +1455,59 @@ function initSearch() {
   });
 }
 
+// ==================== WINDOW CONTROLS ====================
+async function setupWindowControls() {
+  // Check if we're in Tauri
+  if (!window.__TAURI__) {
+    console.log('[WINDOW] Not in Tauri, hiding titlebar');
+    const titlebar = document.getElementById('titlebar');
+    if (titlebar) titlebar.style.display = 'none';
+    const app = document.getElementById('app');
+    if (app) app.style.paddingTop = '0';
+    return;
+  }
+  
+  try {
+    const { getCurrentWindow } = await import('@tauri-apps/api/window');
+    const appWindow = getCurrentWindow();
+    
+    // Minimize
+    document.getElementById('titlebar-minimize')?.addEventListener('click', async () => {
+      await appWindow.minimize();
+    });
+    
+    // Maximize / Restore
+    document.getElementById('titlebar-maximize')?.addEventListener('click', async () => {
+      const isMaximized = await appWindow.isMaximized();
+      if (isMaximized) {
+        await appWindow.unmaximize();
+      } else {
+        await appWindow.maximize();
+      }
+    });
+    
+    // Update maximize icon on state change
+    appWindow.onResized(async () => {
+      const maximizeBtn = document.getElementById('titlebar-maximize');
+      if (maximizeBtn) {
+        const isMaximized = await appWindow.isMaximized();
+        maximizeBtn.innerHTML = isMaximized 
+          ? '<span class="material-symbols-rounded">filter_none</span>'
+          : '<span class="material-symbols-rounded">crop_square</span>';
+      }
+    });
+    
+    // Close
+    document.getElementById('titlebar-close')?.addEventListener('click', async () => {
+      await appWindow.close();
+    });
+    
+    console.log('[WINDOW] Window controls initialized');
+  } catch (err) {
+    console.error('[WINDOW] Failed to setup window controls:', err);
+  }
+}
+
 // ==================== INITIALIZATION ====================
 async function init() {
   console.log('[INIT] OpenNotes Desktop initializing...');
@@ -1400,6 +1592,35 @@ async function init() {
     }
   });
   
+  // Modal preview
+  document.getElementById('modal-preview')?.addEventListener('click', () => {
+    if (state.currentNote) {
+      toggleNotePreview();
+    }
+  });
+  
+  // Modal open external (opens in system default app)
+  document.getElementById('modal-open-external')?.addEventListener('click', async () => {
+    if (state.currentNote) {
+      await openNoteExternal(state.currentNote);
+    }
+  });
+  
+  // Modal share
+  document.getElementById('modal-share')?.addEventListener('click', () => {
+    if (state.currentNote) {
+      shareNote(state.currentNote);
+    }
+  });
+  
+  // Preview download fallback button
+  document.getElementById('preview-download-instead')?.addEventListener('click', () => {
+    if (state.currentNote && state.currentNote.dl) {
+      window.open(state.currentNote.dl, '_blank');
+      api.incrementDownloads(state.currentNote.name);
+    }
+  });
+  
   // Storage actions
   document.getElementById('clear-cache')?.addEventListener('click', () => {
     if (confirm('Clear cache? Saved offline notes will be kept.')) {
@@ -1417,6 +1638,9 @@ async function init() {
   document.getElementById('sidebar-toggle')?.addEventListener('click', () => {
     document.getElementById('sidebar')?.classList.toggle('open');
   });
+  
+  // Window controls (custom title bar)
+  setupWindowControls();
   
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
