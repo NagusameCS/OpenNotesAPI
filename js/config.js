@@ -9,10 +9,9 @@ const CONFIG = {
     // Base URL of the OpenNotes Worker API
     API_URL: 'https://open-notes.tebby2008-li.workers.dev',
     
-    // API Key (optional - for authenticated requests)
-    // Note: The API uses CORS and only allows requests from opennotes.pages.dev
-    // To use this SDK from other origins, the API owner must add your domain to CORS
-    API_KEY: null,
+    // API Key for authenticated requests
+    // This key is authorized for use from nagusamecs.github.io
+    API_KEY: 'apreHI*ru$axi!uCeCR&D?EkuhobrUwLRasI&heD_frIsUYuphIprIche&h2TawRE@raPLP!6vEdoJitRiFL7i*OdR*Drib=j0bIquhuV4=R57I_WLJE8re&wU7e9Rwrag6xlsuch6phLnesticeQlrofidAhlyomlswum$d3EwroPicedr5h1qlkOg4Sp',
     
     // OpenNotes GitHub repository base URL
     REPO_URL: 'https://github.com/Tebby2008/OpenNotes',
