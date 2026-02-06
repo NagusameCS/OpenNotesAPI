@@ -492,13 +492,12 @@ class OpenNotesAnalytics {
             error.style.display = 'flex';
             const msg = error.querySelector('.error-message');
             if (msg) {
-                // Check if it's a connection/fetch error
-                if (message.includes('Failed to fetch') || message.includes('NetworkError') || message.includes('ERR_NAME_NOT_RESOLVED')) {
+                // Check if it's a connection/fetch error or CORS error
+                if (message.includes('Failed to fetch') || message.includes('NetworkError') || message.includes('ERR_NAME_NOT_RESOLVED') || message.includes('CORS') || message.includes('403')) {
                     msg.innerHTML = `
-                        <strong>API Connection Unavailable</strong><br>
-                        Unable to load analytics data. The API may be temporarily unavailable.
-                        <br><br>
-                        <button onclick="openAccessModal()" class="btn btn-secondary">Request API Access</button>
+                        <strong>API Access Restricted</strong><br>
+                        The OpenNotes API only allows requests from authorized origins.<br>
+                        <a href="https://opennotes.pages.dev" class="btn btn-primary" target="_blank" style="margin-top: 12px; display: inline-block;">Visit OpenNotes</a>
                     `;
                 } else {
                     msg.textContent = message;

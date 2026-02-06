@@ -174,11 +174,16 @@ class OpenNotesAPIClient {
         // Request configuration
         const fetchOptions = {
             method,
+            credentials: 'include',
             headers: {
-                'Content-Type': 'application/json',
-                'X-Api-Key': this.apiKey
+                'Content-Type': 'application/json'
             }
         };
+        
+        // Add authorization if API key is provided
+        if (this.apiKey) {
+            fetchOptions.headers['Authorization'] = `Bearer ${this.apiKey}`;
+        }
 
         if (body && method !== 'GET') {
             fetchOptions.body = JSON.stringify(body);

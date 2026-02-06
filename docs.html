@@ -275,19 +275,19 @@
                 <p>The OpenNotes API provides programmatic access to the OpenNotes educational content platform. Use this API to browse, search, and integrate notes into your applications.</p>
                 
                 <div class="info-box">
-                    <strong>Base URL:</strong> <code class="code-inline">https://opennotes.tebby.workers.dev</code>
+                    <strong>Base URL:</strong> <code class="code-inline">https://open-notes.tebby2008-li.workers.dev</code>
+                </div>
+                
+                <div class="warning-box">
+                    <strong>CORS Restriction:</strong> The API only allows requests from <code class="code-inline">opennotes.pages.dev</code>. To use this SDK from other domains, contact the API owner to whitelist your origin.
                 </div>
             </section>
 
             <section id="authentication">
                 <h2>Authentication</h2>
-                <p>All API requests must include the <code class="code-inline">X-Api-Key</code> header with your secret API key.</p>
+                <p>The API supports optional Bearer token authentication for authenticated operations. For read-only access, requests may work without authentication if originating from an allowed origin.</p>
                 
-                <div class="warning-box">
-                    <strong>Important:</strong> Your API key is sensitive. Never expose it in client-side code that could be viewed by users. Requests must also originate from an approved domain.
-                </div>
-                
-                <h3>Required Headers</h3>
+                <h3>Optional Headers</h3>
                 <table class="params-table">
                     <thead>
                         <tr>
@@ -298,9 +298,9 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td><code class="code-inline">X-Api-Key</code></td>
-                            <td>Your secret API key</td>
-                            <td class="param-required">Yes</td>
+                            <td><code class="code-inline">Authorization</code></td>
+                            <td>Bearer {token}</td>
+                            <td class="param-optional">For authenticated actions</td>
                         </tr>
                         <tr>
                             <td><code class="code-inline">Content-Type</code></td>
@@ -591,8 +591,8 @@ const api = openNotesAPI;
 
 // Or create a custom instance
 const customApi = new OpenNotesAPIClient({
-    apiUrl: 'https://opennotes.tebby.workers.dev',
-    apiKey: 'your-api-key',
+    apiUrl: 'https://open-notes.tebby2008-li.workers.dev',
+    apiKey: null, // Optional - for authenticated requests
     timeout: 10000,
     retries: 3
 });

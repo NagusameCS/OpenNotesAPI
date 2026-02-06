@@ -451,11 +451,11 @@
 </head>
 <body>
     <!-- API Status Banner -->
-    <div class="api-status-banner" id="api-status-banner">
+    <div class="api-status-banner show" id="api-status-banner">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
         </svg>
-        <span>API connection unavailable. <span class="request-link" onclick="openAccessModal()">Request API access</span> for your own key.</span>
+        <span>This is an SDK demo. The OpenNotes API restricts cross-origin requests. <a href="https://opennotes.pages.dev" target="_blank" class="request-link">Visit OpenNotes</a> to browse notes.</span>
     </div>
 
     <!-- Header -->
@@ -479,9 +479,12 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="container">
-            <h1>Access Educational Notes via API</h1>
-            <p>Browse, search, and integrate OpenNotes content into your applications with our comprehensive API.</p>
-            <div class="hero-search" id="main-search"></div>
+            <h1>OpenNotes API SDK</h1>
+            <p>A JavaScript SDK for integrating OpenNotes content into your applications. View the documentation and examples below.</p>
+            <div style="display: flex; gap: 12px; justify-content: center; margin-top: 16px;">
+                <a href="https://opennotes.pages.dev" class="btn btn-primary" target="_blank">Visit OpenNotes</a>
+                <a href="docs.html" class="btn btn-secondary">View API Docs</a>
+            </div>
         </div>
     </section>
 

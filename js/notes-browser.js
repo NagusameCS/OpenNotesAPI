@@ -585,13 +585,14 @@ class NotesBrowser {
             this.errorEl.style.display = 'flex';
             const msgEl = this.errorEl.querySelector('.error-message');
             if (msgEl) {
-                // Check if it's a connection/fetch error
-                if (message.includes('Failed to fetch') || message.includes('NetworkError') || message.includes('ERR_NAME_NOT_RESOLVED')) {
+                // Check if it's a connection/fetch error or CORS error
+                if (message.includes('Failed to fetch') || message.includes('NetworkError') || message.includes('ERR_NAME_NOT_RESOLVED') || message.includes('CORS') || message.includes('403')) {
                     msgEl.innerHTML = `
-                        <strong>API Connection Unavailable</strong><br>
-                        Unable to connect to the OpenNotes API. This could be due to network issues or the API may be temporarily unavailable.
+                        <strong>API Access Restricted</strong><br>
+                        The OpenNotes API only allows requests from <code>opennotes.pages.dev</code>.<br>
+                        To use this SDK, visit <a href="https://opennotes.pages.dev" target="_blank">OpenNotes</a> directly, or contact the API owner to add your domain to CORS.
                         <br><br>
-                        <button onclick="openAccessModal()" class="btn btn-secondary" style="margin-right: 8px;">Request API Access</button>
+                        <a href="https://opennotes.pages.dev" class="btn btn-primary" target="_blank">Visit OpenNotes</a>
                     `;
                 } else {
                     msgEl.textContent = message;
