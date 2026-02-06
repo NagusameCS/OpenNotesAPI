@@ -71,12 +71,12 @@ const api = {
     try {
       const queryParams = new URLSearchParams({
         type: 'list',
-        limit: params.limit || CONFIG.NOTES_PER_PAGE,
         offset: params.offset || 0,
         sort: params.sort || 'views',
         ...(params.format && params.format !== 'all' && { format: params.format }),
         ...(params.search && { q: params.search }),
       });
+      // Note: API ignores limit param and always returns up to 20 items
       
       const response = await fetch(`${this.getBaseUrl()}?${queryParams}`, {
         headers: this.getHeaders()
@@ -84,11 +84,14 @@ const api = {
       if (!response.ok) throw new Error('Failed to fetch notes');
       const data = await response.json();
       
-      // Normalize response - API returns { items: [], meta: { total } }
+      const items = data.items || data.notes || data.data || [];
+      
+      // API returns up to 20 items per request
+      // hasMore = true if we got exactly 20 (likely more exist)
       return {
-        notes: data.items || data.notes || data.data || [],
-        total: data.meta?.total || data.total || 0,
-        hasMore: data.meta?.hasMore !== false,
+        notes: items,
+        total: data.meta?.total || null, // API doesn't provide total
+        hasMore: items.length === 20, // If we got 20, there might be more
       };
     } catch (error) {
       console.error('API Error:', error);
@@ -100,17 +103,16 @@ const api = {
     // Fetch notes in batches until we have all of them
     const allNotes = [];
     let offset = 0;
-    const limit = 50; // Larger batches for efficiency
     let hasMore = true;
     
     while (hasMore) {
-      const result = await this.fetchNotes({ ...params, offset, limit });
+      const result = await this.fetchNotes({ ...params, offset });
       allNotes.push(...result.notes);
-      offset += limit;
-      hasMore = result.notes.length === limit && allNotes.length < (result.total || Infinity);
+      offset += result.notes.length;
+      hasMore = result.hasMore; // true if we got exactly 20
       
       // Safety limit
-      if (allNotes.length >= 1000) break;
+      if (allNotes.length >= 1000 || result.notes.length === 0) break;
     }
     
     return { notes: allNotes, total: allNotes.length };
@@ -429,7 +431,7 @@ function renderPagination() {
         <span class="material-symbols-rounded">expand_more</span>
         Load More Notes
       </button>
-      <span class="notes-count">${state.allNotes.length} of ${state.totalNotes} notes loaded</span>
+      <span class="notes-count">${state.allNotes.length} notes loaded (more available)</span>
     `;
     
     document.getElementById('load-more-btn').addEventListener('click', loadMoreNotes);
@@ -546,7 +548,6 @@ async function loadNotes(reset = true) {
   try {
     const result = await api.fetchNotes({
       offset: state.offset,
-      limit: CONFIG.NOTES_PER_PAGE,
       sort: state.currentSort,
       format: state.currentFilter,
       search: state.searchQuery,
@@ -555,9 +556,11 @@ async function loadNotes(reset = true) {
     const newNotes = result.notes || [];
     state.allNotes = [...state.allNotes, ...newNotes];
     state.notes = state.allNotes;
-    state.totalNotes = result.total || state.allNotes.length;
     state.offset += newNotes.length;
-    state.hasMore = newNotes.length >= CONFIG.NOTES_PER_PAGE && state.allNotes.length < state.totalNotes;
+    state.hasMore = result.hasMore; // true if we got 20 items (more may exist)
+    state.totalNotes = state.hasMore ? state.allNotes.length + '+' : state.allNotes.length;
+    
+    console.log(`Loaded ${newNotes.length} notes, total: ${state.allNotes.length}, hasMore: ${state.hasMore}`);
     
     renderNotesGrid(state.allNotes);
     renderPagination();
@@ -615,7 +618,10 @@ async function loadAllNotes() {
     state.allNotes = result.notes || [];
     state.notes = state.allNotes;
     state.totalNotes = state.allNotes.length;
+    state.offset = state.allNotes.length;
     state.hasMore = false;
+    
+    console.log(`Loaded all ${state.allNotes.length} notes`);
     
     renderNotesGrid(state.allNotes);
     renderPagination();
