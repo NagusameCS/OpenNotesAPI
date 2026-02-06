@@ -8,15 +8,15 @@
     <title>OpenNotes API</title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>�</text></svg>">
     
     <!-- Stylesheets -->
     <link rel="stylesheet" href="css/styles.css">
     
     <style>
-        /* Page-specific styles */
+        /* Page-specific styles - Azure Monotone */
         .app-header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
+            background: linear-gradient(135deg, #0078d4 0%, #004578 100%);
             color: white;
             padding: var(--spacing-xl) 0;
         }
@@ -33,6 +33,7 @@
             gap: var(--spacing-sm);
             font-size: 1.5rem;
             font-weight: 700;
+            letter-spacing: -0.5px;
         }
         
         .app-nav {
@@ -50,24 +51,26 @@
         .app-nav a:hover,
         .app-nav a.active {
             color: white;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.15);
         }
         
         .hero {
-            background: var(--bg-primary);
+            background: var(--bg-secondary);
             padding: var(--spacing-xl) * 2 0;
             text-align: center;
+            border-bottom: 1px solid var(--border-color);
         }
         
         .hero h1 {
             font-size: 2.5rem;
-            font-weight: 800;
+            font-weight: 700;
             margin-bottom: var(--spacing-md);
             color: var(--text-primary);
+            letter-spacing: -1px;
         }
         
         .hero p {
-            font-size: 1.25rem;
+            font-size: 1.125rem;
             color: var(--text-secondary);
             max-width: 600px;
             margin: 0 auto var(--spacing-lg);
@@ -83,7 +86,7 @@
             justify-content: center;
             gap: var(--spacing-sm);
             padding: var(--spacing-md);
-            background: var(--bg-secondary);
+            background: var(--bg-primary);
             border-bottom: 1px solid var(--border-color);
         }
         
@@ -96,7 +99,7 @@
         }
         
         .tab-btn:hover {
-            background: var(--bg-tertiary);
+            background: var(--bg-secondary);
             color: var(--text-primary);
         }
         

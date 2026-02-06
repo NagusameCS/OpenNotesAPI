@@ -128,14 +128,14 @@ class OpenNotesExport {
     <title>OpenNotes Export</title>
     <style>
         body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
-        h1 { color: #7c3aed; }
-        .meta { color: #666; margin-bottom: 20px; }
+        h1 { color: #0078d4; }
+        .meta { color: #5c6970; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background: #f5f3ff; color: #7c3aed; }
-        tr:hover { background: #f9fafb; }
-        .verified { color: #16a34a; }
-        a { color: #7c3aed; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #d2d8dd; }
+        th { background: #deecf9; color: #004578; }
+        tr:hover { background: #f6f8fa; }
+        .verified { color: #0078d4; }
+        a { color: #0078d4; }
     </style>
 </head>
 <body>

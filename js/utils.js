@@ -29,21 +29,21 @@ const OpenNotesUtils = {
     },
 
     /**
-     * Get format color for styling
+     * Get format color for styling - Azure monotone
      */
     getFormatColor(format) {
         const colors = {
-            pdf: '#dc2626',
-            docx: '#2563eb',
-            doc: '#2563eb',
-            pptx: '#ea580c',
-            ppt: '#ea580c',
-            xlsx: '#16a34a',
-            xls: '#16a34a',
-            txt: '#6b7280',
-            md: '#8b5cf6'
+            pdf: '#0078d4',     // Azure primary
+            docx: '#005a9e',    // Azure dark
+            doc: '#005a9e',
+            pptx: '#004578',    // Azure darker
+            ppt: '#004578',
+            xlsx: '#106ebe',    // Azure medium
+            xls: '#106ebe',
+            txt: '#5c6970',     // Neutral
+            md: '#4a90c2'       // Secondary blue
         };
-        return colors[format?.toLowerCase()] || '#6b7280';
+        return colors[format?.toLowerCase()] || '#5c6970';
     },
 
     /**

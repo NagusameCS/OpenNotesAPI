@@ -1,6 +1,6 @@
 /**
  * OpenNotes API - Main Stylesheet
- * Comprehensive styles for the OpenNotes API integration.
+ * Azure-inspired monotone design.
  * 
  * @version 1.0.0
  * @author NagusameCS
@@ -9,35 +9,53 @@
 /* ==================== CSS VARIABLES ==================== */
 
 :root {
-    /* Colors */
-    --primary-color: #3b82f6;
-    --primary-hover: #2563eb;
-    --primary-light: #dbeafe;
-    --secondary-color: #64748b;
-    --success-color: #22c55e;
-    --warning-color: #f59e0b;
-    --error-color: #ef4444;
+    /* Azure Blue Monotone Palette */
+    --primary-color: #0078d4;
+    --primary-hover: #005a9e;
+    --primary-dark: #004578;
+    --primary-light: #deecf9;
+    --primary-lighter: #eff6fc;
+    
+    /* Secondary (muted blues) */
+    --secondary-color: #4a90c2;
+    --secondary-light: #a0c4e8;
+    
+    /* Neutral grays with blue tint */
+    --neutral-100: #f6f8fa;
+    --neutral-200: #e8ecef;
+    --neutral-300: #d2d8dd;
+    --neutral-400: #8a9299;
+    --neutral-500: #5c6970;
+    --neutral-600: #3b4248;
+    --neutral-700: #2b3035;
+    --neutral-800: #1b1f23;
+    --neutral-900: #0d1117;
+    
+    /* Status colors (monochrome-friendly) */
+    --success-color: #0078d4;
+    --warning-color: #005a9e;
+    --error-color: #004578;
     
     /* Backgrounds */
     --bg-primary: #ffffff;
-    --bg-secondary: #f8fafc;
-    --bg-tertiary: #f1f5f9;
+    --bg-secondary: #f6f8fa;
+    --bg-tertiary: #e8ecef;
     
     /* Text */
-    --text-primary: #1e293b;
-    --text-secondary: #64748b;
-    --text-muted: #94a3b8;
+    --text-primary: #1b1f23;
+    --text-secondary: #5c6970;
+    --text-muted: #8a9299;
     
     /* Borders */
-    --border-color: #e2e8f0;
-    --border-radius: 8px;
-    --border-radius-lg: 12px;
+    --border-color: #d2d8dd;
+    --border-radius: 6px;
+    --border-radius-lg: 10px;
     --border-radius-sm: 4px;
     
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    /* Shadows (subtle blue tint) */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 120, 212, 0.05);
+    --shadow-md: 0 4px 8px -1px rgba(0, 120, 212, 0.1), 0 2px 4px -1px rgba(0, 120, 212, 0.06);
+    --shadow-lg: 0 12px 24px -4px rgba(0, 120, 212, 0.15), 0 4px 8px -2px rgba(0, 120, 212, 0.08);
     
     /* Spacing */
     --spacing-xs: 4px;
@@ -55,15 +73,18 @@
     --sidebar-width: 280px;
 }
 
-/* Dark mode */
+/* Dark mode - Azure dark theme */
 [data-theme="dark"] {
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --bg-tertiary: #334155;
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-    --border-color: #334155;
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-tertiary: #21262d;
+    --text-primary: #f0f6fc;
+    --text-secondary: #8b949e;
+    --text-muted: #6e7681;
+    --border-color: #30363d;
+    --primary-color: #58a6ff;
+    --primary-hover: #79b8ff;
+    --primary-light: #1f3d5c;
 }
 
 /* ==================== RESET & BASE ==================== */

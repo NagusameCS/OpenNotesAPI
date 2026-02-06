@@ -266,39 +266,43 @@ class OpenNotesTheme {
     }
 }
 
-// CSS for dark theme (add to stylesheet or inject)
+// CSS for dark theme - Azure Monotone
 const darkThemeCSS = `
 [data-theme="dark"] {
-    --bg-primary: #111827;
-    --bg-secondary: #1f2937;
-    --bg-tertiary: #374151;
-    --text-primary: #f9fafb;
-    --text-secondary: #d1d5db;
-    --text-tertiary: #9ca3af;
-    --border-color: #374151;
-    --accent-color: #a78bfa;
-    --accent-hover: #c4b5fd;
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-tertiary: #21262d;
+    --text-primary: #f0f6fc;
+    --text-secondary: #8b949e;
+    --text-tertiary: #6e7681;
+    --border-color: #30363d;
+    --primary-color: #58a6ff;
+    --primary-hover: #79b8ff;
+    --accent-color: #58a6ff;
+    --accent-hover: #79b8ff;
     --shadow-color: rgba(0, 0, 0, 0.5);
-    --success-color: #34d399;
-    --warning-color: #fbbf24;
-    --error-color: #f87171;
+    --success-color: #58a6ff;
+    --warning-color: #388bfd;
+    --error-color: #1f6feb;
     color-scheme: dark;
 }
 
 [data-theme="light"] {
     --bg-primary: #ffffff;
-    --bg-secondary: #f9fafb;
-    --bg-tertiary: #f3f4f6;
-    --text-primary: #111827;
-    --text-secondary: #4b5563;
-    --text-tertiary: #6b7280;
-    --border-color: #e5e7eb;
-    --accent-color: #7c3aed;
-    --accent-hover: #6d28d9;
-    --shadow-color: rgba(0, 0, 0, 0.1);
-    --success-color: #10b981;
-    --warning-color: #f59e0b;
-    --error-color: #ef4444;
+    --bg-secondary: #f6f8fa;
+    --bg-tertiary: #e8ecef;
+    --text-primary: #1b1f23;
+    --text-secondary: #5c6970;
+    --text-tertiary: #8a9299;
+    --border-color: #d2d8dd;
+    --primary-color: #0078d4;
+    --primary-hover: #005a9e;
+    --accent-color: #0078d4;
+    --accent-hover: #005a9e;
+    --shadow-color: rgba(0, 120, 212, 0.1);
+    --success-color: #0078d4;
+    --warning-color: #005a9e;
+    --error-color: #004578;
     color-scheme: light;
 }
 `;
