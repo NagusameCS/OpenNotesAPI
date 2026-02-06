@@ -95,7 +95,7 @@ window.toggleDevConsole = function() {
 // ==================== CONFIGURATION ====================
 const CONFIG = {
   API_BASE: 'https://open-notes.tebby2008-li.workers.dev',
-  AUTH_URL: 'https://open-notes.tebby2008-li.workers.dev/auth/login',
+  AUTH_URL: 'https://nagusamecs.github.io/OpenNotesAPI/auth.html',
   SUBMIT_URL: 'https://open-notes.tebby2008-li.workers.dev/upload/submit',
   NOTES_RAW_BASE: 'https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes',
   FALLBACK_THUMBNAIL: 'https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/fallback.svg',
@@ -1765,6 +1765,9 @@ async function init() {
   console.log('[INIT] Setting up auth handlers...');
   const signinBtn = document.getElementById('google-signin-btn');
   const logoutBtn = document.getElementById('logout-btn');
+  const skipAuthBtn = document.getElementById('skip-auth-btn');
+  const submitTokenBtn = document.getElementById('submit-token-btn');
+  const tokenInput = document.getElementById('auth-token-input');
   
   if (signinBtn) {
     signinBtn.addEventListener('click', (e) => {
@@ -1779,6 +1782,39 @@ async function init() {
   
   if (logoutBtn) {
     logoutBtn.addEventListener('click', handleLogout);
+  }
+  
+  // Skip button - allows using app without auth
+  if (skipAuthBtn) {
+    skipAuthBtn.addEventListener('click', () => {
+      console.log('[AUTH] Skipping authentication');
+      hideAuthModal();
+      showToast('You can sign in later from the sidebar', 'info');
+    });
+  }
+  
+  // Token submit - manual token entry for desktop app
+  if (submitTokenBtn && tokenInput) {
+    submitTokenBtn.addEventListener('click', () => {
+      const token = tokenInput.value.trim();
+      if (!token) {
+        showToast('Please enter a token', 'error');
+        return;
+      }
+      
+      console.log('[AUTH] Submitting token manually');
+      localStorage.setItem('auth_token_fallback', token);
+      
+      // Create a minimal user object
+      state.user = { name: 'Desktop User', email: '' };
+      localStorage.setItem('opennotes_user', JSON.stringify(state.user));
+      state.isAuthenticated = true;
+      
+      updateUserProfile();
+      hideAuthModal();
+      showToast('Successfully authenticated!', 'success');
+      tokenInput.value = '';
+    });
   }
   
   // Check authentication state immediately

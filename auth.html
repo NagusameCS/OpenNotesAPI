@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenNotes - Sign In</title>
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+    .auth-container {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 48px;
+      text-align: center;
+      max-width: 480px;
+      width: 90%;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .logo { width: 120px; height: 120px; margin-bottom: 24px; }
+    h1 { font-size: 1.75rem; margin-bottom: 8px; }
+    .subtitle { color: #94a3b8; margin-bottom: 32px; }
+    .btn-google {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      padding: 14px 24px;
+      background: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #1f2937;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-google:hover { background: #f3f4f6; transform: translateY(-1px); }
+    .status { margin-top: 24px; padding: 12px; border-radius: 8px; display: none; }
+    .status.loading { display: block; background: rgba(59,130,246,0.2); color: #93c5fd; }
+    .status.success { display: block; background: rgba(34,197,94,0.2); color: #86efac; }
+    .status.error { display: block; background: rgba(239,68,68,0.2); color: #fca5a5; }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 8px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .desktop-note { margin-top: 24px; font-size: 0.875rem; color: #64748b; }
+    .token-box { 
+      margin-top: 24px; 
+      padding: 16px; 
+      background: rgba(0,0,0,0.3); 
+      border-radius: 8px; 
+      text-align: left;
+      display: none;
+    }
+    .token-box.visible { display: block; }
+    .token-label { font-size: 0.75rem; color: #94a3b8; margin-bottom: 8px; }
+    .token-value { 
+      font-family: monospace; 
+      font-size: 0.85rem; 
+      word-break: break-all; 
+      background: rgba(0,0,0,0.3); 
+      padding: 12px; 
+      border-radius: 4px; 
+      user-select: all;
+      cursor: text;
+    }
+    .btn-copy {
+      margin-top: 12px;
+      padding: 10px 20px;
+      background: #3b82f6;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.2s;
+    }
+    .btn-copy:hover { background: #2563eb; }
+    .btn-copy.copied { background: #22c55e; }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <img src="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/logo.svg" alt="OpenNotes" class="logo">
+    <h1>Welcome to OpenNotes</h1>
+    <p class="subtitle">Sign in to access your notes and sync across devices</p>
+    
+    <button class="btn-google" id="google-signin-btn" onclick="startAuth()">
+      <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+        <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+        <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+      </svg>
+      Sign in with Google
+    </button>
+    
+    <div id="status" class="status"></div>
+    
+    <div id="token-box" class="token-box">
+      <div class="token-label">Your Auth Token (copy this to the desktop app):</div>
+      <div id="token-value" class="token-value"></div>
+      <button class="btn-copy" onclick="copyToken()">Copy Token</button>
+    </div>
+    
+    <p class="desktop-note">
+      After signing in, copy the token above and paste it in the OpenNotes Desktop app.
+    </p>
+  </div>
+
+  <script>
+    const API_BASE = 'https://open-notes.tebby2008-li.workers.dev';
+    
+    // Check if we're receiving a callback with auth data
+    function checkCallback() {
+      const params = new URLSearchParams(window.location.search);
+      const hash = new URLSearchParams(window.location.hash.slice(1));
+      
+      // Check for token in URL params or hash
+      const token = params.get('token') || hash.get('token');
+      const userStr = params.get('user') || hash.get('user');
+      const error = params.get('error') || hash.get('error');
+      
+      if (error) {
+        showStatus('error', 'Sign in failed: ' + error);
+        return;
+      }
+      
+      if (token) {
+        // Store auth data
+        try {
+          localStorage.setItem('auth_token_fallback', token);
+          if (userStr) {
+            localStorage.setItem('opennotes_user', decodeURIComponent(userStr));
+          }
+          
+          // Show the token for copying
+          document.getElementById('token-value').textContent = token;
+          document.getElementById('token-box').classList.add('visible');
+          document.getElementById('google-signin-btn').style.display = 'none';
+          
+          showStatus('success', 'Signed in successfully! Copy the token below.');
+        } catch (e) {
+          showStatus('error', 'Failed to save auth data: ' + e.message);
+        }
+      }
+    }
+    
+    function showStatus(type, message) {
+      const el = document.getElementById('status');
+      el.className = 'status ' + type;
+      el.innerHTML = (type === 'loading' ? '<span class="spinner"></span>' : '') + message;
+    }
+    
+    function startAuth() {
+      showStatus('loading', 'Redirecting to Google Sign-In...');
+      
+      // Redirect to the worker auth endpoint
+      // The worker will handle OAuth and redirect back here with the token
+      const callbackUrl = encodeURIComponent(window.location.origin + window.location.pathname);
+      window.location.href = API_BASE + '/auth/login?callback=' + callbackUrl;
+    }
+    
+    function copyToken() {
+      const token = document.getElementById('token-value').textContent;
+      navigator.clipboard.writeText(token).then(() => {
+        const btn = document.querySelector('.btn-copy');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy Token';
+          btn.classList.remove('copied');
+        }, 2000);
+      }).catch(err => {
+        showStatus('error', 'Failed to copy: ' + err.message);
+      });
+    }
+    
+    // Check for callback on page load
+    checkCallback();
+  </script>
+</body>
+</html>

@@ -44,6 +44,18 @@
           </svg>
           Sign in with Google
         </button>
+        <p class="auth-hint" style="margin-top: 16px; font-size: 0.8rem; color: var(--text-muted);">
+          After signing in, copy the token and paste below
+        </p>
+        <div class="token-entry" style="margin-top: 16px;">
+          <input type="text" id="auth-token-input" placeholder="Paste your auth token here..." style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: var(--bg); color: var(--text);">
+          <button class="btn btn-primary" id="submit-token-btn" style="margin-top: 8px; width: 100%; padding: 12px; background: var(--accent); color: white; border-radius: 8px; font-weight: 500;">
+            Submit Token
+          </button>
+        </div>
+        <button class="btn btn-text" id="skip-auth-btn" style="margin-top: 24px; color: var(--text-muted); font-size: 0.9rem;">
+          Skip for now
+        </button>
       </div>
     </div>
   </div>
