@@ -43,6 +43,16 @@
     
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
+        
+        /* Fallback colors for custom Tailwind classes */
+        .bg-cf-sidebar { background-color: #0d1117 !important; }
+        .bg-cf-sidebar-hover { background-color: #161b22 !important; }
+        .hover\:bg-cf-sidebar-hover:hover { background-color: #161b22 !important; }
+        .text-cf-orange { color: #f6821f !important; }
+        .bg-cf-orange { background-color: #f6821f !important; }
+        .hover\:bg-cf-orange-dark:hover { background-color: #e06d10 !important; }
+        .border-cf-border { border-color: #30363d !important; }
+        
         .sidebar-link.active { background: #161b22; border-left: 3px solid #f6821f; }
         .docs-nav-link.active { color: #f6821f; font-weight: 500; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -56,7 +66,7 @@
 <body class="bg-gray-50 text-gray-900 min-h-screen">
     <div class="flex min-h-screen">
         <!-- Sidebar -->
-        <aside class="w-64 bg-cf-sidebar text-gray-300 flex-shrink-0 hidden lg:block">
+        <aside class="w-64 bg-cf-sidebar text-gray-300 flex-shrink-0 hidden lg:block" style="background-color: #0d1117;">
             <div class="sticky top-0 h-screen overflow-y-auto">
                 <!-- Logo -->
                 <div class="flex items-center gap-3 px-5 py-4 border-b border-cf-border">
