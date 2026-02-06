@@ -491,7 +491,19 @@ class OpenNotesAnalytics {
         if (error) {
             error.style.display = 'flex';
             const msg = error.querySelector('.error-message');
-            if (msg) msg.textContent = message;
+            if (msg) {
+                // Check if it's a connection/fetch error
+                if (message.includes('Failed to fetch') || message.includes('NetworkError') || message.includes('ERR_NAME_NOT_RESOLVED')) {
+                    msg.innerHTML = `
+                        <strong>API Connection Unavailable</strong><br>
+                        Unable to load analytics data. The API may be temporarily unavailable.
+                        <br><br>
+                        <button onclick="openAccessModal()" class="btn btn-secondary">Request API Access</button>
+                    `;
+                } else {
+                    msg.textContent = message;
+                }
+            }
         }
     }
 

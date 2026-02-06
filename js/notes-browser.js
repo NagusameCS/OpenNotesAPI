@@ -584,7 +584,19 @@ class NotesBrowser {
         if (this.errorEl) {
             this.errorEl.style.display = 'flex';
             const msgEl = this.errorEl.querySelector('.error-message');
-            if (msgEl) msgEl.textContent = message;
+            if (msgEl) {
+                // Check if it's a connection/fetch error
+                if (message.includes('Failed to fetch') || message.includes('NetworkError') || message.includes('ERR_NAME_NOT_RESOLVED')) {
+                    msgEl.innerHTML = `
+                        <strong>API Connection Unavailable</strong><br>
+                        Unable to connect to the OpenNotes API. This could be due to network issues or the API may be temporarily unavailable.
+                        <br><br>
+                        <button onclick="openAccessModal()" class="btn btn-secondary" style="margin-right: 8px;">Request API Access</button>
+                    `;
+                } else {
+                    msgEl.textContent = message;
+                }
+            }
         }
     }
 

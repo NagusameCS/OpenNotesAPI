@@ -54,6 +54,189 @@
             background: rgba(255, 255, 255, 0.15);
         }
         
+        .app-nav a.nav-highlight {
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            font-weight: 600;
+        }
+        
+        .app-nav a.nav-highlight:hover {
+            background: rgba(255, 255, 255, 0.35);
+        }
+        
+        /* API Status Banner */
+        .api-status-banner {
+            background: var(--primary-dark);
+            color: white;
+            padding: var(--spacing-sm) var(--spacing-md);
+            text-align: center;
+            display: none;
+        }
+        
+        .api-status-banner.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .api-status-banner .request-link {
+            color: var(--primary-light);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        
+        /* Request Access Modal */
+        .access-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-normal);
+        }
+        
+        .access-modal.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .access-modal-content {
+            background: var(--bg-primary);
+            border-radius: var(--border-radius-lg);
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            transform: translateY(20px);
+            transition: transform var(--transition-normal);
+        }
+        
+        .access-modal.open .access-modal-content {
+            transform: translateY(0);
+        }
+        
+        .access-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, #0078d4 0%, #004578 100%);
+            color: white;
+            border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+        }
+        
+        .access-modal-header h2 {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .access-modal-body {
+            padding: var(--spacing-lg);
+        }
+        
+        .access-form-group {
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .access-form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+            color: var(--text-primary);
+        }
+        
+        .access-form-group input,
+        .access-form-group textarea,
+        .access-form-group select {
+            width: 100%;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: border-color var(--transition-fast);
+        }
+        
+        .access-form-group input:focus,
+        .access-form-group textarea:focus,
+        .access-form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.15);
+        }
+        
+        .access-form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .access-info-box {
+            background: var(--primary-lighter);
+            border: 1px solid var(--primary-light);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .access-info-box h4 {
+            color: var(--primary-dark);
+            margin-bottom: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .access-info-box ul {
+            margin-left: var(--spacing-lg);
+            color: var(--text-secondary);
+        }
+        
+        .access-info-box li {
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .access-modal-footer {
+            display: flex;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-lg);
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .access-modal-footer .btn {
+            flex: 1;
+        }
+        
+        .access-success {
+            text-align: center;
+            padding: var(--spacing-lg) 0;
+        }
+        
+        .access-success svg {
+            width: 64px;
+            height: 64px;
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .access-success h3 {
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .access-success p {
+            color: var(--text-secondary);
+        }
+        
         .hero {
             background: var(--bg-secondary);
             padding: var(--spacing-xl) * 2 0;
@@ -267,6 +450,14 @@
     </style>
 </head>
 <body>
+    <!-- API Status Banner -->
+    <div class="api-status-banner" id="api-status-banner">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+        <span>API connection unavailable. <span class="request-link" onclick="openAccessModal()">Request API access</span> for your own key.</span>
+    </div>
+
     <!-- Header -->
     <header class="app-header">
         <div class="container">
@@ -278,6 +469,7 @@
                 <a href="#browse" class="active">Browse</a>
                 <a href="#analytics">Analytics</a>
                 <a href="docs.html">API Docs</a>
+                <a href="#" id="request-access-btn" class="nav-highlight">Request Access</a>
                 <a href="https://opennotes.pages.dev" target="_blank">OpenNotes</a>
                 <a href="https://github.com/Tebby2008/OpenNotes" target="_blank">GitHub</a>
             </nav>
@@ -384,12 +576,88 @@
         </div>
     </div>
 
+    <!-- Request Access Modal -->
+    <div class="access-modal" id="access-modal">
+        <div class="access-modal-content">
+            <div class="access-modal-header">
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                    </svg>
+                    Request API Access
+                </h2>
+                <button class="modal-close" id="access-modal-close">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="access-modal-body" id="access-modal-form">
+                <div class="access-info-box">
+                    <h4>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                        </svg>
+                        API Access Information
+                    </h4>
+                    <ul>
+                        <li>Free tier: 1,000 requests/day</li>
+                        <li>Developer tier: 10,000 requests/day</li>
+                        <li>Enterprise: Unlimited (contact us)</li>
+                    </ul>
+                </div>
+                
+                <form id="access-request-form">
+                    <div class="access-form-group">
+                        <label for="access-name">Full Name *</label>
+                        <input type="text" id="access-name" name="name" required placeholder="Your full name">
+                    </div>
+                    
+                    <div class="access-form-group">
+                        <label for="access-email">Email Address *</label>
+                        <input type="email" id="access-email" name="email" required placeholder="your@email.com">
+                    </div>
+                    
+                    <div class="access-form-group">
+                        <label for="access-tier">Access Tier *</label>
+                        <select id="access-tier" name="tier" required>
+                            <option value="">Select a tier...</option>
+                            <option value="free">Free (1,000 req/day)</option>
+                            <option value="developer">Developer (10,000 req/day)</option>
+                            <option value="enterprise">Enterprise (Custom)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="access-form-group">
+                        <label for="access-use-case">Use Case *</label>
+                        <textarea id="access-use-case" name="useCase" required placeholder="Describe how you plan to use the OpenNotes API..."></textarea>
+                    </div>
+                    
+                    <div class="access-form-group">
+                        <label for="access-website">Website/Project URL (Optional)</label>
+                        <input type="url" id="access-website" name="website" placeholder="https://yourproject.com">
+                    </div>
+                </form>
+            </div>
+            <div class="access-modal-footer">
+                <button class="btn btn-secondary" id="access-cancel-btn">Cancel</button>
+                <button class="btn btn-primary" id="access-submit-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                    Submit Request
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="app-footer">
         <div class="container">
             <div class="footer-links">
                 <a href="docs.html">API Documentation</a>
                 <a href="examples.html">Examples</a>
+                <a href="#" onclick="openAccessModal(); return false;">Request Access</a>
                 <a href="https://github.com/NagusameCS/OpenNotesAPI" target="_blank">Source Code</a>
             </div>
             <p>OpenNotes API &copy; 2026. Built for the OpenNotes platform.</p>
@@ -605,9 +873,116 @@
             openNotesAPI.healthCheck().then(healthy => {
                 if (!healthy) {
                     console.warn('OpenNotes API may be unavailable');
+                    // Show API status banner
+                    document.getElementById('api-status-banner').classList.add('show');
                 }
             });
+
+            // ==================== REQUEST ACCESS MODAL ====================
+
+            const accessModal = document.getElementById('access-modal');
+            const accessModalClose = document.getElementById('access-modal-close');
+            const accessCancelBtn = document.getElementById('access-cancel-btn');
+            const accessSubmitBtn = document.getElementById('access-submit-btn');
+            const accessForm = document.getElementById('access-request-form');
+            const accessModalBody = document.getElementById('access-modal-form');
+
+            // Request Access button in nav
+            const requestAccessBtn = document.getElementById('request-access-btn');
+            if (requestAccessBtn) {
+                requestAccessBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openAccessModal();
+                });
+            }
+
+            accessModalClose.addEventListener('click', closeAccessModal);
+            accessCancelBtn.addEventListener('click', closeAccessModal);
+            accessModal.addEventListener('click', (e) => {
+                if (e.target === accessModal) closeAccessModal();
+            });
+
+            accessSubmitBtn.addEventListener('click', submitAccessRequest);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && accessModal.classList.contains('open')) {
+                    closeAccessModal();
+                }
+            });
+
+            function submitAccessRequest() {
+                const name = document.getElementById('access-name').value;
+                const email = document.getElementById('access-email').value;
+                const tier = document.getElementById('access-tier').value;
+                const useCase = document.getElementById('access-use-case').value;
+                const website = document.getElementById('access-website').value;
+
+                if (!name || !email || !tier || !useCase) {
+                    alert('Please fill in all required fields.');
+                    return;
+                }
+
+                // Show success state
+                accessModalBody.innerHTML = `
+                    <div class="access-success">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        <h3>Request Submitted!</h3>
+                        <p>Thank you, ${name}! We'll review your request and send your API key to <strong>${email}</strong> within 24-48 hours.</p>
+                        <p style="margin-top: var(--spacing-md); font-size: 0.875rem; color: var(--text-muted);">
+                            Selected tier: <strong>${tier.charAt(0).toUpperCase() + tier.slice(1)}</strong>
+                        </p>
+                    </div>
+                `;
+
+                // Hide cancel button, change submit to close
+                accessCancelBtn.style.display = 'none';
+                accessSubmitBtn.textContent = 'Close';
+                accessSubmitBtn.onclick = closeAccessModal;
+
+                // Log the request (in production, this would send to a backend)
+                console.log('API Access Request:', { name, email, tier, useCase, website });
+            }
         });
+
+        // Global functions for opening/closing access modal
+        function openAccessModal() {
+            const modal = document.getElementById('access-modal');
+            modal.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAccessModal() {
+            const modal = document.getElementById('access-modal');
+            modal.classList.remove('open');
+            document.body.style.overflow = '';
+            
+            // Reset form after modal close
+            setTimeout(() => {
+                const accessForm = document.getElementById('access-request-form');
+                if (accessForm) {
+                    accessForm.reset();
+                }
+                const accessModalBody = document.getElementById('access-modal-form');
+                const accessCancelBtn = document.getElementById('access-cancel-btn');
+                const accessSubmitBtn = document.getElementById('access-submit-btn');
+                
+                // Check if we need to restore the form
+                if (!accessForm) {
+                    location.reload(); // Simple reset if form was replaced
+                } else {
+                    accessCancelBtn.style.display = '';
+                    accessSubmitBtn.innerHTML = `
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                        </svg>
+                        Submit Request
+                    `;
+                    accessSubmitBtn.onclick = null;
+                }
+            }, 300);
+        }
     </script>
 </body>
 </html>
