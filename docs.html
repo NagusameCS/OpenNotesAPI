@@ -8,908 +8,714 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png">
     
-    <link rel="stylesheet" href="css/styles.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cf-orange': '#f6821f',
+                        'cf-orange-dark': '#e06d10',
+                        'cf-sidebar': '#0d1117',
+                        'cf-sidebar-hover': '#161b22',
+                        'cf-border': '#30363d',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Inter + JetBrains Mono Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
     <!-- Material Symbols -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
     
     <style>
-        .docs-container {
-            display: grid;
-            grid-template-columns: 280px 1fr;
-            gap: 24px;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 24px;
-        }
-        
-        .docs-sidebar {
-            position: sticky;
-            top: 96px;
-            height: fit-content;
-            background: white;
-            border-radius: var(--radius);
-            padding: 24px;
-            border: 1px solid var(--border);
-        }
-        
-        .docs-sidebar h3 {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-            margin-top: 20px;
-        }
-        
-        .docs-sidebar h3:first-child {
-            margin-top: 0;
-        }
-        
-        .docs-nav {
-            list-style: none;
-        }
-        
-        .docs-nav li {
-            margin-bottom: 4px;
-        }
-        
-        .docs-nav a {
-            display: block;
-            padding: 6px 12px;
-            color: var(--text-secondary);
-            border-radius: var(--radius-sm);
-            font-size: 0.9rem;
-            transition: all var(--speed) var(--ease-smooth);
-        }
-        
-        .docs-nav a:hover,
-        .docs-nav a.active {
-            background: var(--bg);
-            color: var(--text);
-        }
-        
-        .docs-nav .sub-nav {
-            margin-left: 16px;
-            font-size: 0.85rem;
-        }
-        
-        .docs-content {
-            background: white;
-            border-radius: var(--radius);
-            padding: 32px;
-            border: 1px solid var(--border);
-        }
-        
-        .docs-content h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .docs-content h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin: 32px 0 16px;
-            color: var(--text);
-        }
-        
-        .docs-content h3 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin: 24px 0 8px;
-        }
-        
-        .docs-content p {
-            margin-bottom: 16px;
-            color: var(--text-secondary);
-            line-height: 1.7;
-        }
-        
-        .docs-content ul, .docs-content ol {
-            margin: 16px 0;
-            padding-left: 24px;
-        }
-        
-        .docs-content li {
-            margin-bottom: 8px;
-            color: var(--text-secondary);
-        }
-        
-        .code-block {
-            background: #0f172a;
-            color: #e2e8f0;
-            padding: 16px;
-            border-radius: var(--radius-sm);
-            overflow-x: auto;
-            margin: 16px 0;
-            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-            font-size: 0.85rem;
-            line-height: 1.6;
-        }
-        
-        .code-inline {
-            background: var(--bg);
-            padding: 2px 6px;
-            border-radius: var(--radius-xs);
-            font-family: monospace;
-            font-size: 0.85em;
-            color: var(--text);
-        }
-        
-        .method-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: var(--radius-xs);
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-right: 8px;
-        }
-        
-        .method-get { background: #22c55e; color: white; }
-        .method-post { background: #3b82f6; color: white; }
-        .method-put { background: #f59e0b; color: white; }
-        .method-delete { background: #ef4444; color: white; }
-        
-        .endpoint-path {
-            font-family: monospace;
-            background: var(--bg);
-            padding: 4px 8px;
-            border-radius: var(--radius-xs);
-        }
-        
-        .params-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 16px 0;
-        }
-        
-        .params-table th,
-        .params-table td {
-            text-align: left;
-            padding: 12px;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .params-table th {
-            font-weight: 600;
-            color: var(--text);
-            background: var(--bg);
-        }
-        
-        .params-table td {
-            color: var(--text-secondary);
-        }
-        
-        .param-required {
-            color: #ef4444;
-            font-weight: 600;
-        }
-        
-        .param-optional {
-            color: var(--text-muted);
-        }
-        
-        .response-example {
-            background: var(--bg);
-            border-radius: var(--radius-sm);
-            padding: 16px;
-            margin: 16px 0;
-        }
-        
-        .warning-box {
-            background: #fef3c7;
-            border-left: 4px solid #f59e0b;
-            padding: 16px;
-            border-radius: var(--radius-sm);
-            margin: 16px 0;
-            color: #92400e;
-        }
-        
-        .info-box {
-            background: var(--accent-light);
-            border-left: 4px solid var(--accent);
-            padding: 16px;
-            border-radius: var(--radius-sm);
-            margin: 16px 0;
-            color: var(--text);
-        }
-        
-        @media (max-width: 1024px) {
-            .docs-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .docs-sidebar {
-                position: static;
-            }
-        }
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .sidebar-link.active { background: #161b22; border-left: 3px solid #f6821f; }
+        .docs-nav-link.active { color: #f6821f; font-weight: 500; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .code-block { font-family: 'JetBrains Mono', monospace; }
+        html { scroll-behavior: smooth; }
     </style>
 </head>
-<body>
-    <!-- Header -->
-    <header class="app-header">
-        <div class="header-container">
-            <div class="app-logo">
-                <img src="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png" alt="OpenNotes">
-                OpenNotes<span>API</span>
+<body class="bg-gray-50 text-gray-900 min-h-screen">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-cf-sidebar text-gray-300 flex-shrink-0 hidden lg:block">
+            <div class="sticky top-0 h-screen overflow-y-auto">
+                <!-- Logo -->
+                <div class="flex items-center gap-3 px-5 py-4 border-b border-cf-border">
+                    <img src="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png" alt="OpenNotes" class="w-8 h-8">
+                    <div>
+                        <span class="text-white font-semibold">OpenNotes</span>
+                        <span class="text-cf-orange font-semibold">API</span>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="py-4">
+                    <div class="px-4 mb-2">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Navigation</span>
+                    </div>
+                    <a href="index.html" class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover transition-all">
+                        <span class="material-symbols-rounded text-xl">home</span>
+                        Dashboard
+                    </a>
+                    <a href="docs.html" class="sidebar-link active flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover transition-all">
+                        <span class="material-symbols-rounded text-xl">description</span>
+                        API Docs
+                    </a>
+                    <a href="examples.html" class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover transition-all">
+                        <span class="material-symbols-rounded text-xl">code</span>
+                        Examples
+                    </a>
+                    <a href="https://github.com/NagusameCS/OpenNotesAPI" target="_blank" class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover transition-all">
+                        <span class="material-symbols-rounded text-xl">code_blocks</span>
+                        GitHub
+                    </a>
+                    <a href="https://opennotes.pages.dev" target="_blank" class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover transition-all">
+                        <span class="material-symbols-rounded text-xl">open_in_new</span>
+                        OpenNotes
+                    </a>
+                </nav>
             </div>
-            <nav class="app-nav">
-                <a href="index.html">Browse</a>
-                <a href="docs.html" class="active">API Docs</a>
-                <a href="examples.html">Examples</a>
-                <a href="https://opennotes.pages.dev" target="_blank">OpenNotes</a>
-                <a href="https://github.com/Tebby2008/OpenNotes" target="_blank">GitHub</a>
-            </nav>
-        </div>
-    </header>
-    
-    <div class="page-header">
-        <div class="container">
-            <h1 class="page-title">API Documentation</h1>
-            <p class="text-secondary">Complete reference for the OpenNotes API integration</p>
-        </div>
-    </div>
-
-    <div class="docs-container">
-        <!-- Sidebar Navigation -->
-        <aside class="docs-sidebar">
-            <h3>Getting Started</h3>
-            <ul class="docs-nav">
-                <li><a href="#introduction">Introduction</a></li>
-                <li><a href="#authentication">Authentication</a></li>
-                <li><a href="#quick-start">Quick Start</a></li>
-            </ul>
-            
-            <h3>API Reference</h3>
-            <ul class="docs-nav">
-                <li><a href="#notes-endpoints">Notes</a></li>
-                <ul class="sub-nav">
-                    <li><a href="#get-notes">Get Notes List</a></li>
-                    <li><a href="#get-note">Get Single Note</a></li>
-                    <li><a href="#search-notes">Search Notes</a></li>
-                </ul>
-                <li><a href="#counters-endpoints">Counters</a></li>
-                <ul class="sub-nav">
-                    <li><a href="#increment-views">Increment Views</a></li>
-                    <li><a href="#increment-downloads">Increment Downloads</a></li>
-                </ul>
-                <li><a href="#statistics-endpoints">Statistics</a></li>
-            </ul>
-            
-            <h3>JavaScript SDK</h3>
-            <ul class="docs-nav">
-                <li><a href="#sdk-installation">Installation</a></li>
-                <li><a href="#sdk-client">API Client</a></li>
-                <li><a href="#sdk-browser">Notes Browser</a></li>
-                <li><a href="#sdk-search">Search Module</a></li>
-                <li><a href="#sdk-analytics">Analytics</a></li>
-            </ul>
-            
-            <h3>More</h3>
-            <ul class="docs-nav">
-                <li><a href="#response-format">Response Format</a></li>
-                <li><a href="#error-handling">Error Handling</a></li>
-                <li><a href="#rate-limiting">Rate Limiting</a></li>
-            </ul>
         </aside>
 
         <!-- Main Content -->
-        <main class="docs-content">
-            <h1>API Documentation</h1>
-            
-            <section id="introduction">
-                <h2>Introduction</h2>
-                <p>The OpenNotes API provides programmatic access to the OpenNotes educational content platform. Use this API to browse, search, and integrate notes into your applications.</p>
-                
-                <div class="info-box">
-                    <strong>Base URL:</strong> <code class="code-inline">https://open-notes.tebby2008-li.workers.dev</code>
-                </div>
-                
-                <div class="warning-box">
-                    <strong>CORS Restriction:</strong> The API only allows requests from <code class="code-inline">opennotes.pages.dev</code>. To use this SDK from other domains, contact the API owner to whitelist your origin.
-                </div>
-            </section>
-
-            <section id="authentication">
-                <h2>Authentication</h2>
-                <p>The API supports optional Bearer token authentication for authenticated operations. For read-only access, requests may work without authentication if originating from an allowed origin.</p>
-                
-                <h3>Optional Headers</h3>
-                <table class="params-table">
-                    <thead>
-                        <tr>
-                            <th>Header</th>
-                            <th>Value</th>
-                            <th>Required</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><code class="code-inline">Authorization</code></td>
-                            <td>Bearer {token}</td>
-                            <td class="param-optional">For authenticated actions</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-inline">Content-Type</code></td>
-                            <td>application/json</td>
-                            <td class="param-optional">Recommended</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
-
-            <section id="quick-start">
-                <h2>Quick Start</h2>
-                <p>Get up and running in minutes with this quick start guide.</p>
-                
-                <h3>1. Include the SDK</h3>
-                <div class="code-block">
-&lt;script src="js/config.js"&gt;&lt;/script&gt;
-&lt;script src="js/api-client.js"&gt;&lt;/script&gt;
-                </div>
-                
-                <h3>2. Make Your First Request</h3>
-                <div class="code-block">
-// Get list of notes
-const response = await openNotesAPI.getNotes({
-    limit: 10,
-    sort: 'views'
-});
-
-console.log(response.items); // Array of notes
-console.log(response.meta);  // Metadata including total views
-                </div>
-                
-                <h3>3. Search for Notes</h3>
-                <div class="code-block">
-// Search by keyword
-const results = await openNotesAPI.searchNotes('physics', {
-    format: 'pdf',
-    limit: 20
-});
-
-results.items.forEach(note => {
-    console.log(note.title, note.auth);
-});
-                </div>
-            </section>
-
-            <section id="notes-endpoints">
-                <h2>Notes Endpoints</h2>
-                
-                <article id="get-notes">
-                    <h3><span class="method-badge method-get">GET</span> Get Notes List</h3>
-                    <p>Retrieve a list of all notes with optional filtering and sorting.</p>
-                    
-                    <p><span class="endpoint-path">?type=list</span></p>
-                    
-                    <h4>Query Parameters</h4>
-                    <table class="params-table">
-                        <thead>
-                            <tr>
-                                <th>Parameter</th>
-                                <th>Type</th>
-                                <th>Description</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code class="code-inline">type</code></td>
-                                <td>string</td>
-                                <td><span class="param-required">Required.</span> Must be "list"</td>
-                            </tr>
-                            <tr>
-                                <td><code class="code-inline">sort</code></td>
-                                <td>string</td>
-                                <td>Sort order: relevance, views, downloads, updated, name</td>
-                            </tr>
-                            <tr>
-                                <td><code class="code-inline">limit</code></td>
-                                <td>integer</td>
-                                <td>Number of results (default: 20, max: 100)</td>
-                            </tr>
-                            <tr>
-                                <td><code class="code-inline">offset</code></td>
-                                <td>integer</td>
-                                <td>Pagination offset (default: 0)</td>
-                            </tr>
-                            <tr>
-                                <td><code class="code-inline">q</code></td>
-                                <td>string</td>
-                                <td>Search query</td>
-                            </tr>
-                            <tr>
-                                <td><code class="code-inline">format</code></td>
-                                <td>string</td>
-                                <td>Filter by format: pdf, docx, pptx, etc.</td>
-                            </tr>
-                            <tr>
-                                <td><code class="code-inline">author</code></td>
-                                <td>string</td>
-                                <td>Filter by author name</td>
-                            </tr>
-                            <tr>
-                                <td><code class="code-inline">verified</code></td>
-                                <td>boolean</td>
-                                <td>Filter to verified notes only</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    
-                    <h4>Example Request</h4>
-                    <div class="code-block">
-const notes = await openNotesAPI.getNotes({
-    sort: 'views',
-    limit: 10,
-    filters: { format: 'pdf' }
-});
+        <div class="flex-1 flex flex-col">
+            <!-- Top Header -->
+            <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+                <div class="flex items-center justify-between px-6 py-4">
+                    <div class="flex items-center gap-4">
+                        <!-- Mobile Menu Toggle -->
+                        <button id="mobile-menu-btn" class="lg:hidden p-2 -ml-2 text-gray-600 hover:text-gray-900">
+                            <span class="material-symbols-rounded">menu</span>
+                        </button>
+                        <h1 class="text-xl font-semibold text-gray-900">API Documentation</h1>
                     </div>
-                </article>
-
-                <article id="get-note">
-                    <h3><span class="method-badge method-get">GET</span> Get Single Note</h3>
-                    <p>Retrieve details for a specific note by ID or name.</p>
-                    
-                    <p><span class="endpoint-path">?type=note&amp;noteId={noteId}</span></p>
-                    
-                    <h4>Example Request</h4>
-                    <div class="code-block">
-const note = await openNotesAPI.getNote('IB Physics (Magnetism).pdf');
-console.log(note.title, note.v, note.d);
-                    </div>
-                </article>
-
-                <article id="search-notes">
-                    <h3><span class="method-badge method-get">GET</span> Search Notes</h3>
-                    <p>Search for notes by keyword with advanced filtering.</p>
-                    
-                    <h4>Example Request</h4>
-                    <div class="code-block">
-// Simple search
-const results = await openNotesAPI.searchNotes('calculus');
-
-// Advanced search with filters
-const physicsNotes = await openNotesAPI.searchNotes('physics', {
-    format: 'pdf',
-    verifiedOnly: true,
-    sort: 'views',
-    limit: 10
-});
-                    </div>
-                </article>
-            </section>
-
-            <section id="counters-endpoints">
-                <h2>Counters Endpoints</h2>
-                
-                <article id="increment-views">
-                    <h3><span class="method-badge method-post">POST</span> Increment Views</h3>
-                    <p>Increment the view counter for a note. Call this when a user views a note.</p>
-                    
-                    <p><span class="endpoint-path">?type=note&amp;noteId={noteId}&amp;counter=views</span></p>
-                    
-                    <h4>Example Request</h4>
-                    <div class="code-block">
-await openNotesAPI.incrementViews('AP Calculus AB Notes.pdf');
-                    </div>
-                </article>
-
-                <article id="increment-downloads">
-                    <h3><span class="method-badge method-post">POST</span> Increment Downloads</h3>
-                    <p>Increment the download counter for a note. Call this when a user downloads a note.</p>
-                    
-                    <p><span class="endpoint-path">?type=note&amp;noteId={noteId}&amp;counter=downloads</span></p>
-                    
-                    <h4>Example Request</h4>
-                    <div class="code-block">
-await openNotesAPI.incrementDownloads('AP Calculus AB Notes.pdf');
-                    </div>
-                </article>
-            </section>
-
-            <section id="statistics-endpoints">
-                <h2>Statistics</h2>
-                <p>Get comprehensive statistics about the notes collection.</p>
-                
-                <h4>Example Request</h4>
-                <div class="code-block">
-const stats = await openNotesAPI.getStatistics();
-
-console.log('Total Notes:', stats.totalNotes);
-console.log('Total Views:', stats.totalViews);
-console.log('Format Distribution:', stats.formats);
-console.log('Top Authors:', stats.authors);
-console.log('Top Viewed:', stats.topViewedNotes);
+                    <a href="https://opennotes.pages.dev" target="_blank" class="hidden sm:flex items-center gap-2 px-4 py-2 bg-cf-orange text-white rounded-lg font-medium hover:bg-cf-orange-dark transition-colors">
+                        <span class="material-symbols-rounded text-lg">open_in_new</span>
+                        OpenNotes
+                    </a>
                 </div>
-                
-                <h4>Statistics Object Properties</h4>
-                <table class="params-table">
-                    <thead>
-                        <tr>
-                            <th>Property</th>
-                            <th>Type</th>
-                            <th>Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><code class="code-inline">totalNotes</code></td>
-                            <td>number</td>
-                            <td>Total number of notes</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-inline">totalViews</code></td>
-                            <td>number</td>
-                            <td>Total site-wide views</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-inline">totalDownloads</code></td>
-                            <td>number</td>
-                            <td>Total downloads across all notes</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-inline">verifiedNotes</code></td>
-                            <td>number</td>
-                            <td>Count of verified notes</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-inline">formats</code></td>
-                            <td>object</td>
-                            <td>Notes count by format</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-inline">authors</code></td>
-                            <td>object</td>
-                            <td>Notes count by author</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-inline">topViewedNotes</code></td>
-                            <td>array</td>
-                            <td>Top 5 most viewed notes</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-inline">topDownloadedNotes</code></td>
-                            <td>array</td>
-                            <td>Top 5 most downloaded notes</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
+            </header>
 
-            <section id="sdk-installation">
-                <h2>JavaScript SDK Installation</h2>
-                <p>Include the SDK files in your HTML page:</p>
-                
-                <div class="code-block">
-&lt;!-- Configuration (contains API key) --&gt;
-&lt;script src="js/config.js"&gt;&lt;/script&gt;
+            <div class="flex-1 flex">
+                <!-- Docs Sidebar (Table of Contents) -->
+                <aside class="w-64 border-r border-gray-200 bg-white hidden xl:block">
+                    <div class="sticky top-16 p-6 overflow-y-auto max-h-[calc(100vh-4rem)]">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Getting Started</h3>
+                        <nav class="space-y-1 mb-6">
+                            <a href="#introduction" class="docs-nav-link block text-sm text-gray-600 hover:text-cf-orange py-1">Introduction</a>
+                            <a href="#authentication" class="docs-nav-link block text-sm text-gray-600 hover:text-cf-orange py-1">Authentication</a>
+                            <a href="#quick-start" class="docs-nav-link block text-sm text-gray-600 hover:text-cf-orange py-1">Quick Start</a>
+                        </nav>
+                        
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">API Reference</h3>
+                        <nav class="space-y-1 mb-6">
+                            <a href="#notes-endpoints" class="docs-nav-link block text-sm text-gray-600 hover:text-cf-orange py-1">Notes</a>
+                            <div class="pl-4 space-y-1">
+                                <a href="#get-notes" class="docs-nav-link block text-xs text-gray-500 hover:text-cf-orange py-0.5">Get Notes List</a>
+                                <a href="#get-note" class="docs-nav-link block text-xs text-gray-500 hover:text-cf-orange py-0.5">Get Single Note</a>
+                                <a href="#search-notes" class="docs-nav-link block text-xs text-gray-500 hover:text-cf-orange py-0.5">Search Notes</a>
+                            </div>
+                            <a href="#counters-endpoints" class="docs-nav-link block text-sm text-gray-600 hover:text-cf-orange py-1">Counters</a>
+                            <a href="#statistics-endpoints" class="docs-nav-link block text-sm text-gray-600 hover:text-cf-orange py-1">Statistics</a>
+                        </nav>
+                        
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">JavaScript SDK</h3>
+                        <nav class="space-y-1 mb-6">
+                            <a href="#sdk-installation" class="docs-nav-link block text-sm text-gray-600 hover:text-cf-orange py-1">Installation</a>
+                            <a href="#sdk-client" class="docs-nav-link block text-sm text-gray-600 hover:text-cf-orange py-1">API Client</a>
+                            <a href="#sdk-browser" class="docs-nav-link block text-sm text-gray-600 hover:text-cf-orange py-1">Notes Browser</a>
+                            <a href="#sdk-search" class="docs-nav-link block text-sm text-gray-600 hover:text-cf-orange py-1">Search Module</a>
+                            <a href="#sdk-analytics" class="docs-nav-link block text-sm text-gray-600 hover:text-cf-orange py-1">Analytics</a>
+                        </nav>
+                        
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">More</h3>
+                        <nav class="space-y-1">
+                            <a href="#response-format" class="docs-nav-link block text-sm text-gray-600 hover:text-cf-orange py-1">Response Format</a>
+                            <a href="#error-handling" class="docs-nav-link block text-sm text-gray-600 hover:text-cf-orange py-1">Error Handling</a>
+                            <a href="#rate-limiting" class="docs-nav-link block text-sm text-gray-600 hover:text-cf-orange py-1">Rate Limiting</a>
+                        </nav>
+                    </div>
+                </aside>
 
-&lt;!-- Core Modules --&gt;
-&lt;script src="js/utils.js"&gt;&lt;/script&gt;
-&lt;script src="js/events.js"&gt;&lt;/script&gt;
-&lt;script src="js/api-client.js"&gt;&lt;/script&gt;
+                <!-- Main Docs Content -->
+                <main class="flex-1 p-6 lg:p-8 max-w-4xl">
+                    <div class="bg-white rounded-xl border border-gray-200 p-8">
+                        <h1 class="text-3xl font-bold text-gray-900 mb-6 pb-6 border-b border-gray-200">API Documentation</h1>
+                        
+                        <!-- Introduction -->
+                        <section id="introduction" class="mb-12">
+                            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Introduction</h2>
+                            <p class="text-gray-600 leading-relaxed mb-4">The OpenNotes API provides programmatic access to the OpenNotes educational content platform. Use this API to browse, search, and integrate notes into your applications.</p>
+                            
+                            <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4">
+                                <p class="text-sm text-blue-800"><strong>Base URL:</strong> <code class="bg-blue-100 px-2 py-0.5 rounded text-blue-900 font-mono text-xs">https://open-notes.tebby2008-li.workers.dev</code></p>
+                            </div>
+                            
+                            <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg">
+                                <p class="text-sm text-amber-800"><strong>CORS Restriction:</strong> The API only allows requests from <code class="bg-amber-100 px-1.5 py-0.5 rounded font-mono text-xs">opennotes.pages.dev</code>. To use this SDK from other domains, contact the API owner to whitelist your origin.</p>
+                            </div>
+                        </section>
 
-&lt;!-- UI Components --&gt;
-&lt;script src="js/notes-browser.js"&gt;&lt;/script&gt;
-&lt;script src="js/search.js"&gt;&lt;/script&gt;
-&lt;script src="js/analytics.js"&gt;&lt;/script&gt;
+                        <!-- Authentication -->
+                        <section id="authentication" class="mb-12">
+                            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Authentication</h2>
+                            <p class="text-gray-600 leading-relaxed mb-4">The API supports optional Bearer token authentication for authenticated operations. For read-only access, requests may work without authentication if originating from an allowed origin.</p>
+                            
+                            <h3 class="text-lg font-medium text-gray-900 mt-6 mb-3">Optional Headers</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="bg-gray-50">
+                                            <th class="text-left px-4 py-3 font-semibold text-gray-900">Header</th>
+                                            <th class="text-left px-4 py-3 font-semibold text-gray-900">Value</th>
+                                            <th class="text-left px-4 py-3 font-semibold text-gray-900">Required</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        <tr>
+                                            <td class="px-4 py-3"><code class="bg-gray-100 px-2 py-0.5 rounded font-mono text-xs">Authorization</code></td>
+                                            <td class="px-4 py-3 text-gray-600">Bearer {token}</td>
+                                            <td class="px-4 py-3 text-gray-500">For authenticated actions</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3"><code class="bg-gray-100 px-2 py-0.5 rounded font-mono text-xs">Content-Type</code></td>
+                                            <td class="px-4 py-3 text-gray-600">application/json</td>
+                                            <td class="px-4 py-3 text-gray-500">Recommended</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
 
-&lt;!-- Feature Modules --&gt;
-&lt;script src="js/favorites.js"&gt;&lt;/script&gt;
-&lt;script src="js/export.js"&gt;&lt;/script&gt;
-&lt;script src="js/theme.js"&gt;&lt;/script&gt;
-
-&lt;!-- SDK Bundle --&gt;
-&lt;script src="js/opennotes.js"&gt;&lt;/script&gt;
-
-&lt;!-- Styles --&gt;
-&lt;link rel="stylesheet" href="css/styles.css"&gt;
-                </div>
-            </section>
-
-            <section id="sdk-client">
-                <h2>API Client</h2>
-                <p>The <code class="code-inline">OpenNotesAPIClient</code> class provides all core API functionality.</p>
-                
-                <h3>Creating a Custom Instance</h3>
-                <div class="code-block">
-// Use the default instance
-const api = openNotesAPI;
-
-// Or create a custom instance
-const customApi = new OpenNotesAPIClient({
-    apiUrl: 'https://open-notes.tebby2008-li.workers.dev',
-    apiKey: null, // Optional - for authenticated requests
-    timeout: 10000,
-    retries: 3
-});
-                </div>
-                
-                <h3>Available Methods</h3>
-                <table class="params-table">
-                    <thead>
-                        <tr>
-                            <th>Method</th>
-                            <th>Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><code class="code-inline">getNotes(options)</code></td>
-                            <td>Get list of notes with options</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-inline">getNote(noteId)</code></td>
-                            <td>Get single note by ID</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-inline">searchNotes(query, options)</code></td>
-                            <td>Search notes by keyword</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-inline">getNotesByAuthor(author)</code></td>
-                            <td>Get notes by author</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-inline">getNotesByFormat(format)</code></td>
-                            <td>Get notes by format</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-inline">getTrendingNotes(limit)</code></td>
-                            <td>Get most viewed notes</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-inline">getMostDownloaded(limit)</code></td>
-                            <td>Get most downloaded notes</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-inline">getRecentNotes(limit)</code></td>
-                            <td>Get recently updated notes</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-inline">incrementViews(noteId)</code></td>
-                            <td>Increment view counter</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-inline">incrementDownloads(noteId)</code></td>
-                            <td>Increment download counter</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-inline">getStatistics()</code></td>
-                            <td>Get comprehensive statistics</td>
-                        </tr>
-                        <tr>
-                            <td><code class="code-inline">healthCheck()</code></td>
-                            <td>Check API availability</td>
-                        </tr>
-                    </tbody>
-                </table>
-                
-                <h3>Events</h3>
-                <div class="code-block">
-// Listen for API events
-openNotesAPI.on('request:start', (data) => {
-    console.log('Request started:', data.url);
+                        <!-- Quick Start -->
+                        <section id="quick-start" class="mb-12">
+                            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Quick Start</h2>
+                            <p class="text-gray-600 leading-relaxed mb-4">Get up and running in minutes with this quick start guide.</p>
+                            
+                            <h3 class="text-lg font-medium text-gray-900 mt-6 mb-3">1. Include the SDK</h3>
+                            <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto mb-4">
+                                <pre class="text-sm text-gray-100 font-mono code-block">&lt;script src="js/config.js"&gt;&lt;/script&gt;
+&lt;script src="js/api-client.js"&gt;&lt;/script&gt;</pre>
+                            </div>
+                            
+                            <h3 class="text-lg font-medium text-gray-900 mt-6 mb-3">2. Make Your First Request</h3>
+                            <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto mb-4">
+                                <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-purple-400">const</span> response = <span class="text-purple-400">await</span> openNotesAPI.<span class="text-blue-400">getNotes</span>({
+    limit: <span class="text-orange-400">10</span>,
+    sort: <span class="text-green-400">'views'</span>
 });
 
-openNotesAPI.on('request:success', (data) => {
-    console.log('Request succeeded:', data);
+console.<span class="text-blue-400">log</span>(response.items); <span class="text-gray-500">// Array of notes</span>
+console.<span class="text-blue-400">log</span>(response.meta);  <span class="text-gray-500">// Metadata including total views</span></pre>
+                            </div>
+                            
+                            <h3 class="text-lg font-medium text-gray-900 mt-6 mb-3">3. Search for Notes</h3>
+                            <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto">
+                                <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-purple-400">const</span> results = <span class="text-purple-400">await</span> openNotesAPI.<span class="text-blue-400">searchNotes</span>(<span class="text-green-400">'physics'</span>, {
+    format: <span class="text-green-400">'pdf'</span>,
+    limit: <span class="text-orange-400">20</span>
 });
 
-openNotesAPI.on('request:error', (data) => {
-    console.error('Request failed:', data.error);
+results.items.<span class="text-blue-400">forEach</span>(note => {
+    console.<span class="text-blue-400">log</span>(note.title, note.auth);
+});</pre>
+                            </div>
+                        </section>
+
+                        <!-- Notes Endpoints -->
+                        <section id="notes-endpoints" class="mb-12">
+                            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Notes Endpoints</h2>
+                            
+                            <article id="get-notes" class="mb-8">
+                                <h3 class="text-lg font-medium text-gray-900 mb-3">
+                                    <span class="inline-block px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded mr-2">GET</span>
+                                    Get Notes List
+                                </h3>
+                                <p class="text-gray-600 mb-3">Retrieve a list of all notes with optional filtering and sorting.</p>
+                                <p class="mb-4"><code class="bg-gray-100 px-2 py-1 rounded font-mono text-sm">?type=list</code></p>
+                                
+                                <h4 class="font-medium text-gray-900 mb-2">Query Parameters</h4>
+                                <div class="overflow-x-auto mb-4">
+                                    <table class="w-full text-sm">
+                                        <thead>
+                                            <tr class="bg-gray-50">
+                                                <th class="text-left px-4 py-3 font-semibold text-gray-900">Parameter</th>
+                                                <th class="text-left px-4 py-3 font-semibold text-gray-900">Type</th>
+                                                <th class="text-left px-4 py-3 font-semibold text-gray-900">Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200">
+                                            <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">type</code></td><td class="px-4 py-3 text-gray-600">string</td><td class="px-4 py-3"><span class="text-red-600 font-medium">Required.</span> Must be "list"</td></tr>
+                                            <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">sort</code></td><td class="px-4 py-3 text-gray-600">string</td><td class="px-4 py-3 text-gray-600">Sort order: relevance, views, downloads, updated, name</td></tr>
+                                            <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">limit</code></td><td class="px-4 py-3 text-gray-600">integer</td><td class="px-4 py-3 text-gray-600">Number of results (default: 20, max: 100)</td></tr>
+                                            <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">offset</code></td><td class="px-4 py-3 text-gray-600">integer</td><td class="px-4 py-3 text-gray-600">Pagination offset (default: 0)</td></tr>
+                                            <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">q</code></td><td class="px-4 py-3 text-gray-600">string</td><td class="px-4 py-3 text-gray-600">Search query</td></tr>
+                                            <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">format</code></td><td class="px-4 py-3 text-gray-600">string</td><td class="px-4 py-3 text-gray-600">Filter by format: pdf, docx, pptx, etc.</td></tr>
+                                            <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">author</code></td><td class="px-4 py-3 text-gray-600">string</td><td class="px-4 py-3 text-gray-600">Filter by author name</td></tr>
+                                            <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">verified</code></td><td class="px-4 py-3 text-gray-600">boolean</td><td class="px-4 py-3 text-gray-600">Filter to verified notes only</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <h4 class="font-medium text-gray-900 mb-2">Example Request</h4>
+                                <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto">
+                                    <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-purple-400">const</span> notes = <span class="text-purple-400">await</span> openNotesAPI.<span class="text-blue-400">getNotes</span>({
+    sort: <span class="text-green-400">'views'</span>,
+    limit: <span class="text-orange-400">10</span>,
+    filters: { format: <span class="text-green-400">'pdf'</span> }
+});</pre>
+                                </div>
+                            </article>
+                            
+                            <article id="get-note" class="mb-8">
+                                <h3 class="text-lg font-medium text-gray-900 mb-3">
+                                    <span class="inline-block px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded mr-2">GET</span>
+                                    Get Single Note
+                                </h3>
+                                <p class="text-gray-600 mb-3">Retrieve details for a specific note by ID or name.</p>
+                                <p class="mb-4"><code class="bg-gray-100 px-2 py-1 rounded font-mono text-sm">?type=note&amp;noteId={noteId}</code></p>
+                                <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto">
+                                    <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-purple-400">const</span> note = <span class="text-purple-400">await</span> openNotesAPI.<span class="text-blue-400">getNote</span>(<span class="text-green-400">'IB Physics (Magnetism).pdf'</span>);
+console.<span class="text-blue-400">log</span>(note.title, note.v, note.d);</pre>
+                                </div>
+                            </article>
+                            
+                            <article id="search-notes" class="mb-8">
+                                <h3 class="text-lg font-medium text-gray-900 mb-3">
+                                    <span class="inline-block px-2 py-0.5 bg-green-500 text-white text-xs font-bold rounded mr-2">GET</span>
+                                    Search Notes
+                                </h3>
+                                <p class="text-gray-600 mb-3">Search for notes by keyword with advanced filtering.</p>
+                                <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto">
+                                    <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-gray-500">// Simple search</span>
+<span class="text-purple-400">const</span> results = <span class="text-purple-400">await</span> openNotesAPI.<span class="text-blue-400">searchNotes</span>(<span class="text-green-400">'calculus'</span>);
+
+<span class="text-gray-500">// Advanced search with filters</span>
+<span class="text-purple-400">const</span> physicsNotes = <span class="text-purple-400">await</span> openNotesAPI.<span class="text-blue-400">searchNotes</span>(<span class="text-green-400">'physics'</span>, {
+    format: <span class="text-green-400">'pdf'</span>,
+    verifiedOnly: <span class="text-purple-400">true</span>,
+    sort: <span class="text-green-400">'views'</span>,
+    limit: <span class="text-orange-400">10</span>
+});</pre>
+                                </div>
+                            </article>
+                        </section>
+
+                        <!-- Counters Endpoints -->
+                        <section id="counters-endpoints" class="mb-12">
+                            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Counters Endpoints</h2>
+                            
+                            <article id="increment-views" class="mb-8">
+                                <h3 class="text-lg font-medium text-gray-900 mb-3">
+                                    <span class="inline-block px-2 py-0.5 bg-blue-500 text-white text-xs font-bold rounded mr-2">POST</span>
+                                    Increment Views
+                                </h3>
+                                <p class="text-gray-600 mb-3">Increment the view counter for a note. Call this when a user views a note.</p>
+                                <p class="mb-4"><code class="bg-gray-100 px-2 py-1 rounded font-mono text-sm">?type=note&amp;noteId={noteId}&amp;counter=views</code></p>
+                                <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto">
+                                    <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-purple-400">await</span> openNotesAPI.<span class="text-blue-400">incrementViews</span>(<span class="text-green-400">'AP Calculus AB Notes.pdf'</span>);</pre>
+                                </div>
+                            </article>
+                            
+                            <article id="increment-downloads" class="mb-8">
+                                <h3 class="text-lg font-medium text-gray-900 mb-3">
+                                    <span class="inline-block px-2 py-0.5 bg-blue-500 text-white text-xs font-bold rounded mr-2">POST</span>
+                                    Increment Downloads
+                                </h3>
+                                <p class="text-gray-600 mb-3">Increment the download counter for a note. Call this when a user downloads a note.</p>
+                                <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto">
+                                    <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-purple-400">await</span> openNotesAPI.<span class="text-blue-400">incrementDownloads</span>(<span class="text-green-400">'AP Calculus AB Notes.pdf'</span>);</pre>
+                                </div>
+                            </article>
+                        </section>
+
+                        <!-- Statistics -->
+                        <section id="statistics-endpoints" class="mb-12">
+                            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Statistics</h2>
+                            <p class="text-gray-600 mb-4">Get comprehensive statistics about the notes collection.</p>
+                            
+                            <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto mb-4">
+                                <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-purple-400">const</span> stats = <span class="text-purple-400">await</span> openNotesAPI.<span class="text-blue-400">getStatistics</span>();
+
+console.<span class="text-blue-400">log</span>(<span class="text-green-400">'Total Notes:'</span>, stats.totalNotes);
+console.<span class="text-blue-400">log</span>(<span class="text-green-400">'Total Views:'</span>, stats.totalViews);
+console.<span class="text-blue-400">log</span>(<span class="text-green-400">'Format Distribution:'</span>, stats.formats);
+console.<span class="text-blue-400">log</span>(<span class="text-green-400">'Top Authors:'</span>, stats.authors);</pre>
+                            </div>
+                            
+                            <h3 class="text-lg font-medium text-gray-900 mt-6 mb-3">Statistics Object Properties</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="bg-gray-50">
+                                            <th class="text-left px-4 py-3 font-semibold text-gray-900">Property</th>
+                                            <th class="text-left px-4 py-3 font-semibold text-gray-900">Type</th>
+                                            <th class="text-left px-4 py-3 font-semibold text-gray-900">Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">totalNotes</code></td><td class="px-4 py-3 text-gray-600">number</td><td class="px-4 py-3 text-gray-600">Total number of notes</td></tr>
+                                        <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">totalViews</code></td><td class="px-4 py-3 text-gray-600">number</td><td class="px-4 py-3 text-gray-600">Total site-wide views</td></tr>
+                                        <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">totalDownloads</code></td><td class="px-4 py-3 text-gray-600">number</td><td class="px-4 py-3 text-gray-600">Total downloads across all notes</td></tr>
+                                        <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">verifiedNotes</code></td><td class="px-4 py-3 text-gray-600">number</td><td class="px-4 py-3 text-gray-600">Count of verified notes</td></tr>
+                                        <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">formats</code></td><td class="px-4 py-3 text-gray-600">object</td><td class="px-4 py-3 text-gray-600">Notes count by format</td></tr>
+                                        <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">authors</code></td><td class="px-4 py-3 text-gray-600">object</td><td class="px-4 py-3 text-gray-600">Notes count by author</td></tr>
+                                        <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">topViewedNotes</code></td><td class="px-4 py-3 text-gray-600">array</td><td class="px-4 py-3 text-gray-600">Top 5 most viewed notes</td></tr>
+                                        <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">topDownloadedNotes</code></td><td class="px-4 py-3 text-gray-600">array</td><td class="px-4 py-3 text-gray-600">Top 5 most downloaded notes</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                        <!-- SDK Installation -->
+                        <section id="sdk-installation" class="mb-12">
+                            <h2 class="text-2xl font-semibold text-gray-900 mb-4">JavaScript SDK Installation</h2>
+                            <p class="text-gray-600 mb-4">Include the SDK files in your HTML page:</p>
+                            
+                            <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto">
+                                <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-gray-500">&lt;!-- Configuration --&gt;</span>
+&lt;script src=<span class="text-green-400">"js/config.js"</span>&gt;&lt;/script&gt;
+
+<span class="text-gray-500">&lt;!-- Core Modules --&gt;</span>
+&lt;script src=<span class="text-green-400">"js/utils.js"</span>&gt;&lt;/script&gt;
+&lt;script src=<span class="text-green-400">"js/events.js"</span>&gt;&lt;/script&gt;
+&lt;script src=<span class="text-green-400">"js/api-client.js"</span>&gt;&lt;/script&gt;
+
+<span class="text-gray-500">&lt;!-- UI Components --&gt;</span>
+&lt;script src=<span class="text-green-400">"js/notes-browser.js"</span>&gt;&lt;/script&gt;
+&lt;script src=<span class="text-green-400">"js/search.js"</span>&gt;&lt;/script&gt;
+&lt;script src=<span class="text-green-400">"js/analytics.js"</span>&gt;&lt;/script&gt;
+
+<span class="text-gray-500">&lt;!-- Feature Modules --&gt;</span>
+&lt;script src=<span class="text-green-400">"js/favorites.js"</span>&gt;&lt;/script&gt;
+&lt;script src=<span class="text-green-400">"js/export.js"</span>&gt;&lt;/script&gt;
+&lt;script src=<span class="text-green-400">"js/theme.js"</span>&gt;&lt;/script&gt;
+
+<span class="text-gray-500">&lt;!-- SDK Bundle --&gt;</span>
+&lt;script src=<span class="text-green-400">"js/opennotes.js"</span>&gt;&lt;/script&gt;</pre>
+                            </div>
+                        </section>
+
+                        <!-- API Client -->
+                        <section id="sdk-client" class="mb-12">
+                            <h2 class="text-2xl font-semibold text-gray-900 mb-4">API Client</h2>
+                            <p class="text-gray-600 mb-4">The <code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-sm">OpenNotesAPIClient</code> class provides all core API functionality.</p>
+                            
+                            <h3 class="text-lg font-medium text-gray-900 mt-6 mb-3">Creating a Custom Instance</h3>
+                            <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto mb-6">
+                                <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-gray-500">// Use the default instance</span>
+<span class="text-purple-400">const</span> api = openNotesAPI;
+
+<span class="text-gray-500">// Or create a custom instance</span>
+<span class="text-purple-400">const</span> customApi = <span class="text-purple-400">new</span> <span class="text-blue-400">OpenNotesAPIClient</span>({
+    apiUrl: <span class="text-green-400">'https://open-notes.tebby2008-li.workers.dev'</span>,
+    apiKey: <span class="text-purple-400">null</span>, <span class="text-gray-500">// Optional - for authenticated requests</span>
+    timeout: <span class="text-orange-400">10000</span>,
+    retries: <span class="text-orange-400">3</span>
+});</pre>
+                            </div>
+                            
+                            <h3 class="text-lg font-medium text-gray-900 mb-3">Available Methods</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="bg-gray-50">
+                                            <th class="text-left px-4 py-3 font-semibold text-gray-900">Method</th>
+                                            <th class="text-left px-4 py-3 font-semibold text-gray-900">Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">getNotes(options)</code></td><td class="px-4 py-3 text-gray-600">Get list of notes with options</td></tr>
+                                        <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">getNote(noteId)</code></td><td class="px-4 py-3 text-gray-600">Get single note by ID</td></tr>
+                                        <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">searchNotes(query, options)</code></td><td class="px-4 py-3 text-gray-600">Search notes by keyword</td></tr>
+                                        <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">getNotesByAuthor(author)</code></td><td class="px-4 py-3 text-gray-600">Get notes by author</td></tr>
+                                        <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">getNotesByFormat(format)</code></td><td class="px-4 py-3 text-gray-600">Get notes by format</td></tr>
+                                        <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">getTrendingNotes(limit)</code></td><td class="px-4 py-3 text-gray-600">Get most viewed notes</td></tr>
+                                        <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">incrementViews(noteId)</code></td><td class="px-4 py-3 text-gray-600">Increment view counter</td></tr>
+                                        <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">incrementDownloads(noteId)</code></td><td class="px-4 py-3 text-gray-600">Increment download counter</td></tr>
+                                        <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">getStatistics()</code></td><td class="px-4 py-3 text-gray-600">Get comprehensive statistics</td></tr>
+                                        <tr><td class="px-4 py-3"><code class="bg-gray-100 px-1.5 py-0.5 rounded font-mono text-xs">healthCheck()</code></td><td class="px-4 py-3 text-gray-600">Check API availability</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <h3 class="text-lg font-medium text-gray-900 mt-6 mb-3">Events</h3>
+                            <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto">
+                                <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-gray-500">// Listen for API events</span>
+openNotesAPI.<span class="text-blue-400">on</span>(<span class="text-green-400">'request:start'</span>, (data) => {
+    console.<span class="text-blue-400">log</span>(<span class="text-green-400">'Request started:'</span>, data.url);
 });
 
-openNotesAPI.on('cache:hit', (data) => {
-    console.log('Cache hit:', data.key);
+openNotesAPI.<span class="text-blue-400">on</span>(<span class="text-green-400">'request:success'</span>, (data) => {
+    console.<span class="text-blue-400">log</span>(<span class="text-green-400">'Request succeeded:'</span>, data);
 });
-                </div>
-            </section>
 
-            <section id="sdk-browser">
-                <h2>Notes Browser Component</h2>
-                <p>Create interactive notes browsing interfaces easily.</p>
-                
-                <div class="code-block">
-const browser = new NotesBrowser('#container', {
-    viewMode: 'grid',          // 'grid' or 'list'
-    pageSize: 20,              // Notes per page
-    showFilters: true,         // Show filter controls
-    showSorting: true,         // Show sort dropdown
-    showPagination: true,      // Show pagination controls
-    enableFavorites: true,     // Enable favorites feature
-    showThumbnails: true,      // Show note thumbnails
-    infiniteScroll: false,     // Enable infinite scroll
+openNotesAPI.<span class="text-blue-400">on</span>(<span class="text-green-400">'request:error'</span>, (data) => {
+    console.<span class="text-blue-400">error</span>(<span class="text-green-400">'Request failed:'</span>, data.error);
+});</pre>
+                            </div>
+                        </section>
+
+                        <!-- Notes Browser -->
+                        <section id="sdk-browser" class="mb-12">
+                            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Notes Browser Component</h2>
+                            <p class="text-gray-600 mb-4">Create interactive notes browsing interfaces easily.</p>
+                            
+                            <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto">
+                                <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-purple-400">const</span> browser = <span class="text-purple-400">new</span> <span class="text-blue-400">NotesBrowser</span>(<span class="text-green-400">'#container'</span>, {
+    viewMode: <span class="text-green-400">'grid'</span>,          <span class="text-gray-500">// 'grid' or 'list'</span>
+    pageSize: <span class="text-orange-400">20</span>,              <span class="text-gray-500">// Notes per page</span>
+    showFilters: <span class="text-purple-400">true</span>,         <span class="text-gray-500">// Show filter controls</span>
+    showSorting: <span class="text-purple-400">true</span>,         <span class="text-gray-500">// Show sort dropdown</span>
+    showPagination: <span class="text-purple-400">true</span>,      <span class="text-gray-500">// Show pagination controls</span>
+    enableFavorites: <span class="text-purple-400">true</span>,     <span class="text-gray-500">// Enable favorites feature</span>
+    showThumbnails: <span class="text-purple-400">true</span>,      <span class="text-gray-500">// Show note thumbnails</span>
     
-    // Callbacks
+    <span class="text-gray-500">// Callbacks</span>
     onNoteClick: (note) => {
-        console.log('Note clicked:', note);
+        console.<span class="text-blue-400">log</span>(<span class="text-green-400">'Note clicked:'</span>, note);
     },
     onDownload: (note) => {
-        console.log('Download started:', note);
+        console.<span class="text-blue-400">log</span>(<span class="text-green-400">'Download started:'</span>, note);
     }
 });
 
-// Methods
-browser.refresh();                    // Reload notes
-browser.setFilter('format', 'pdf');   // Set filter
-browser.setSort('views');             // Change sort order
-browser.getNotes();                   // Get current notes
-browser.loadFavoriteNotes();          // Load favorites only
-                </div>
-            </section>
+<span class="text-gray-500">// Methods</span>
+browser.<span class="text-blue-400">refresh</span>();                    <span class="text-gray-500">// Reload notes</span>
+browser.<span class="text-blue-400">setFilter</span>(<span class="text-green-400">'format'</span>, <span class="text-green-400">'pdf'</span>);   <span class="text-gray-500">// Set filter</span>
+browser.<span class="text-blue-400">setSort</span>(<span class="text-green-400">'views'</span>);             <span class="text-gray-500">// Change sort order</span>
+browser.<span class="text-blue-400">loadFavoriteNotes</span>();          <span class="text-gray-500">// Load favorites only</span></pre>
+                            </div>
+                        </section>
 
-            <section id="sdk-search">
-                <h2>Search Component</h2>
-                <p>Add powerful search functionality with autocomplete.</p>
-                
-                <div class="code-block">
-const search = new OpenNotesSearch({
-    container: '#search-container',
-    placeholder: 'Search notes...',
-    debounceMs: 300,
-    minChars: 2,
-    maxSuggestions: 8,
-    showHistory: true,
+                        <!-- Search Module -->
+                        <section id="sdk-search" class="mb-12">
+                            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Search Component</h2>
+                            <p class="text-gray-600 mb-4">Add powerful search functionality with autocomplete.</p>
+                            
+                            <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto">
+                                <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-purple-400">const</span> search = <span class="text-purple-400">new</span> <span class="text-blue-400">OpenNotesSearch</span>({
+    container: <span class="text-green-400">'#search-container'</span>,
+    placeholder: <span class="text-green-400">'Search notes...'</span>,
+    debounceMs: <span class="text-orange-400">300</span>,
+    minChars: <span class="text-orange-400">2</span>,
+    maxSuggestions: <span class="text-orange-400">8</span>,
+    showHistory: <span class="text-purple-400">true</span>,
     
     onSearch: (query) => {
-        console.log('Search for:', query);
+        console.<span class="text-blue-400">log</span>(<span class="text-green-400">'Search for:'</span>, query);
     },
     onSelect: (value) => {
-        console.log('Selected:', value);
+        console.<span class="text-blue-400">log</span>(<span class="text-green-400">'Selected:'</span>, value);
     }
 });
 
-// Advanced search
-const results = await search.advancedSearch('author:Chenyu format:pdf physics');
+<span class="text-gray-500">// Advanced search</span>
+<span class="text-purple-400">const</span> results = <span class="text-purple-400">await</span> search.<span class="text-blue-400">advancedSearch</span>(<span class="text-green-400">'author:Chenyu format:pdf physics'</span>);</pre>
+                            </div>
+                        </section>
 
-// Full-text search
-const matches = await search.fullTextSearch('calculus');
-                </div>
-            </section>
-
-            <section id="sdk-analytics">
-                <h2>Analytics Dashboard</h2>
-                <p>Display comprehensive statistics and charts.</p>
-                
-                <div class="code-block">
-const analytics = new OpenNotesAnalytics({
-    container: '#analytics',
-    showCharts: true,
-    refreshInterval: 60000,  // Auto-refresh every minute
-    theme: 'light'
+                        <!-- Analytics -->
+                        <section id="sdk-analytics" class="mb-12">
+                            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Analytics Dashboard</h2>
+                            <p class="text-gray-600 mb-4">Display comprehensive statistics and charts.</p>
+                            
+                            <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto">
+                                <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-purple-400">const</span> analytics = <span class="text-purple-400">new</span> <span class="text-blue-400">OpenNotesAnalytics</span>({
+    container: <span class="text-green-400">'#analytics'</span>,
+    showCharts: <span class="text-purple-400">true</span>,
+    refreshInterval: <span class="text-orange-400">60000</span>,  <span class="text-gray-500">// Auto-refresh every minute</span>
+    theme: <span class="text-green-400">'light'</span>
 });
 
-// Get current stats
-const stats = analytics.getStats();
+<span class="text-gray-500">// Get current stats</span>
+<span class="text-purple-400">const</span> stats = analytics.<span class="text-blue-400">getStats</span>();
 
-// Export data
-analytics.exportData('json');  // or 'csv'
-                </div>
-            </section>
+<span class="text-gray-500">// Export data</span>
+analytics.<span class="text-blue-400">exportData</span>(<span class="text-green-400">'json'</span>);  <span class="text-gray-500">// or 'csv'</span></pre>
+                            </div>
+                        </section>
 
-            <section id="response-format">
-                <h2>Response Format</h2>
-                <p>All API responses follow this structure:</p>
-                
-                <h3>Notes List Response</h3>
-                <div class="code-block">
-{
-    "items": [
+                        <!-- Response Format -->
+                        <section id="response-format" class="mb-12">
+                            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Response Format</h2>
+                            <p class="text-gray-600 mb-4">All API responses follow this structure:</p>
+                            
+                            <h3 class="text-lg font-medium text-gray-900 mb-3">Notes List Response</h3>
+                            <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto">
+                                <pre class="text-sm text-gray-100 font-mono code-block">{
+    <span class="text-blue-400">"items"</span>: [
         {
-            "id": 1,
-            "name": "AP Calculus AB Notes.pdf",
-            "title": "AP Calculus AB Notes",
-            "format": "pdf",
-            "created_at": 1769830616519,
-            "v": 110,          // Views
-            "d": 5,            // Downloads
-            "auth": "Chenyu Li",
-            "is_verified": true,
-            "is_owner": false,
-            "thumb": "https://...",  // Thumbnail URL
-            "dl": "https://...",     // Download URL
-            "upd": "2025-08-19T03:41:58Z",
-            "fmt": "pdf",
-            "ai": false,
-            "size": "9.18 MiB"
+            <span class="text-blue-400">"id"</span>: <span class="text-orange-400">1</span>,
+            <span class="text-blue-400">"name"</span>: <span class="text-green-400">"AP Calculus AB Notes.pdf"</span>,
+            <span class="text-blue-400">"title"</span>: <span class="text-green-400">"AP Calculus AB Notes"</span>,
+            <span class="text-blue-400">"format"</span>: <span class="text-green-400">"pdf"</span>,
+            <span class="text-blue-400">"v"</span>: <span class="text-orange-400">110</span>,           <span class="text-gray-500">// Views</span>
+            <span class="text-blue-400">"d"</span>: <span class="text-orange-400">5</span>,             <span class="text-gray-500">// Downloads</span>
+            <span class="text-blue-400">"auth"</span>: <span class="text-green-400">"Chenyu Li"</span>,
+            <span class="text-blue-400">"is_verified"</span>: <span class="text-purple-400">true</span>,
+            <span class="text-blue-400">"thumb"</span>: <span class="text-green-400">"https://..."</span>,  <span class="text-gray-500">// Thumbnail URL</span>
+            <span class="text-blue-400">"dl"</span>: <span class="text-green-400">"https://..."</span>,     <span class="text-gray-500">// Download URL</span>
+            <span class="text-blue-400">"size"</span>: <span class="text-green-400">"9.18 MiB"</span>
         }
     ],
-    "meta": {
-        "views": 4734,
-        "user": {
-            "name": "Chenyu Li",
-            "picture": "https://...",
-            "is_admin": true
+    <span class="text-blue-400">"meta"</span>: {
+        <span class="text-blue-400">"views"</span>: <span class="text-orange-400">4734</span>,
+        <span class="text-blue-400">"user"</span>: {
+            <span class="text-blue-400">"name"</span>: <span class="text-green-400">"Chenyu Li"</span>,
+            <span class="text-blue-400">"is_admin"</span>: <span class="text-purple-400">true</span>
         }
     }
-}
-                </div>
-            </section>
+}</pre>
+                            </div>
+                        </section>
 
-            <section id="error-handling">
-                <h2>Error Handling</h2>
-                <p>Handle API errors gracefully using try-catch:</p>
-                
-                <div class="code-block">
-try {
-    const notes = await openNotesAPI.getNotes();
-} catch (error) {
-    if (error instanceof OpenNotesAPIError) {
-        if (error.is403()) {
-            console.error('Access denied - check API key and origin');
-        } else if (error.is404()) {
-            console.error('Note not found');
-        } else if (error.is500()) {
-            console.error('Server error - try again later');
+                        <!-- Error Handling -->
+                        <section id="error-handling" class="mb-12">
+                            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Error Handling</h2>
+                            <p class="text-gray-600 mb-4">Handle API errors gracefully using try-catch:</p>
+                            
+                            <div class="bg-slate-900 rounded-lg p-4 overflow-x-auto mb-6">
+                                <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-purple-400">try</span> {
+    <span class="text-purple-400">const</span> notes = <span class="text-purple-400">await</span> openNotesAPI.<span class="text-blue-400">getNotes</span>();
+} <span class="text-purple-400">catch</span> (error) {
+    <span class="text-purple-400">if</span> (error <span class="text-purple-400">instanceof</span> OpenNotesAPIError) {
+        <span class="text-purple-400">if</span> (error.<span class="text-blue-400">is403</span>()) {
+            console.<span class="text-blue-400">error</span>(<span class="text-green-400">'Access denied - check API key and origin'</span>);
+        } <span class="text-purple-400">else if</span> (error.<span class="text-blue-400">is404</span>()) {
+            console.<span class="text-blue-400">error</span>(<span class="text-green-400">'Note not found'</span>);
+        } <span class="text-purple-400">else if</span> (error.<span class="text-blue-400">is500</span>()) {
+            console.<span class="text-blue-400">error</span>(<span class="text-green-400">'Server error - try again later'</span>);
         }
-    } else {
-        console.error('Network error:', error);
+    } <span class="text-purple-400">else</span> {
+        console.<span class="text-blue-400">error</span>(<span class="text-green-400">'Network error:'</span>, error);
     }
-}
-                </div>
-                
-                <h3>Common Error Codes</h3>
-                <table class="params-table">
-                    <thead>
-                        <tr>
-                            <th>Status</th>
-                            <th>Meaning</th>
-                            <th>Solution</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>401</td>
-                            <td>Unauthorized</td>
-                            <td>Check X-Api-Key header</td>
-                        </tr>
-                        <tr>
-                            <td>403</td>
-                            <td>Forbidden</td>
-                            <td>Verify origin domain and API key</td>
-                        </tr>
-                        <tr>
-                            <td>404</td>
-                            <td>Not Found</td>
-                            <td>Check note ID/name</td>
-                        </tr>
-                        <tr>
-                            <td>429</td>
-                            <td>Rate Limited</td>
-                            <td>Slow down requests</td>
-                        </tr>
-                        <tr>
-                            <td>500</td>
-                            <td>Server Error</td>
-                            <td>Retry later</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
+}</pre>
+                            </div>
+                            
+                            <h3 class="text-lg font-medium text-gray-900 mb-3">Common Error Codes</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="bg-gray-50">
+                                            <th class="text-left px-4 py-3 font-semibold text-gray-900">Status</th>
+                                            <th class="text-left px-4 py-3 font-semibold text-gray-900">Meaning</th>
+                                            <th class="text-left px-4 py-3 font-semibold text-gray-900">Solution</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        <tr><td class="px-4 py-3 font-mono">401</td><td class="px-4 py-3 text-gray-600">Unauthorized</td><td class="px-4 py-3 text-gray-600">Check X-Api-Key header</td></tr>
+                                        <tr><td class="px-4 py-3 font-mono">403</td><td class="px-4 py-3 text-gray-600">Forbidden</td><td class="px-4 py-3 text-gray-600">Verify origin domain and API key</td></tr>
+                                        <tr><td class="px-4 py-3 font-mono">404</td><td class="px-4 py-3 text-gray-600">Not Found</td><td class="px-4 py-3 text-gray-600">Check note ID/name</td></tr>
+                                        <tr><td class="px-4 py-3 font-mono">429</td><td class="px-4 py-3 text-gray-600">Rate Limited</td><td class="px-4 py-3 text-gray-600">Slow down requests</td></tr>
+                                        <tr><td class="px-4 py-3 font-mono">500</td><td class="px-4 py-3 text-gray-600">Server Error</td><td class="px-4 py-3 text-gray-600">Retry later</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
 
-            <section id="rate-limiting">
-                <h2>Rate Limiting</h2>
-                <p>To ensure fair usage, the API implements rate limiting:</p>
-                
-                <ul>
-                    <li>Maximum 60 requests per minute</li>
-                    <li>Maximum 1000 requests per hour</li>
-                    <li>Counter increment endpoints are limited to 10 per minute per note</li>
-                </ul>
-                
-                <p>The SDK includes built-in retry logic with exponential backoff to handle rate limiting gracefully.</p>
-            </section>
-        </main>
+                        <!-- Rate Limiting -->
+                        <section id="rate-limiting" class="mb-6">
+                            <h2 class="text-2xl font-semibold text-gray-900 mb-4">Rate Limiting</h2>
+                            <p class="text-gray-600 mb-4">To ensure fair usage, the API implements rate limiting:</p>
+                            
+                            <ul class="list-disc list-inside text-gray-600 space-y-2 mb-4">
+                                <li>Maximum 60 requests per minute</li>
+                                <li>Maximum 1000 requests per hour</li>
+                                <li>Counter increment endpoints are limited to 10 per minute per note</li>
+                            </ul>
+                            
+                            <p class="text-gray-600">The SDK includes built-in retry logic with exponential backoff to handle rate limiting gracefully.</p>
+                        </section>
+                    </div>
+                </main>
+            </div>
+
+            <!-- Footer -->
+            <footer class="bg-white border-t border-gray-200 px-6 py-4">
+                <p class="text-sm text-gray-400 text-center">OpenNotes API Documentation © 2026</p>
+            </footer>
+        </div>
     </div>
 
-    <footer class="app-footer">
-        <p>OpenNotes API Documentation &copy; 2026</p>
-    </footer>
+    <!-- Mobile Sidebar -->
+    <div id="mobile-sidebar" class="fixed inset-0 z-50 hidden lg:hidden">
+        <div class="absolute inset-0 bg-black/50" onclick="closeMobileSidebar()"></div>
+        <aside class="absolute left-0 top-0 bottom-0 w-64 bg-cf-sidebar text-gray-300 overflow-y-auto">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-cf-border">
+                <div class="flex items-center gap-3">
+                    <img src="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png" alt="OpenNotes" class="w-8 h-8">
+                    <span class="text-white font-semibold">OpenNotes<span class="text-cf-orange">API</span></span>
+                </div>
+                <button onclick="closeMobileSidebar()" class="p-1 text-gray-400 hover:text-white">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+            <nav class="py-4">
+                <a href="index.html" class="flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover">
+                    <span class="material-symbols-rounded text-xl">home</span>
+                    Dashboard
+                </a>
+                <a href="docs.html" class="flex items-center gap-3 px-5 py-2.5 text-sm bg-cf-sidebar-hover border-l-2 border-cf-orange">
+                    <span class="material-symbols-rounded text-xl">description</span>
+                    API Docs
+                </a>
+                <a href="examples.html" class="flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover">
+                    <span class="material-symbols-rounded text-xl">code</span>
+                    Examples
+                </a>
+            </nav>
+        </aside>
+    </div>
+
+    <script>
+        // Mobile sidebar functions
+        function openMobileSidebar() {
+            document.getElementById('mobile-sidebar').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeMobileSidebar() {
+            document.getElementById('mobile-sidebar').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+        document.getElementById('mobile-menu-btn').addEventListener('click', openMobileSidebar);
+        
+        // Highlight active nav link on scroll
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.docs-nav-link');
+        
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

@@ -8,458 +8,440 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png">
     
-    <link rel="stylesheet" href="css/styles.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cf-orange': '#f6821f',
+                        'cf-orange-dark': '#e06d10',
+                        'cf-sidebar': '#0d1117',
+                        'cf-sidebar-hover': '#161b22',
+                        'cf-border': '#30363d',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Inter + JetBrains Mono Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
     <!-- Material Symbols -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
     
     <style>
-        .examples-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 24px;
-        }
-        
-        .example-section {
-            background: white;
-            border-radius: var(--radius);
-            margin-bottom: 24px;
-            border: 1px solid var(--border);
-            overflow: hidden;
-        }
-        
-        .example-header {
-            padding: 24px;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .example-header h2 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        
-        .example-header p {
-            color: var(--text-secondary);
-            margin: 0;
-        }
-        
-        .example-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0;
-        }
-        
-        .example-code {
-            background: #0f172a;
-            color: #e2e8f0;
-            padding: 24px;
-            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-            font-size: 0.85rem;
-            line-height: 1.6;
-            overflow-x: auto;
-            border-right: 1px solid var(--border);
-        }
-        
-        .example-code pre {
-            margin: 0;
-            white-space: pre-wrap;
-        }
-        
-        .example-output {
-            padding: 24px;
-            background: var(--bg);
-        }
-        
-        .example-actions {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-        
-        .btn-run {
-            background: var(--text);
-            color: white;
-            padding: 10px 20px;
-            border-radius: var(--radius-sm);
-            font-weight: 500;
-            border: none;
-            cursor: pointer;
-            transition: all var(--speed) var(--ease-smooth);
-        }
-        
-        .btn-run:hover {
-            background: var(--text-secondary);
-        }
-        
-        .btn-copy {
-            background: white;
-            color: var(--text);
-            padding: 10px 16px;
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border);
-            cursor: pointer;
-            transition: all var(--speed) var(--ease-smooth);
-        }
-        
-        .btn-copy:hover {
-            border-color: var(--text-muted);
-        }
-        
-        .output-area {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 16px;
-            min-height: 200px;
-            max-height: 400px;
-            overflow-y: auto;
-            font-family: monospace;
-            font-size: 0.85rem;
-        }
-        
-        .output-area.loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
-        }
-        
-        .live-demo {
-            padding: 24px;
-        }
-        
-        @media (max-width: 1024px) {
-            .example-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .example-code {
-                border-right: none;
-                border-bottom: 1px solid var(--border);
-            }
-        }
-        
-        .syntax-keyword { color: #c792ea; }
-        .syntax-string { color: #c3e88d; }
-        .syntax-number { color: #f78c6c; }
-        .syntax-comment { color: #637777; font-style: italic; }
-        .syntax-function { color: #82aaff; }
-        .syntax-property { color: #ffcb6b; }
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .sidebar-link.active { background: #161b22; border-left: 3px solid #f6821f; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .code-block { font-family: 'JetBrains Mono', monospace; }
     </style>
 </head>
-<body>
-    <!-- Header -->
-    <header class="app-header">
-        <div class="header-container">
-            <div class="app-logo">
-                <img src="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png" alt="OpenNotes">
-                OpenNotes<span>API</span>
+<body class="bg-gray-50 text-gray-900 min-h-screen">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-cf-sidebar text-gray-300 flex-shrink-0 hidden lg:block">
+            <div class="sticky top-0 h-screen overflow-y-auto">
+                <!-- Logo -->
+                <div class="flex items-center gap-3 px-5 py-4 border-b border-cf-border">
+                    <img src="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png" alt="OpenNotes" class="w-8 h-8">
+                    <div>
+                        <span class="text-white font-semibold">OpenNotes</span>
+                        <span class="text-cf-orange font-semibold">API</span>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="py-4">
+                    <div class="px-4 mb-2">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Navigation</span>
+                    </div>
+                    <a href="index.html" class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover transition-all">
+                        <span class="material-symbols-rounded text-xl">home</span>
+                        Dashboard
+                    </a>
+                    <a href="docs.html" class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover transition-all">
+                        <span class="material-symbols-rounded text-xl">description</span>
+                        API Docs
+                    </a>
+                    <a href="examples.html" class="sidebar-link active flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover transition-all">
+                        <span class="material-symbols-rounded text-xl">code</span>
+                        Examples
+                    </a>
+                    <a href="https://github.com/NagusameCS/OpenNotesAPI" target="_blank" class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover transition-all">
+                        <span class="material-symbols-rounded text-xl">code_blocks</span>
+                        GitHub
+                    </a>
+                    <a href="https://opennotes.pages.dev" target="_blank" class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover transition-all">
+                        <span class="material-symbols-rounded text-xl">open_in_new</span>
+                        OpenNotes
+                    </a>
+                </nav>
             </div>
-            <nav class="app-nav">
-                <a href="index.html">Browse</a>
-                <a href="docs.html">API Docs</a>
-                <a href="examples.html" class="active">Examples</a>
-                <a href="https://opennotes.pages.dev" target="_blank">OpenNotes</a>
-                <a href="https://github.com/Tebby2008/OpenNotes" target="_blank">GitHub</a>
-            </nav>
-        </div>
-    </header>
-    
-    <div class="page-header">
-        <div class="container">
-            <h1 class="page-title">Code Examples</h1>
-            <p class="text-secondary">Interactive examples to help you get started with the OpenNotes API</p>
-        </div>
-    </div>
+        </aside>
 
-    <div class="examples-container">
-        <!-- Example 1: Get All Notes -->
-        <section class="example-section">
-            <div class="example-header">
-                <h2>Get All Notes</h2>
-                <p>Fetch a list of notes with optional sorting and limiting</p>
-            </div>
-            <div class="example-content">
-                <div class="example-code">
-<pre><span class="syntax-comment">// Get notes sorted by views</span>
-<span class="syntax-keyword">const</span> response = <span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">getNotes</span>({
-    <span class="syntax-property">sort</span>: <span class="syntax-string">'views'</span>,
-    <span class="syntax-property">limit</span>: <span class="syntax-number">5</span>
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col">
+            <!-- Top Header -->
+            <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+                <div class="flex items-center justify-between px-6 py-4">
+                    <div class="flex items-center gap-4">
+                        <button id="mobile-menu-btn" class="lg:hidden p-2 -ml-2 text-gray-600 hover:text-gray-900">
+                            <span class="material-symbols-rounded">menu</span>
+                        </button>
+                        <h1 class="text-xl font-semibold text-gray-900">Code Examples</h1>
+                    </div>
+                    <a href="https://opennotes.pages.dev" target="_blank" class="hidden sm:flex items-center gap-2 px-4 py-2 bg-cf-orange text-white rounded-lg font-medium hover:bg-cf-orange-dark transition-colors">
+                        <span class="material-symbols-rounded text-lg">open_in_new</span>
+                        OpenNotes
+                    </a>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main class="flex-1 p-6 lg:p-8">
+                <div class="max-w-5xl mx-auto space-y-6">
+                    <!-- Hero Section -->
+                    <div class="bg-gradient-to-r from-cf-sidebar to-gray-800 rounded-xl p-8 text-white mb-8">
+                        <h2 class="text-2xl font-bold mb-2">Interactive Code Examples</h2>
+                        <p class="text-gray-300">Run live examples to see the OpenNotes API in action. Click "Run" to execute each code snippet.</p>
+                    </div>
+
+                    <!-- Example 1: Get All Notes -->
+                    <section class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                            <div>
+                                <h2 class="text-lg font-semibold text-gray-900">Get All Notes</h2>
+                                <p class="text-sm text-gray-500">Fetch a list of notes with optional sorting and limiting</p>
+                            </div>
+                            <span class="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">GET</span>
+                        </div>
+                        <div class="grid lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
+                            <div class="bg-slate-900 p-6 overflow-x-auto">
+                                <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-gray-500">// Get notes sorted by views</span>
+<span class="text-purple-400">const</span> response = <span class="text-purple-400">await</span> openNotesAPI.<span class="text-blue-400">getNotes</span>({
+    sort: <span class="text-green-400">'views'</span>,
+    limit: <span class="text-orange-400">5</span>
 });
 
-<span class="syntax-comment">// Display results</span>
-response.items.<span class="syntax-function">forEach</span>(note => {
-    <span class="syntax-function">console.log</span>(note.title, <span class="syntax-string">'-'</span>, note.v, <span class="syntax-string">'views'</span>);
+<span class="text-gray-500">// Display results</span>
+response.items.<span class="text-blue-400">forEach</span>(note => {
+    console.<span class="text-blue-400">log</span>(note.title, <span class="text-green-400">'-'</span>, note.v, <span class="text-green-400">'views'</span>);
 });</pre>
-                </div>
-                <div class="example-output">
-                    <div class="example-actions">
-                        <button class="btn-run" onclick="runExample1()">Run Example</button>
-                        <button class="btn-copy" onclick="copyCode(this)">Copy Code</button>
-                    </div>
-                    <div class="output-area" id="output-1">Click "Run Example" to see results</div>
-                </div>
-            </div>
-        </section>
+                            </div>
+                            <div class="p-6 bg-gray-50">
+                                <div class="flex gap-2 mb-4">
+                                    <button onclick="runExample1()" class="flex items-center gap-2 px-4 py-2 bg-cf-orange text-white rounded-lg font-medium hover:bg-cf-orange-dark transition-colors">
+                                        <span class="material-symbols-rounded text-lg">play_arrow</span>
+                                        Run
+                                    </button>
+                                    <button onclick="copyCode(this)" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                                        Copy
+                                    </button>
+                                </div>
+                                <div id="output-1" class="bg-white border border-gray-200 rounded-lg p-4 min-h-32 max-h-64 overflow-y-auto font-mono text-sm text-gray-700">
+                                    Click "Run" to see results
+                                </div>
+                            </div>
+                        </div>
+                    </section>
 
-        <!-- Example 2: Search Notes -->
-        <section class="example-section">
-            <div class="example-header">
-                <h2>Search Notes</h2>
-                <p>Search for notes by keyword with filtering options</p>
-            </div>
-            <div class="example-content">
-                <div class="example-code">
-<pre><span class="syntax-comment">// Search for physics notes</span>
-<span class="syntax-keyword">const</span> results = <span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">searchNotes</span>(<span class="syntax-string">'physics'</span>, {
-    <span class="syntax-property">format</span>: <span class="syntax-string">'pdf'</span>,
-    <span class="syntax-property">limit</span>: <span class="syntax-number">10</span>
+                    <!-- Example 2: Search Notes -->
+                    <section class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                            <div>
+                                <h2 class="text-lg font-semibold text-gray-900">Search Notes</h2>
+                                <p class="text-sm text-gray-500">Search for notes by keyword with filtering options</p>
+                            </div>
+                            <span class="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">GET</span>
+                        </div>
+                        <div class="grid lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
+                            <div class="bg-slate-900 p-6 overflow-x-auto">
+                                <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-gray-500">// Search for physics notes</span>
+<span class="text-purple-400">const</span> results = <span class="text-purple-400">await</span> openNotesAPI.<span class="text-blue-400">searchNotes</span>(<span class="text-green-400">'physics'</span>, {
+    format: <span class="text-green-400">'pdf'</span>,
+    limit: <span class="text-orange-400">10</span>
 });
 
-<span class="syntax-function">console.log</span>(<span class="syntax-string">'Found'</span>, results.items.length, <span class="syntax-string">'notes'</span>);
+console.<span class="text-blue-400">log</span>(<span class="text-green-400">'Found'</span>, results.items.length, <span class="text-green-400">'notes'</span>);
 
-results.items.<span class="syntax-function">forEach</span>(note => {
-    <span class="syntax-function">console.log</span>(<span class="syntax-string">`- ${note.title} by ${note.auth}`</span>);
+results.items.<span class="text-blue-400">forEach</span>(note => {
+    console.<span class="text-blue-400">log</span>(<span class="text-green-400">`- ${note.title} by ${note.auth}`</span>);
 });</pre>
-                </div>
-                <div class="example-output">
-                    <div class="example-actions">
-                        <button class="btn-run" onclick="runExample2()">Run Example</button>
-                        <button class="btn-copy" onclick="copyCode(this)">Copy Code</button>
-                    </div>
-                    <div class="output-area" id="output-2">Click "Run Example" to see results</div>
-                </div>
-            </div>
-        </section>
+                            </div>
+                            <div class="p-6 bg-gray-50">
+                                <div class="flex gap-2 mb-4">
+                                    <button onclick="runExample2()" class="flex items-center gap-2 px-4 py-2 bg-cf-orange text-white rounded-lg font-medium hover:bg-cf-orange-dark transition-colors">
+                                        <span class="material-symbols-rounded text-lg">play_arrow</span>
+                                        Run
+                                    </button>
+                                    <button onclick="copyCode(this)" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                                        Copy
+                                    </button>
+                                </div>
+                                <div id="output-2" class="bg-white border border-gray-200 rounded-lg p-4 min-h-32 max-h-64 overflow-y-auto font-mono text-sm text-gray-700">
+                                    Click "Run" to see results
+                                </div>
+                            </div>
+                        </div>
+                    </section>
 
-        <!-- Example 3: Get Statistics -->
-        <section class="example-section">
-            <div class="example-header">
-                <h2>Get Statistics</h2>
-                <p>Retrieve comprehensive statistics about the notes collection</p>
-            </div>
-            <div class="example-content">
-                <div class="example-code">
-<pre><span class="syntax-comment">// Get comprehensive statistics</span>
-<span class="syntax-keyword">const</span> stats = <span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">getStatistics</span>();
+                    <!-- Example 3: Get Statistics -->
+                    <section class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                            <div>
+                                <h2 class="text-lg font-semibold text-gray-900">Get Statistics</h2>
+                                <p class="text-sm text-gray-500">Retrieve comprehensive statistics about the notes collection</p>
+                            </div>
+                            <span class="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">GET</span>
+                        </div>
+                        <div class="grid lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
+                            <div class="bg-slate-900 p-6 overflow-x-auto">
+                                <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-gray-500">// Get comprehensive statistics</span>
+<span class="text-purple-400">const</span> stats = <span class="text-purple-400">await</span> openNotesAPI.<span class="text-blue-400">getStatistics</span>();
 
-<span class="syntax-function">console.log</span>(<span class="syntax-string">'Total Notes:'</span>, stats.totalNotes);
-<span class="syntax-function">console.log</span>(<span class="syntax-string">'Total Views:'</span>, stats.totalViews);
-<span class="syntax-function">console.log</span>(<span class="syntax-string">'Total Downloads:'</span>, stats.totalDownloads);
+console.<span class="text-blue-400">log</span>(<span class="text-green-400">'Total Notes:'</span>, stats.totalNotes);
+console.<span class="text-blue-400">log</span>(<span class="text-green-400">'Total Views:'</span>, stats.totalViews);
+console.<span class="text-blue-400">log</span>(<span class="text-green-400">'Total Downloads:'</span>, stats.totalDownloads);
 
-<span class="syntax-function">console.log</span>(<span class="syntax-string">'\nFormat Distribution:'</span>);
-Object.<span class="syntax-function">entries</span>(stats.formats).<span class="syntax-function">forEach</span>(([fmt, count]) => {
-    <span class="syntax-function">console.log</span>(<span class="syntax-string">`  ${fmt}: ${count} notes`</span>);
+console.<span class="text-blue-400">log</span>(<span class="text-green-400">'\nFormat Distribution:'</span>);
+Object.<span class="text-blue-400">entries</span>(stats.formats).<span class="text-blue-400">forEach</span>(([fmt, count]) => {
+    console.<span class="text-blue-400">log</span>(<span class="text-green-400">`  ${fmt}: ${count} notes`</span>);
 });</pre>
-                </div>
-                <div class="example-output">
-                    <div class="example-actions">
-                        <button class="btn-run" onclick="runExample3()">Run Example</button>
-                        <button class="btn-copy" onclick="copyCode(this)">Copy Code</button>
-                    </div>
-                    <div class="output-area" id="output-3">Click "Run Example" to see results</div>
-                </div>
-            </div>
-        </section>
+                            </div>
+                            <div class="p-6 bg-gray-50">
+                                <div class="flex gap-2 mb-4">
+                                    <button onclick="runExample3()" class="flex items-center gap-2 px-4 py-2 bg-cf-orange text-white rounded-lg font-medium hover:bg-cf-orange-dark transition-colors">
+                                        <span class="material-symbols-rounded text-lg">play_arrow</span>
+                                        Run
+                                    </button>
+                                    <button onclick="copyCode(this)" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                                        Copy
+                                    </button>
+                                </div>
+                                <div id="output-3" class="bg-white border border-gray-200 rounded-lg p-4 min-h-32 max-h-64 overflow-y-auto font-mono text-sm text-gray-700">
+                                    Click "Run" to see results
+                                </div>
+                            </div>
+                        </div>
+                    </section>
 
-        <!-- Example 4: Get Notes by Author -->
-        <section class="example-section">
-            <div class="example-header">
-                <h2>Get Notes by Author</h2>
-                <p>Filter notes by a specific author</p>
-            </div>
-            <div class="example-content">
-                <div class="example-code">
-<pre><span class="syntax-comment">// Get all notes by Chenyu Li</span>
-<span class="syntax-keyword">const</span> authorNotes = <span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">getNotesByAuthor</span>(
-    <span class="syntax-string">'Chenyu Li'</span>
+                    <!-- Example 4: Get Notes by Author -->
+                    <section class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                            <div>
+                                <h2 class="text-lg font-semibold text-gray-900">Get Notes by Author</h2>
+                                <p class="text-sm text-gray-500">Filter notes by a specific author</p>
+                            </div>
+                            <span class="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">GET</span>
+                        </div>
+                        <div class="grid lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
+                            <div class="bg-slate-900 p-6 overflow-x-auto">
+                                <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-gray-500">// Get all notes by Chenyu Li</span>
+<span class="text-purple-400">const</span> authorNotes = <span class="text-purple-400">await</span> openNotesAPI.<span class="text-blue-400">getNotesByAuthor</span>(
+    <span class="text-green-400">'Chenyu Li'</span>
 );
 
-<span class="syntax-function">console.log</span>(<span class="syntax-string">'Notes by Chenyu Li:'</span>);
-authorNotes.items.<span class="syntax-function">forEach</span>(note => {
-    <span class="syntax-function">console.log</span>(<span class="syntax-string">`  - ${note.title}`</span>);
-    <span class="syntax-function">console.log</span>(<span class="syntax-string">`    Views: ${note.v}, Downloads: ${note.d}`</span>);
+console.<span class="text-blue-400">log</span>(<span class="text-green-400">'Notes by Chenyu Li:'</span>);
+authorNotes.items.<span class="text-blue-400">forEach</span>(note => {
+    console.<span class="text-blue-400">log</span>(<span class="text-green-400">`  - ${note.title}`</span>);
+    console.<span class="text-blue-400">log</span>(<span class="text-green-400">`    Views: ${note.v}, Downloads: ${note.d}`</span>);
 });</pre>
-                </div>
-                <div class="example-output">
-                    <div class="example-actions">
-                        <button class="btn-run" onclick="runExample4()">Run Example</button>
-                        <button class="btn-copy" onclick="copyCode(this)">Copy Code</button>
-                    </div>
-                    <div class="output-area" id="output-4">Click "Run Example" to see results</div>
-                </div>
-            </div>
-        </section>
+                            </div>
+                            <div class="p-6 bg-gray-50">
+                                <div class="flex gap-2 mb-4">
+                                    <button onclick="runExample4()" class="flex items-center gap-2 px-4 py-2 bg-cf-orange text-white rounded-lg font-medium hover:bg-cf-orange-dark transition-colors">
+                                        <span class="material-symbols-rounded text-lg">play_arrow</span>
+                                        Run
+                                    </button>
+                                    <button onclick="copyCode(this)" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                                        Copy
+                                    </button>
+                                </div>
+                                <div id="output-4" class="bg-white border border-gray-200 rounded-lg p-4 min-h-32 max-h-64 overflow-y-auto font-mono text-sm text-gray-700">
+                                    Click "Run" to see results
+                                </div>
+                            </div>
+                        </div>
+                    </section>
 
-        <!-- Example 5: Trending Notes -->
-        <section class="example-section">
-            <div class="example-header">
-                <h2>Trending Notes</h2>
-                <p>Get the most viewed notes</p>
-            </div>
-            <div class="example-content">
-                <div class="example-code">
-<pre><span class="syntax-comment">// Get top 5 trending notes</span>
-<span class="syntax-keyword">const</span> trending = <span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">getTrendingNotes</span>(<span class="syntax-number">5</span>);
+                    <!-- Example 5: Trending Notes -->
+                    <section class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                            <div>
+                                <h2 class="text-lg font-semibold text-gray-900">Trending Notes</h2>
+                                <p class="text-sm text-gray-500">Get the most viewed notes</p>
+                            </div>
+                            <span class="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">GET</span>
+                        </div>
+                        <div class="grid lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
+                            <div class="bg-slate-900 p-6 overflow-x-auto">
+                                <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-gray-500">// Get top 5 trending notes</span>
+<span class="text-purple-400">const</span> trending = <span class="text-purple-400">await</span> openNotesAPI.<span class="text-blue-400">getTrendingNotes</span>(<span class="text-orange-400">5</span>);
 
-<span class="syntax-function">console.log</span>(<span class="syntax-string">'🔥 Trending Notes:\n'</span>);
+console.<span class="text-blue-400">log</span>(<span class="text-green-400">'🔥 Trending Notes:\n'</span>);
 
-trending.items.<span class="syntax-function">forEach</span>((note, i) => {
-    <span class="syntax-function">console.log</span>(<span class="syntax-string">`${i + 1}. ${note.title}`</span>);
-    <span class="syntax-function">console.log</span>(<span class="syntax-string">`   👀 ${note.v} views | 📥 ${note.d} downloads`</span>);
-    <span class="syntax-function">console.log</span>(<span class="syntax-string">`   Author: ${note.auth}\n`</span>);
+trending.items.<span class="text-blue-400">forEach</span>((note, i) => {
+    console.<span class="text-blue-400">log</span>(<span class="text-green-400">`${i + 1}. ${note.title}`</span>);
+    console.<span class="text-blue-400">log</span>(<span class="text-green-400">`   👀 ${note.v} views | 📥 ${note.d} downloads`</span>);
+    console.<span class="text-blue-400">log</span>(<span class="text-green-400">`   Author: ${note.auth}\n`</span>);
 });</pre>
-                </div>
-                <div class="example-output">
-                    <div class="example-actions">
-                        <button class="btn-run" onclick="runExample5()">Run Example</button>
-                        <button class="btn-copy" onclick="copyCode(this)">Copy Code</button>
-                    </div>
-                    <div class="output-area" id="output-5">Click "Run Example" to see results</div>
-                </div>
-            </div>
-        </section>
+                            </div>
+                            <div class="p-6 bg-gray-50">
+                                <div class="flex gap-2 mb-4">
+                                    <button onclick="runExample5()" class="flex items-center gap-2 px-4 py-2 bg-cf-orange text-white rounded-lg font-medium hover:bg-cf-orange-dark transition-colors">
+                                        <span class="material-symbols-rounded text-lg">play_arrow</span>
+                                        Run
+                                    </button>
+                                    <button onclick="copyCode(this)" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                                        Copy
+                                    </button>
+                                </div>
+                                <div id="output-5" class="bg-white border border-gray-200 rounded-lg p-4 min-h-32 max-h-64 overflow-y-auto font-mono text-sm text-gray-700">
+                                    Click "Run" to see results
+                                </div>
+                            </div>
+                        </div>
+                    </section>
 
-        <!-- Example 6: Event Handling -->
-        <section class="example-section">
-            <div class="example-header">
-                <h2>Event Handling</h2>
-                <p>Listen to API events for logging and monitoring</p>
-            </div>
-            <div class="example-content">
-                <div class="example-code">
-<pre><span class="syntax-comment">// Set up event listeners</span>
-openNotesAPI.<span class="syntax-function">on</span>(<span class="syntax-string">'request:start'</span>, (data) => {
-    <span class="syntax-function">console.log</span>(<span class="syntax-string">'🚀 Request started'</span>);
-});
-
-openNotesAPI.<span class="syntax-function">on</span>(<span class="syntax-string">'request:success'</span>, (data) => {
-    <span class="syntax-function">console.log</span>(<span class="syntax-string">'✅ Request succeeded'</span>);
-});
-
-openNotesAPI.<span class="syntax-function">on</span>(<span class="syntax-string">'cache:hit'</span>, (data) => {
-    <span class="syntax-function">console.log</span>(<span class="syntax-string">'📦 Cache hit!'</span>);
-});
-
-<span class="syntax-comment">// Make a request to trigger events</span>
-<span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">getNotes</span>({ <span class="syntax-property">limit</span>: <span class="syntax-number">1</span> });
-
-<span class="syntax-comment">// Second request will hit cache</span>
-<span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">getNotes</span>({ <span class="syntax-property">limit</span>: <span class="syntax-number">1</span> });</pre>
-                </div>
-                <div class="example-output">
-                    <div class="example-actions">
-                        <button class="btn-run" onclick="runExample6()">Run Example</button>
-                        <button class="btn-copy" onclick="copyCode(this)">Copy Code</button>
-                    </div>
-                    <div class="output-area" id="output-6">Click "Run Example" to see results</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Example 7: Client Statistics -->
-        <section class="example-section">
-            <div class="example-header">
-                <h2>Client Statistics</h2>
-                <p>Monitor API client performance and cache efficiency</p>
-            </div>
-            <div class="example-content">
-                <div class="example-code">
-<pre><span class="syntax-comment">// Make several requests</span>
-<span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">getNotes</span>();
-<span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">getNotes</span>(); <span class="syntax-comment">// Will use cache</span>
-<span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">getStatistics</span>();
-
-<span class="syntax-comment">// Get client statistics</span>
-<span class="syntax-keyword">const</span> clientStats = openNotesAPI.<span class="syntax-function">getClientStats</span>();
-
-<span class="syntax-function">console.log</span>(<span class="syntax-string">'API Client Statistics:'</span>);
-<span class="syntax-function">console.log</span>(<span class="syntax-string">'  Total Requests:'</span>, clientStats.requestCount);
-<span class="syntax-function">console.log</span>(<span class="syntax-string">'  Successful:'</span>, clientStats.successCount);
-<span class="syntax-function">console.log</span>(<span class="syntax-string">'  Errors:'</span>, clientStats.errorCount);
-<span class="syntax-function">console.log</span>(<span class="syntax-string">'  Cache Hits:'</span>, clientStats.cacheHits);
-<span class="syntax-function">console.log</span>(<span class="syntax-string">'  Cache Misses:'</span>, clientStats.cacheMisses);</pre>
-                </div>
-                <div class="example-output">
-                    <div class="example-actions">
-                        <button class="btn-run" onclick="runExample7()">Run Example</button>
-                        <button class="btn-copy" onclick="copyCode(this)">Copy Code</button>
-                    </div>
-                    <div class="output-area" id="output-7">Click "Run Example" to see results</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Example 8: Full Integration -->
-        <section class="example-section">
-            <div class="example-header">
-                <h2>Full Integration Example</h2>
-                <p>Complete example showing multiple API features together</p>
-            </div>
-            <div class="example-content">
-                <div class="example-code">
-<pre><span class="syntax-keyword">async function</span> <span class="syntax-function">displayDashboard</span>() {
-    <span class="syntax-comment">// Check API health</span>
-    <span class="syntax-keyword">const</span> healthy = <span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">healthCheck</span>();
-    <span class="syntax-function">console.log</span>(<span class="syntax-string">'API Status:'</span>, healthy ? <span class="syntax-string">'✅ Online'</span> : <span class="syntax-string">'❌ Offline'</span>);
+                    <!-- Example 6: Full Integration -->
+                    <section class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                            <div>
+                                <h2 class="text-lg font-semibold text-gray-900">Full Integration Example</h2>
+                                <p class="text-sm text-gray-500">Complete example showing multiple API features together</p>
+                            </div>
+                            <span class="px-2.5 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">FULL</span>
+                        </div>
+                        <div class="grid lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
+                            <div class="bg-slate-900 p-6 overflow-x-auto">
+                                <pre class="text-sm text-gray-100 font-mono code-block"><span class="text-purple-400">async function</span> <span class="text-blue-400">displayDashboard</span>() {
+    <span class="text-gray-500">// Check API health</span>
+    <span class="text-purple-400">const</span> healthy = <span class="text-purple-400">await</span> openNotesAPI.<span class="text-blue-400">healthCheck</span>();
+    console.<span class="text-blue-400">log</span>(<span class="text-green-400">'API Status:'</span>, healthy ? <span class="text-green-400">'✅ Online'</span> : <span class="text-green-400">'❌ Offline'</span>);
     
-    <span class="syntax-keyword">if</span> (!healthy) <span class="syntax-keyword">return</span>;
+    <span class="text-purple-400">if</span> (!healthy) <span class="text-purple-400">return</span>;
     
-    <span class="syntax-comment">// Get stats</span>
-    <span class="syntax-keyword">const</span> stats = <span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">getStatistics</span>();
+    <span class="text-gray-500">// Get stats</span>
+    <span class="text-purple-400">const</span> stats = <span class="text-purple-400">await</span> openNotesAPI.<span class="text-blue-400">getStatistics</span>();
     
-    <span class="syntax-function">console.log</span>(<span class="syntax-string">'\n📊 Dashboard\n'</span>);
-    <span class="syntax-function">console.log</span>(<span class="syntax-string">`Total Notes: ${stats.totalNotes}`</span>);
-    <span class="syntax-function">console.log</span>(<span class="syntax-string">`Total Views: ${stats.totalViews}`</span>);
+    console.<span class="text-blue-400">log</span>(<span class="text-green-400">'\n📊 Dashboard\n'</span>);
+    console.<span class="text-blue-400">log</span>(<span class="text-green-400">`Total Notes: ${stats.totalNotes}`</span>);
+    console.<span class="text-blue-400">log</span>(<span class="text-green-400">`Total Views: ${stats.totalViews}`</span>);
     
-    <span class="syntax-comment">// Show top note</span>
-    <span class="syntax-keyword">if</span> (stats.topViewedNotes[<span class="syntax-number">0</span>]) {
-        <span class="syntax-keyword">const</span> top = stats.topViewedNotes[<span class="syntax-number">0</span>];
-        <span class="syntax-function">console.log</span>(<span class="syntax-string">`\n🏆 Top Note: "${top.title}"`</span>);
-        <span class="syntax-function">console.log</span>(<span class="syntax-string">`   ${top.v} views, ${top.d} downloads`</span>);
+    <span class="text-gray-500">// Show top note</span>
+    <span class="text-purple-400">if</span> (stats.topViewedNotes[<span class="text-orange-400">0</span>]) {
+        <span class="text-purple-400">const</span> top = stats.topViewedNotes[<span class="text-orange-400">0</span>];
+        console.<span class="text-blue-400">log</span>(<span class="text-green-400">`\n🏆 Top Note: "${top.title}"`</span>);
+        console.<span class="text-blue-400">log</span>(<span class="text-green-400">`   ${top.v} views, ${top.d} downloads`</span>);
     }
 }
 
-<span class="syntax-function">displayDashboard</span>();</pre>
-                </div>
-                <div class="example-output">
-                    <div class="example-actions">
-                        <button class="btn-run" onclick="runExample8()">Run Example</button>
-                        <button class="btn-copy" onclick="copyCode(this)">Copy Code</button>
-                    </div>
-                    <div class="output-area" id="output-8">Click "Run Example" to see results</div>
-                </div>
-            </div>
-        </section>
+<span class="text-blue-400">displayDashboard</span>();</pre>
+                            </div>
+                            <div class="p-6 bg-gray-50">
+                                <div class="flex gap-2 mb-4">
+                                    <button onclick="runExample6()" class="flex items-center gap-2 px-4 py-2 bg-cf-orange text-white rounded-lg font-medium hover:bg-cf-orange-dark transition-colors">
+                                        <span class="material-symbols-rounded text-lg">play_arrow</span>
+                                        Run
+                                    </button>
+                                    <button onclick="copyCode(this)" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                                        Copy
+                                    </button>
+                                </div>
+                                <div id="output-6" class="bg-white border border-gray-200 rounded-lg p-4 min-h-32 max-h-64 overflow-y-auto font-mono text-sm text-gray-700">
+                                    Click "Run" to see results
+                                </div>
+                            </div>
+                        </div>
+                    </section>
 
-        <!-- Live Demo: Notes Browser -->
-        <section class="example-section">
-            <div class="example-header">
-                <h2>Live Demo: Notes Browser Component</h2>
-                <p>Interactive notes browser with full functionality</p>
-            </div>
-            <div class="live-demo">
-                <div id="demo-browser"></div>
-            </div>
-        </section>
+                    <!-- Live Demo: Notes Browser -->
+                    <section class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-cf-orange/10 rounded-lg flex items-center justify-center">
+                                    <span class="material-symbols-rounded text-cf-orange">widgets</span>
+                                </div>
+                                <div>
+                                    <h2 class="text-lg font-semibold text-gray-900">Live Demo: Notes Browser Component</h2>
+                                    <p class="text-sm text-gray-500">Interactive notes browser with full functionality</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div id="demo-browser"></div>
+                        </div>
+                    </section>
 
-        <!-- Live Demo: Search -->
-        <section class="example-section">
-            <div class="example-header">
-                <h2>Live Demo: Search Component</h2>
-                <p>Try the search with autocomplete suggestions</p>
-            </div>
-            <div class="live-demo">
-                <div id="demo-search" style="max-width: 400px;"></div>
-                <div id="search-results" style="margin-top: var(--spacing-lg);"></div>
-            </div>
-        </section>
+                    <!-- Live Demo: Search -->
+                    <section class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-cf-orange/10 rounded-lg flex items-center justify-center">
+                                    <span class="material-symbols-rounded text-cf-orange">search</span>
+                                </div>
+                                <div>
+                                    <h2 class="text-lg font-semibold text-gray-900">Live Demo: Search Component</h2>
+                                    <p class="text-sm text-gray-500">Try the search with autocomplete suggestions</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div id="demo-search" class="max-w-md"></div>
+                            <div id="search-results" class="mt-6"></div>
+                        </div>
+                    </section>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <footer class="bg-white border-t border-gray-200 px-6 py-4">
+                <p class="text-sm text-gray-400 text-center">OpenNotes API Examples © 2026</p>
+            </footer>
+        </div>
     </div>
 
-    <footer class="app-footer">
-        <p>OpenNotes API Examples &copy; 2026</p>
-    </footer>
+    <!-- Mobile Sidebar -->
+    <div id="mobile-sidebar" class="fixed inset-0 z-50 hidden lg:hidden">
+        <div class="absolute inset-0 bg-black/50" onclick="closeMobileSidebar()"></div>
+        <aside class="absolute left-0 top-0 bottom-0 w-64 bg-cf-sidebar text-gray-300 overflow-y-auto">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-cf-border">
+                <div class="flex items-center gap-3">
+                    <img src="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png" alt="OpenNotes" class="w-8 h-8">
+                    <span class="text-white font-semibold">OpenNotes<span class="text-cf-orange">API</span></span>
+                </div>
+                <button onclick="closeMobileSidebar()" class="p-1 text-gray-400 hover:text-white">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
+            </div>
+            <nav class="py-4">
+                <a href="index.html" class="flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover">
+                    <span class="material-symbols-rounded text-xl">home</span>
+                    Dashboard
+                </a>
+                <a href="docs.html" class="flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover">
+                    <span class="material-symbols-rounded text-xl">description</span>
+                    API Docs
+                </a>
+                <a href="examples.html" class="flex items-center gap-3 px-5 py-2.5 text-sm bg-cf-sidebar-hover border-l-2 border-cf-orange">
+                    <span class="material-symbols-rounded text-xl">code</span>
+                    Examples
+                </a>
+            </nav>
+        </aside>
+    </div>
 
     <!-- Scripts -->
     <script src="js/config.js"></script>
@@ -469,11 +451,22 @@ openNotesAPI.<span class="syntax-function">on</span>(<span class="syntax-string"
     <script src="js/analytics.js"></script>
     
     <script>
-        // Helper to write output
+        // Mobile sidebar
+        function openMobileSidebar() {
+            document.getElementById('mobile-sidebar').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeMobileSidebar() {
+            document.getElementById('mobile-sidebar').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+        document.getElementById('mobile-menu-btn').addEventListener('click', openMobileSidebar);
+
+        // Helper functions
         function writeOutput(id, text) {
             const output = document.getElementById(id);
             output.textContent = text;
-            output.classList.remove('loading');
+            output.classList.remove('text-gray-400', 'italic');
         }
 
         function appendOutput(id, text) {
@@ -483,13 +476,12 @@ openNotesAPI.<span class="syntax-function">on</span>(<span class="syntax-string"
 
         function showLoading(id) {
             const output = document.getElementById(id);
-            output.textContent = 'Loading...';
-            output.classList.add('loading');
+            output.innerHTML = '<div class="flex items-center gap-2 text-gray-500"><span class="material-symbols-rounded animate-spin">progress_activity</span> Loading...</div>';
         }
 
-        // Copy code function
         function copyCode(btn) {
-            const codeBlock = btn.closest('.example-content').querySelector('.example-code pre');
+            const section = btn.closest('section');
+            const codeBlock = section.querySelector('.code-block');
             const text = codeBlock.textContent;
             navigator.clipboard.writeText(text).then(() => {
                 const originalText = btn.textContent;
@@ -502,11 +494,7 @@ openNotesAPI.<span class="syntax-function">on</span>(<span class="syntax-string"
         async function runExample1() {
             showLoading('output-1');
             try {
-                const response = await openNotesAPI.getNotes({
-                    sort: 'views',
-                    limit: 5
-                });
-                
+                const response = await openNotesAPI.getNotes({ sort: 'views', limit: 5 });
                 let output = '';
                 response.items.forEach(note => {
                     output += `${note.title} - ${note.v} views\n`;
@@ -521,11 +509,7 @@ openNotesAPI.<span class="syntax-function">on</span>(<span class="syntax-string"
         async function runExample2() {
             showLoading('output-2');
             try {
-                const results = await openNotesAPI.searchNotes('physics', {
-                    format: 'pdf',
-                    limit: 10
-                });
-                
+                const results = await openNotesAPI.searchNotes('physics', { format: 'pdf', limit: 10 });
                 let output = `Found ${results.items.length} notes\n\n`;
                 results.items.forEach(note => {
                     output += `- ${note.title} by ${note.auth}\n`;
@@ -541,17 +525,13 @@ openNotesAPI.<span class="syntax-function">on</span>(<span class="syntax-string"
             showLoading('output-3');
             try {
                 const stats = await openNotesAPI.getStatistics();
-                
-                let output = '';
-                output += `Total Notes: ${stats.totalNotes}\n`;
+                let output = `Total Notes: ${stats.totalNotes}\n`;
                 output += `Total Views: ${stats.totalViews}\n`;
-                output += `Total Downloads: ${stats.totalDownloads}\n`;
-                output += `\nFormat Distribution:\n`;
-                
+                output += `Total Downloads: ${stats.totalDownloads}\n\n`;
+                output += 'Format Distribution:\n';
                 Object.entries(stats.formats).forEach(([fmt, count]) => {
                     output += `  ${fmt}: ${count} notes\n`;
                 });
-                
                 writeOutput('output-3', output);
             } catch (error) {
                 writeOutput('output-3', 'Error: ' + error.message);
@@ -563,7 +543,6 @@ openNotesAPI.<span class="syntax-function">on</span>(<span class="syntax-string"
             showLoading('output-4');
             try {
                 const authorNotes = await openNotesAPI.getNotesByAuthor('Chenyu Li');
-                
                 let output = 'Notes by Chenyu Li:\n\n';
                 authorNotes.items.forEach(note => {
                     output += `  - ${note.title}\n`;
@@ -580,7 +559,6 @@ openNotesAPI.<span class="syntax-function">on</span>(<span class="syntax-string"
             showLoading('output-5');
             try {
                 const trending = await openNotesAPI.getTrendingNotes(5);
-                
                 let output = '🔥 Trending Notes:\n\n';
                 trending.items.forEach((note, i) => {
                     output += `${i + 1}. ${note.title}\n`;
@@ -593,79 +571,19 @@ openNotesAPI.<span class="syntax-function">on</span>(<span class="syntax-string"
             }
         }
 
-        // Example 6: Event Handling
+        // Example 6: Full Integration
         async function runExample6() {
-            const outputId = 'output-6';
-            writeOutput(outputId, '');
-            
-            const onStart = () => appendOutput(outputId, '🚀 Request started');
-            const onSuccess = () => appendOutput(outputId, '✅ Request succeeded');
-            const onCache = () => appendOutput(outputId, '📦 Cache hit!');
-            
-            openNotesAPI.on('request:start', onStart);
-            openNotesAPI.on('request:success', onSuccess);
-            openNotesAPI.on('cache:hit', onCache);
-            
-            try {
-                // Clear cache first
-                openNotesAPI.clearCache();
-                
-                await openNotesAPI.getNotes({ limit: 1 });
-                appendOutput(outputId, '\n--- Making second request (should hit cache) ---\n');
-                await openNotesAPI.getNotes({ limit: 1 });
-            } catch (error) {
-                appendOutput(outputId, 'Error: ' + error.message);
-            }
-            
-            // Cleanup listeners
-            openNotesAPI.off('request:start', onStart);
-            openNotesAPI.off('request:success', onSuccess);
-            openNotesAPI.off('cache:hit', onCache);
-        }
-
-        // Example 7: Client Statistics
-        async function runExample7() {
-            showLoading('output-7');
-            
-            // Reset stats for demo
-            openNotesAPI.resetClientStats();
-            openNotesAPI.clearCache();
-            
-            try {
-                await openNotesAPI.getNotes();
-                await openNotesAPI.getNotes(); // Cache hit
-                await openNotesAPI.getStatistics();
-                
-                const clientStats = openNotesAPI.getClientStats();
-                
-                let output = 'API Client Statistics:\n\n';
-                output += `  Total Requests: ${clientStats.requestCount}\n`;
-                output += `  Successful: ${clientStats.successCount}\n`;
-                output += `  Errors: ${clientStats.errorCount}\n`;
-                output += `  Cache Hits: ${clientStats.cacheHits}\n`;
-                output += `  Cache Misses: ${clientStats.cacheMisses}\n`;
-                
-                writeOutput('output-7', output);
-            } catch (error) {
-                writeOutput('output-7', 'Error: ' + error.message);
-            }
-        }
-
-        // Example 8: Full Integration
-        async function runExample8() {
-            showLoading('output-8');
-            
+            showLoading('output-6');
             try {
                 const healthy = await openNotesAPI.healthCheck();
                 let output = 'API Status: ' + (healthy ? '✅ Online' : '❌ Offline') + '\n';
                 
                 if (!healthy) {
-                    writeOutput('output-8', output);
+                    writeOutput('output-6', output);
                     return;
                 }
                 
                 const stats = await openNotesAPI.getStatistics();
-                
                 output += '\n📊 Dashboard\n\n';
                 output += `Total Notes: ${stats.totalNotes}\n`;
                 output += `Total Views: ${stats.totalViews}\n`;
@@ -675,62 +593,66 @@ openNotesAPI.<span class="syntax-function">on</span>(<span class="syntax-string"
                     output += `\n🏆 Top Note: "${top.title}"\n`;
                     output += `   ${top.v} views, ${top.d} downloads\n`;
                 }
-                
-                writeOutput('output-8', output);
+                writeOutput('output-6', output);
             } catch (error) {
-                writeOutput('output-8', 'Error: ' + error.message);
+                writeOutput('output-6', 'Error: ' + error.message);
             }
         }
 
         // Initialize Live Demos
         document.addEventListener('DOMContentLoaded', () => {
             // Notes Browser Demo
-            const demoBrowser = new NotesBrowser('#demo-browser', {
-                viewMode: 'grid',
-                pageSize: 6,
-                showFilters: true,
-                showSorting: true,
-                showPagination: true,
-                enableFavorites: true,
-                onNoteClick: (note) => {
-                    alert(`Selected: ${note.title}\n\nViews: ${note.v}\nDownloads: ${note.d}`);
-                }
-            });
+            try {
+                const demoBrowser = new NotesBrowser('#demo-browser', {
+                    viewMode: 'grid',
+                    pageSize: 6,
+                    showFilters: true,
+                    showSorting: true,
+                    showPagination: true,
+                    enableFavorites: true,
+                    onNoteClick: (note) => {
+                        alert(`Selected: ${note.title}\n\nViews: ${note.v}\nDownloads: ${note.d}`);
+                    }
+                });
+            } catch (e) {
+                document.getElementById('demo-browser').innerHTML = '<p class="text-gray-500">Notes browser component not available in demo mode.</p>';
+            }
 
             // Search Demo
-            const demoSearch = new OpenNotesSearch({
-                container: '#demo-search',
-                placeholder: 'Try searching for "calculus" or "physics"...',
-                onSearch: async (query) => {
-                    const resultsContainer = document.getElementById('search-results');
-                    resultsContainer.innerHTML = '<div class="spinner"></div>';
-                    
-                    if (!query) {
-                        resultsContainer.innerHTML = '';
-                        return;
-                    }
-                    
-                    try {
-                        const results = await openNotesAPI.searchNotes(query, { limit: 5 });
-                        
-                        if (results.items.length === 0) {
-                            resultsContainer.innerHTML = '<p>No results found</p>';
+            try {
+                const demoSearch = new OpenNotesSearch({
+                    container: '#demo-search',
+                    placeholder: 'Try searching for "calculus" or "physics"...',
+                    onSearch: async (query) => {
+                        const resultsContainer = document.getElementById('search-results');
+                        if (!query) {
+                            resultsContainer.innerHTML = '';
                             return;
                         }
+                        resultsContainer.innerHTML = '<div class="flex items-center gap-2 text-gray-500"><span class="material-symbols-rounded animate-spin">progress_activity</span> Searching...</div>';
                         
-                        resultsContainer.innerHTML = results.items.map(note => `
-                            <div style="padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px;">
-                                <strong>${note.title}</strong>
-                                <p style="margin: 5px 0 0; color: var(--text-secondary); font-size: 0.875rem;">
-                                    ${note.auth} · ${note.v} views · ${(note.fmt || note.format).toUpperCase()}
-                                </p>
-                            </div>
-                        `).join('');
-                    } catch (error) {
-                        resultsContainer.innerHTML = `<p style="color: var(--error-color);">Error: ${error.message}</p>`;
+                        try {
+                            const results = await openNotesAPI.searchNotes(query, { limit: 5 });
+                            if (results.items.length === 0) {
+                                resultsContainer.innerHTML = '<p class="text-gray-500">No results found</p>';
+                                return;
+                            }
+                            resultsContainer.innerHTML = results.items.map(note => `
+                                <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg mb-3">
+                                    <strong class="text-gray-900">${note.title}</strong>
+                                    <p class="text-sm text-gray-500 mt-1">
+                                        ${note.auth} · ${note.v} views · ${(note.fmt || note.format).toUpperCase()}
+                                    </p>
+                                </div>
+                            `).join('');
+                        } catch (error) {
+                            resultsContainer.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`;
+                        }
                     }
-                }
-            });
+                });
+            } catch (e) {
+                document.getElementById('demo-search').innerHTML = '<p class="text-gray-500">Search component not available in demo mode.</p>';
+            }
         });
     </script>
 </body>

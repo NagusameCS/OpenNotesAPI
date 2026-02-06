@@ -10,380 +10,337 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png">
     
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="css/styles.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'cf-orange': '#f6821f',
+                        'cf-orange-dark': '#e06d10',
+                        'cf-sidebar': '#0d1117',
+                        'cf-sidebar-hover': '#161b22',
+                        'cf-border': '#30363d',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Material Symbols -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
     
     <style>
-        /* Page-specific styles - Clean White */
-        .main-tabs {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            padding: 16px;
-            background: white;
-            border-bottom: 1px solid var(--border);
-        }
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .sidebar-link.active { background: #161b22; border-left: 3px solid #f6821f; }
+        .tab-active { border-bottom: 2px solid #f6821f; color: #f6821f !important; }
         
-        .tab-btn {
-            padding: 10px 24px;
-            border-radius: var(--radius-sm);
-            color: var(--text-secondary);
-            font-weight: 500;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            transition: all var(--speed) var(--ease-smooth);
-        }
+        /* Modal backdrop */
+        .modal-backdrop { backdrop-filter: blur(4px); }
         
-        .tab-btn:hover {
-            background: var(--bg);
-            color: var(--text);
-        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        .tab-btn.active {
-            background: var(--text);
-            color: white;
-        }
+        /* Note cards grid */
+        .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
         
-        .tab-panel {
-            display: none;
-            padding: 24px;
-        }
-        
-        .tab-panel.active {
-            display: block;
-        }
-        
-        .note-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(4px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all var(--speed) var(--ease-smooth);
-        }
-        
-        .note-modal.open {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .note-modal-content {
-            background: white;
-            border-radius: var(--radius);
-            max-width: 600px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: var(--shadow-lg);
-            transform: translateY(20px);
-            transition: transform var(--speed-slow) var(--ease);
-        }
-        
-        .note-modal.open .note-modal-content {
-            transform: translateY(0);
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 24px;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .modal-close {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            color: var(--text-secondary);
-            background: none;
-            border: none;
-            cursor: pointer;
-        }
-        
-        .modal-close:hover {
-            background: var(--bg);
-        }
-        
-        .modal-body {
-            padding: 24px;
-        }
-        
-        .modal-thumbnail {
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            object-fit: cover;
-            border-radius: var(--radius-sm);
-            margin-bottom: 16px;
-        }
-        
-        .modal-info {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        
-        .info-item {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        
-        .info-label {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-        }
-        
-        .info-value {
-            font-size: 1rem;
-            color: var(--text);
-        }
-        
-        .modal-footer {
-            display: flex;
-            gap: 12px;
-            padding: 24px;
-            border-top: 1px solid var(--border);
-        }
-        
-        .modal-footer .btn {
-            flex: 1;
-        }
-        
-        .access-form-group {
-            margin-bottom: 16px;
-        }
-        
-        .access-form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--text);
-        }
-        
-        .access-form-group input,
-        .access-form-group textarea,
-        .access-form-group select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            font-size: 1rem;
-            transition: all var(--speed) var(--ease-smooth);
-        }
-        
-        .access-form-group input:focus,
-        .access-form-group textarea:focus,
-        .access-form-group select:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-        }
-        
-        .access-form-group textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-        
-        .access-info-box {
-            background: var(--accent-light);
-            border: 1px solid var(--accent-glow);
-            border-radius: var(--radius-sm);
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-        
-        .access-info-box h4 {
-            color: var(--text);
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .access-info-box ul {
-            margin-left: 24px;
-            color: var(--text-secondary);
-        }
-        
-        .access-info-box li {
-            margin-bottom: 4px;
-        }
-        
-        .access-success {
-            text-align: center;
-            padding: 24px 0;
-        }
-        
-        .access-success svg {
-            width: 64px;
-            height: 64px;
-            color: var(--accent);
-            margin-bottom: 16px;
-        }
-        
-        .access-success h3 {
-            color: var(--text);
-            margin-bottom: 8px;
-        }
-        
-        .access-success p {
-            color: var(--text-secondary);
-        }
-
-        @media (max-width: 768px) {
-            .main-tabs {
-                overflow-x: auto;
-                justify-content: flex-start;
-                padding: 12px;
-            }
-            
-            .tab-btn {
-                white-space: nowrap;
-            }
-        }
+        /* Transition utilities */
+        .transition-sidebar { transition: all 0.2s ease-in-out; }
     </style>
 </head>
-<body>
+<body class="bg-gray-50 text-gray-900 min-h-screen">
     <!-- API Status Banner -->
-    <div class="api-status-banner show" id="api-status-banner">
-        <span class="material-symbols-rounded" style="font-size: 18px;">info</span>
-        <span>This is an SDK demo. The OpenNotes API restricts cross-origin requests. <a href="https://opennotes.pages.dev" target="_blank">Visit OpenNotes</a> to browse notes.</span>
+    <div id="api-status-banner" class="hidden bg-amber-50 border-b border-amber-200 px-4 py-2">
+        <div class="max-w-7xl mx-auto flex items-center gap-2 text-amber-800 text-sm">
+            <span class="material-symbols-rounded text-lg">info</span>
+            <span>This is an SDK demo. The OpenNotes API restricts cross-origin requests. 
+                <a href="https://opennotes.pages.dev" target="_blank" class="font-medium text-amber-900 underline hover:no-underline">Visit OpenNotes</a> to browse notes.
+            </span>
+        </div>
     </div>
 
-    <!-- Header -->
-    <header class="app-header">
-        <div class="header-container">
-            <div class="app-logo">
-                <img src="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png" alt="OpenNotes">
-                OpenNotes<span>API</span>
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-cf-sidebar text-gray-300 flex-shrink-0 hidden lg:block">
+            <div class="sticky top-0 h-screen overflow-y-auto">
+                <!-- Logo -->
+                <div class="flex items-center gap-3 px-5 py-4 border-b border-cf-border">
+                    <img src="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png" alt="OpenNotes" class="w-8 h-8">
+                    <div>
+                        <span class="text-white font-semibold">OpenNotes</span>
+                        <span class="text-cf-orange font-semibold">API</span>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="py-4">
+                    <div class="px-4 mb-2">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Dashboard</span>
+                    </div>
+                    <a href="#browse" data-tab="browse" class="sidebar-link active flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover transition-sidebar">
+                        <span class="material-symbols-rounded text-xl">folder_open</span>
+                        Browse Notes
+                    </a>
+                    <a href="#trending" data-tab="trending" class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover transition-sidebar">
+                        <span class="material-symbols-rounded text-xl">trending_up</span>
+                        Trending
+                    </a>
+                    <a href="#analytics" data-tab="analytics" class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover transition-sidebar">
+                        <span class="material-symbols-rounded text-xl">analytics</span>
+                        Analytics
+                    </a>
+                    <a href="#favorites" data-tab="favorites" class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover transition-sidebar">
+                        <span class="material-symbols-rounded text-xl">favorite</span>
+                        Favorites
+                    </a>
+                    
+                    <div class="border-t border-cf-border mt-4 pt-4 px-4 mb-2">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Resources</span>
+                    </div>
+                    <a href="docs.html" class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover transition-sidebar">
+                        <span class="material-symbols-rounded text-xl">description</span>
+                        API Docs
+                    </a>
+                    <a href="examples.html" class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover transition-sidebar">
+                        <span class="material-symbols-rounded text-xl">code</span>
+                        Examples
+                    </a>
+                    <a href="https://github.com/NagusameCS/OpenNotesAPI" target="_blank" class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover transition-sidebar">
+                        <span class="material-symbols-rounded text-xl">code_blocks</span>
+                        GitHub
+                    </a>
+                    
+                    <div class="border-t border-cf-border mt-4 pt-4 px-4 mb-2">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Account</span>
+                    </div>
+                    <a href="#" id="request-access-btn" class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover transition-sidebar">
+                        <span class="material-symbols-rounded text-xl">key</span>
+                        Request Access
+                    </a>
+                    <a href="https://opennotes.pages.dev" target="_blank" class="sidebar-link flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover transition-sidebar">
+                        <span class="material-symbols-rounded text-xl">open_in_new</span>
+                        Visit OpenNotes
+                    </a>
+                </nav>
             </div>
-            <nav class="app-nav">
-                <a href="#browse" class="active">Browse</a>
-                <a href="#analytics">Analytics</a>
-                <a href="docs.html">API Docs</a>
-                <a href="#" id="request-access-btn">Request Access</a>
-                <a href="https://opennotes.pages.dev" target="_blank">OpenNotes</a>
-                <a href="https://github.com/Tebby2008/OpenNotes" target="_blank">GitHub</a>
-            </nav>
-        </div>
-    </header>
+        </aside>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="container">
-            <h1>OpenNotes API SDK</h1>
-            <p>A JavaScript SDK for integrating OpenNotes content into your applications. View the documentation and examples below.</p>
-            <div style="display: flex; gap: 12px; justify-content: center; margin-top: 16px;">
-                <a href="https://opennotes.pages.dev" class="btn btn-primary" target="_blank">Visit OpenNotes</a>
-                <a href="docs.html" class="btn btn-secondary">View API Docs</a>
-            </div>
-        </div>
-    </section>
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col">
+            <!-- Top Header -->
+            <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+                <div class="flex items-center justify-between px-6 py-4">
+                    <!-- Mobile Menu Toggle -->
+                    <button id="mobile-menu-btn" class="lg:hidden p-2 -ml-2 text-gray-600 hover:text-gray-900">
+                        <span class="material-symbols-rounded">menu</span>
+                    </button>
+                    
+                    <!-- Logo (mobile) -->
+                    <div class="flex items-center gap-2 lg:hidden">
+                        <img src="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png" alt="OpenNotes" class="w-6 h-6">
+                        <span class="font-semibold">OpenNotes<span class="text-cf-orange">API</span></span>
+                    </div>
+                    
+                    <!-- Page Title (desktop) -->
+                    <div class="hidden lg:block">
+                        <h1 class="text-xl font-semibold text-gray-900" id="page-title">Browse Notes</h1>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="flex items-center gap-3">
+                        <a href="https://opennotes.pages.dev" target="_blank" class="hidden sm:flex items-center gap-2 px-4 py-2 bg-cf-orange text-white rounded-lg font-medium hover:bg-cf-orange-dark transition-colors">
+                            <span class="material-symbols-rounded text-lg">open_in_new</span>
+                            OpenNotes
+                        </a>
+                    </div>
+                </div>
+            </header>
 
-    <!-- Main Tabs -->
-    <div class="main-tabs">
-        <button class="tab-btn active" data-tab="browse">Browse Notes</button>
-        <button class="tab-btn" data-tab="trending">Trending</button>
-        <button class="tab-btn" data-tab="analytics">Analytics</button>
-        <button class="tab-btn" data-tab="favorites">Favorites</button>
+            <!-- Content Area -->
+            <main class="flex-1 p-6">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500 font-medium">Total Notes</p>
+                                <p class="text-2xl font-bold text-gray-900 mt-1" id="stat-total">--</p>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
+                                <span class="material-symbols-rounded text-blue-600 text-2xl">description</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500 font-medium">Total Views</p>
+                                <p class="text-2xl font-bold text-gray-900 mt-1" id="stat-views">--</p>
+                            </div>
+                            <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
+                                <span class="material-symbols-rounded text-green-600 text-2xl">visibility</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500 font-medium">Downloads</p>
+                                <p class="text-2xl font-bold text-gray-900 mt-1" id="stat-downloads">--</p>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
+                                <span class="material-symbols-rounded text-purple-600 text-2xl">download</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500 font-medium">Authors</p>
+                                <p class="text-2xl font-bold text-gray-900 mt-1" id="stat-authors">--</p>
+                            </div>
+                            <div class="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center">
+                                <span class="material-symbols-rounded text-cf-orange text-2xl">group</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Panels -->
+                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <!-- Tab Headers (Mobile) -->
+                    <div class="flex lg:hidden border-b border-gray-200 overflow-x-auto">
+                        <button data-tab="browse" class="tab-btn tab-active flex-1 min-w-max px-6 py-3 text-sm font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent">
+                            Browse
+                        </button>
+                        <button data-tab="trending" class="tab-btn flex-1 min-w-max px-6 py-3 text-sm font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent">
+                            Trending
+                        </button>
+                        <button data-tab="analytics" class="tab-btn flex-1 min-w-max px-6 py-3 text-sm font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent">
+                            Analytics
+                        </button>
+                        <button data-tab="favorites" class="tab-btn flex-1 min-w-max px-6 py-3 text-sm font-medium text-gray-600 hover:text-gray-900 border-b-2 border-transparent">
+                            Favorites
+                        </button>
+                    </div>
+                    
+                    <!-- Panel Content -->
+                    <div class="p-6">
+                        <!-- Browse Panel -->
+                        <div class="tab-panel" id="panel-browse">
+                            <div id="notes-browser"></div>
+                        </div>
+                        
+                        <!-- Trending Panel -->
+                        <div class="tab-panel hidden" id="panel-trending">
+                            <h2 class="text-lg font-semibold text-gray-900 mb-4">Trending Notes</h2>
+                            <div id="trending-notes"></div>
+                        </div>
+                        
+                        <!-- Analytics Panel -->
+                        <div class="tab-panel hidden" id="panel-analytics">
+                            <div id="analytics-dashboard"></div>
+                        </div>
+                        
+                        <!-- Favorites Panel -->
+                        <div class="tab-panel hidden" id="panel-favorites">
+                            <h2 class="text-lg font-semibold text-gray-900 mb-4">Your Favorites</h2>
+                            <div id="favorites-browser"></div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <footer class="bg-white border-t border-gray-200 px-6 py-4">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-4 text-sm text-gray-500">
+                        <a href="docs.html" class="hover:text-gray-900 transition-colors">API Docs</a>
+                        <a href="examples.html" class="hover:text-gray-900 transition-colors">Examples</a>
+                        <a href="#" onclick="openAccessModal(); return false;" class="hover:text-gray-900 transition-colors">Request Access</a>
+                        <a href="https://github.com/NagusameCS/OpenNotesAPI" target="_blank" class="hover:text-gray-900 transition-colors">Source Code</a>
+                    </div>
+                    <p class="text-sm text-gray-400">OpenNotes API © 2026</p>
+                </div>
+            </footer>
+        </div>
     </div>
-
-    <!-- Main Content -->
-    <main class="main-content">
-        <div class="container">
-            <!-- Browse Panel -->
-            <div class="tab-panel active" id="panel-browse">
-                <div id="notes-browser"></div>
-            </div>
-
-            <!-- Trending Panel -->
-            <div class="tab-panel" id="panel-trending">
-                <h2 class="mb-2">Trending Notes</h2>
-                <div id="trending-notes"></div>
-            </div>
-
-            <!-- Analytics Panel -->
-            <div class="tab-panel" id="panel-analytics">
-                <div id="analytics-dashboard"></div>
-            </div>
-
-            <!-- Favorites Panel -->
-            <div class="tab-panel" id="panel-favorites">
-                <h2 class="mb-2">Your Favorites</h2>
-                <div id="favorites-browser"></div>
-            </div>
-        </div>
-    </main>
 
     <!-- Note Detail Modal -->
-    <div class="note-modal" id="note-modal">
-        <div class="note-modal-content">
-            <div class="modal-header">
-                <h2 id="modal-title"></h2>
-                <button class="modal-close" id="modal-close">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                    </svg>
+    <div id="note-modal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-backdrop absolute inset-0 bg-black/50" onclick="closeNoteModal()"></div>
+        <div class="absolute inset-4 sm:inset-10 lg:inset-20 bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-w-4xl mx-auto">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900 truncate" id="modal-title">Note Title</h2>
+                <button onclick="closeNoteModal()" class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+                    <span class="material-symbols-rounded">close</span>
                 </button>
             </div>
-            <div class="modal-body">
-                <img class="modal-thumbnail" id="modal-thumbnail" src="" alt="">
-                <div class="modal-info">
-                    <div class="info-item">
-                        <span class="info-label">Author</span>
-                        <span class="info-value" id="modal-author"></span>
+            
+            <!-- Modal Body -->
+            <div class="flex-1 overflow-y-auto p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Thumbnail -->
+                    <div>
+                        <img id="modal-thumbnail" src="" alt="" class="w-full rounded-lg border border-gray-200 bg-gray-50">
                     </div>
-                    <div class="info-item">
-                        <span class="info-label">Format</span>
-                        <span class="info-value" id="modal-format"></span>
+                    
+                    <!-- Info -->
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <p class="text-xs font-medium text-gray-500 uppercase">Author</p>
+                                <p class="text-sm font-semibold text-gray-900 mt-1" id="modal-author">--</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <p class="text-xs font-medium text-gray-500 uppercase">Format</p>
+                                <p class="text-sm font-semibold text-gray-900 mt-1" id="modal-format">--</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <p class="text-xs font-medium text-gray-500 uppercase">Views</p>
+                                <p class="text-sm font-semibold text-gray-900 mt-1" id="modal-views">--</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <p class="text-xs font-medium text-gray-500 uppercase">Downloads</p>
+                                <p class="text-sm font-semibold text-gray-900 mt-1" id="modal-downloads">--</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <p class="text-xs font-medium text-gray-500 uppercase">Size</p>
+                                <p class="text-sm font-semibold text-gray-900 mt-1" id="modal-size">--</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <p class="text-xs font-medium text-gray-500 uppercase">Updated</p>
+                                <p class="text-sm font-semibold text-gray-900 mt-1" id="modal-updated">--</p>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-xs font-medium text-gray-500 uppercase">Status</p>
+                            <p class="text-sm font-semibold text-gray-900 mt-1" id="modal-status">--</p>
+                        </div>
                     </div>
-                    <div class="info-item">
-                        <span class="info-label">Views</span>
-                        <span class="info-value" id="modal-views"></span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Downloads</span>
-                        <span class="info-value" id="modal-downloads"></span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Size</span>
-                        <span class="info-value" id="modal-size"></span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Updated</span>
-                        <span class="info-value" id="modal-updated"></span>
-                    </div>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Status</span>
-                    <span class="info-value" id="modal-status"></span>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" id="modal-copy-link">Copy Link</button>
-                <a class="btn btn-primary" id="modal-download" href="" target="_blank" download>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
-                    </svg>
+            
+            <!-- Modal Footer -->
+            <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <button id="modal-copy-link" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                    Copy Link
+                </button>
+                <a id="modal-download" href="" target="_blank" download class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-cf-orange rounded-lg hover:bg-cf-orange-dark transition-colors">
+                    <span class="material-symbols-rounded text-lg">download</span>
                     Download
                 </a>
             </div>
@@ -391,50 +348,52 @@
     </div>
 
     <!-- Request Access Modal -->
-    <div class="access-modal" id="access-modal">
-        <div class="access-modal-content">
-            <div class="access-modal-header">
-                <h2>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-                    </svg>
-                    Request API Access
-                </h2>
-                <button class="modal-close" id="access-modal-close">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                    </svg>
+    <div id="access-modal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-backdrop absolute inset-0 bg-black/50" onclick="closeAccessModal()"></div>
+        <div class="absolute inset-4 sm:inset-10 lg:inset-y-20 lg:inset-x-1/4 bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-w-xl mx-auto">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-cf-orange/10 rounded-lg flex items-center justify-center">
+                        <span class="material-symbols-rounded text-cf-orange">key</span>
+                    </div>
+                    <h2 class="text-lg font-semibold text-gray-900">Request API Access</h2>
+                </div>
+                <button id="access-modal-close" onclick="closeAccessModal()" class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+                    <span class="material-symbols-rounded">close</span>
                 </button>
             </div>
-            <div class="access-modal-body" id="access-modal-form">
-                <div class="access-info-box">
-                    <h4>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-                        </svg>
-                        API Access Information
+            
+            <!-- Modal Body -->
+            <div class="flex-1 overflow-y-auto p-6" id="access-modal-form">
+                <!-- Info Box -->
+                <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
+                    <h4 class="flex items-center gap-2 font-semibold text-blue-900 mb-2">
+                        <span class="material-symbols-rounded text-lg">info</span>
+                        API Access Tiers
                     </h4>
-                    <ul>
+                    <ul class="text-sm text-blue-800 space-y-1 pl-6 list-disc">
                         <li>Free tier: 1,000 requests/day</li>
                         <li>Developer tier: 10,000 requests/day</li>
                         <li>Enterprise: Unlimited (contact us)</li>
                     </ul>
                 </div>
                 
-                <form id="access-request-form">
-                    <div class="access-form-group">
-                        <label for="access-name">Full Name *</label>
-                        <input type="text" id="access-name" name="name" required placeholder="Your full name">
+                <!-- Form -->
+                <form id="access-request-form" class="space-y-4">
+                    <div>
+                        <label for="access-name" class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                        <input type="text" id="access-name" name="name" required placeholder="Your full name" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cf-orange focus:border-cf-orange outline-none transition-colors">
                     </div>
                     
-                    <div class="access-form-group">
-                        <label for="access-email">Email Address *</label>
-                        <input type="email" id="access-email" name="email" required placeholder="your@email.com">
+                    <div>
+                        <label for="access-email" class="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                        <input type="email" id="access-email" name="email" required placeholder="your@email.com" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cf-orange focus:border-cf-orange outline-none transition-colors">
                     </div>
                     
-                    <div class="access-form-group">
-                        <label for="access-tier">Access Tier *</label>
-                        <select id="access-tier" name="tier" required>
+                    <div>
+                        <label for="access-tier" class="block text-sm font-medium text-gray-700 mb-1">Access Tier *</label>
+                        <select id="access-tier" name="tier" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cf-orange focus:border-cf-orange outline-none transition-colors bg-white">
                             <option value="">Select a tier...</option>
                             <option value="free">Free (1,000 req/day)</option>
                             <option value="developer">Developer (10,000 req/day)</option>
@@ -442,41 +401,82 @@
                         </select>
                     </div>
                     
-                    <div class="access-form-group">
-                        <label for="access-use-case">Use Case *</label>
-                        <textarea id="access-use-case" name="useCase" required placeholder="Describe how you plan to use the OpenNotes API..."></textarea>
+                    <div>
+                        <label for="access-use-case" class="block text-sm font-medium text-gray-700 mb-1">Use Case *</label>
+                        <textarea id="access-use-case" name="useCase" required placeholder="Describe how you plan to use the OpenNotes API..." rows="3" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cf-orange focus:border-cf-orange outline-none transition-colors resize-none"></textarea>
                     </div>
                     
-                    <div class="access-form-group">
-                        <label for="access-website">Website/Project URL (Optional)</label>
-                        <input type="url" id="access-website" name="website" placeholder="https://yourproject.com">
+                    <div>
+                        <label for="access-website" class="block text-sm font-medium text-gray-700 mb-1">Website/Project URL <span class="text-gray-400">(Optional)</span></label>
+                        <input type="url" id="access-website" name="website" placeholder="https://yourproject.com" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cf-orange focus:border-cf-orange outline-none transition-colors">
                     </div>
                 </form>
             </div>
-            <div class="access-modal-footer">
-                <button class="btn btn-secondary" id="access-cancel-btn">Cancel</button>
-                <button class="btn btn-primary" id="access-submit-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                    </svg>
+            
+            <!-- Modal Footer -->
+            <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
+                <button id="access-cancel-btn" onclick="closeAccessModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                    Cancel
+                </button>
+                <button id="access-submit-btn" onclick="submitAccessRequest()" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-cf-orange rounded-lg hover:bg-cf-orange-dark transition-colors">
+                    <span class="material-symbols-rounded text-lg">send</span>
                     Submit Request
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="app-footer">
-        <div class="container">
-            <div class="footer-links">
-                <a href="docs.html">API Documentation</a>
-                <a href="examples.html">Examples</a>
-                <a href="#" onclick="openAccessModal(); return false;">Request Access</a>
-                <a href="https://github.com/NagusameCS/OpenNotesAPI" target="_blank">Source Code</a>
+    <!-- Mobile Sidebar Overlay -->
+    <div id="mobile-sidebar" class="fixed inset-0 z-50 hidden lg:hidden">
+        <div class="absolute inset-0 bg-black/50" onclick="closeMobileSidebar()"></div>
+        <aside class="absolute left-0 top-0 bottom-0 w-64 bg-cf-sidebar text-gray-300 overflow-y-auto">
+            <!-- Logo -->
+            <div class="flex items-center justify-between px-5 py-4 border-b border-cf-border">
+                <div class="flex items-center gap-3">
+                    <img src="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png" alt="OpenNotes" class="w-8 h-8">
+                    <span class="text-white font-semibold">OpenNotes<span class="text-cf-orange">API</span></span>
+                </div>
+                <button onclick="closeMobileSidebar()" class="p-1 text-gray-400 hover:text-white">
+                    <span class="material-symbols-rounded">close</span>
+                </button>
             </div>
-            <p>OpenNotes API &copy; 2026. Built for the OpenNotes platform.</p>
-        </div>
-    </footer>
+            
+            <!-- Navigation -->
+            <nav class="py-4">
+                <div class="px-4 mb-2">
+                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Dashboard</span>
+                </div>
+                <a href="#browse" data-tab="browse" class="mobile-sidebar-link flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover" onclick="closeMobileSidebar()">
+                    <span class="material-symbols-rounded text-xl">folder_open</span>
+                    Browse Notes
+                </a>
+                <a href="#trending" data-tab="trending" class="mobile-sidebar-link flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover" onclick="closeMobileSidebar()">
+                    <span class="material-symbols-rounded text-xl">trending_up</span>
+                    Trending
+                </a>
+                <a href="#analytics" data-tab="analytics" class="mobile-sidebar-link flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover" onclick="closeMobileSidebar()">
+                    <span class="material-symbols-rounded text-xl">analytics</span>
+                    Analytics
+                </a>
+                <a href="#favorites" data-tab="favorites" class="mobile-sidebar-link flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover" onclick="closeMobileSidebar()">
+                    <span class="material-symbols-rounded text-xl">favorite</span>
+                    Favorites
+                </a>
+                
+                <div class="border-t border-cf-border mt-4 pt-4 px-4 mb-2">
+                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Resources</span>
+                </div>
+                <a href="docs.html" class="flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover">
+                    <span class="material-symbols-rounded text-xl">description</span>
+                    API Docs
+                </a>
+                <a href="examples.html" class="flex items-center gap-3 px-5 py-2.5 text-sm hover:bg-cf-sidebar-hover">
+                    <span class="material-symbols-rounded text-xl">code</span>
+                    Examples
+                </a>
+            </nav>
+        </aside>
+    </div>
 
     <!-- Scripts -->
     <script src="js/config.js"></script>
@@ -492,22 +492,112 @@
     <script src="js/opennotes.js"></script>
     
     <script>
+        // ==================== GLOBAL FUNCTIONS ====================
+        
+        let currentNote = null;
+        
+        function openNoteModal(note) {
+            currentNote = note;
+            
+            // Track view
+            openNotesAPI.incrementViews(note.name).catch(console.error);
+            
+            // Populate modal
+            document.getElementById('modal-title').textContent = note.title;
+            document.getElementById('modal-thumbnail').src = note.thumb;
+            document.getElementById('modal-author').textContent = note.auth || 'Unknown';
+            document.getElementById('modal-format').textContent = (note.fmt || note.format || '').toUpperCase();
+            document.getElementById('modal-views').textContent = (note.v || 0).toLocaleString();
+            document.getElementById('modal-downloads').textContent = (note.d || 0).toLocaleString();
+            document.getElementById('modal-size').textContent = note.size || 'Unknown';
+            document.getElementById('modal-updated').textContent = note.upd 
+                ? new Date(note.upd).toLocaleDateString() 
+                : 'Unknown';
+            
+            // Status badges
+            let status = [];
+            if (note.is_verified) status.push('✓ Verified');
+            if (note.is_owner) status.push('👤 Owner');
+            if (note.ai) status.push('🤖 AI Generated');
+            document.getElementById('modal-status').textContent = status.join(' • ') || 'Standard';
+            
+            // Download link
+            document.getElementById('modal-download').href = note.dl;
+            
+            // Show modal
+            document.getElementById('note-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeNoteModal() {
+            document.getElementById('note-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+            currentNote = null;
+        }
+        
+        function openAccessModal() {
+            document.getElementById('access-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeAccessModal() {
+            document.getElementById('access-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+            
+            // Reset form after close
+            setTimeout(() => {
+                const form = document.getElementById('access-request-form');
+                if (form) form.reset();
+            }, 300);
+        }
+        
+        function submitAccessRequest() {
+            const name = document.getElementById('access-name').value;
+            const email = document.getElementById('access-email').value;
+            const tier = document.getElementById('access-tier').value;
+            const useCase = document.getElementById('access-use-case').value;
+            const website = document.getElementById('access-website').value;
+            
+            if (!name || !email || !tier || !useCase) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+            
+            // Show success state
+            const modalBody = document.getElementById('access-modal-form');
+            modalBody.innerHTML = \`
+                <div class="flex flex-col items-center justify-center py-8 text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                        <span class="material-symbols-rounded text-green-600 text-3xl">check_circle</span>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Request Submitted!</h3>
+                    <p class="text-gray-600">Thank you, \${name}! We'll review your request and send your API key to <strong>\${email}</strong> within 24-48 hours.</p>
+                    <p class="text-sm text-gray-500 mt-4">Selected tier: <strong>\${tier.charAt(0).toUpperCase() + tier.slice(1)}</strong></p>
+                </div>
+            \`;
+            
+            // Update buttons
+            document.getElementById('access-cancel-btn').style.display = 'none';
+            const submitBtn = document.getElementById('access-submit-btn');
+            submitBtn.innerHTML = 'Close';
+            submitBtn.onclick = closeAccessModal;
+            
+            console.log('API Access Request:', { name, email, tier, useCase, website });
+        }
+        
+        function openMobileSidebar() {
+            document.getElementById('mobile-sidebar').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeMobileSidebar() {
+            document.getElementById('mobile-sidebar').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+        
         // ==================== APP INITIALIZATION ====================
         
         document.addEventListener('DOMContentLoaded', () => {
-            // Initialize main search
-            const mainSearch = new OpenNotesSearch({
-                container: '#main-search',
-                placeholder: 'Search for notes...',
-                onSearch: (query) => {
-                    // Switch to browse tab and search
-                    switchTab('browse');
-                    if (notesBrowser) {
-                        notesBrowser.setFilter('query', query);
-                    }
-                }
-            });
-
             // Initialize notes browser
             const notesBrowser = new NotesBrowser('#notes-browser', {
                 viewMode: 'grid',
@@ -518,12 +608,10 @@
                 enableFavorites: true,
                 showThumbnails: true,
                 onNoteClick: openNoteModal,
-                onDownload: (note) => {
-                    console.log('Downloaded:', note.name);
-                }
+                onDownload: (note) => console.log('Downloaded:', note.name)
             });
-
-            // Initialize trending notes browser
+            
+            // Initialize trending
             const trendingBrowser = new NotesBrowser('#trending-notes', {
                 viewMode: 'grid',
                 pageSize: 12,
@@ -533,11 +621,9 @@
                 enableFavorites: true,
                 onNoteClick: openNoteModal
             });
-            
-            // Set trending sort
             trendingBrowser.setSort('views');
-
-            // Initialize favorites browser
+            
+            // Initialize favorites
             const favoritesBrowser = new NotesBrowser('#favorites-browser', {
                 viewMode: 'grid',
                 pageSize: 20,
@@ -547,101 +633,89 @@
                 enableFavorites: true,
                 onNoteClick: openNoteModal
             });
-
+            
             // Initialize analytics
             const analytics = new OpenNotesAnalytics({
                 container: '#analytics-dashboard',
                 showCharts: true,
                 theme: 'light'
             });
-
+            
+            // Update stats
+            openNotesAPI.getStats().then(stats => {
+                if (stats) {
+                    document.getElementById('stat-total').textContent = (stats.total || 0).toLocaleString();
+                    document.getElementById('stat-views').textContent = (stats.views || 0).toLocaleString();
+                    document.getElementById('stat-downloads').textContent = (stats.downloads || 0).toLocaleString();
+                    document.getElementById('stat-authors').textContent = (stats.authors || 0).toLocaleString();
+                }
+            }).catch(() => {});
+            
             // ==================== TAB NAVIGATION ====================
-
-            const tabBtns = document.querySelectorAll('.tab-btn');
-            const tabPanels = document.querySelectorAll('.tab-panel');
-
+            
+            const pageTitles = {
+                browse: 'Browse Notes',
+                trending: 'Trending',
+                analytics: 'Analytics',
+                favorites: 'Favorites'
+            };
+            
             function switchTab(tabId) {
-                tabBtns.forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.tab === tabId);
+                // Update sidebar links
+                document.querySelectorAll('.sidebar-link[data-tab]').forEach(link => {
+                    link.classList.toggle('active', link.dataset.tab === tabId);
                 });
                 
-                tabPanels.forEach(panel => {
-                    panel.classList.toggle('active', panel.id === `panel-${tabId}`);
+                // Update mobile tabs
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    if (btn.dataset.tab === tabId) {
+                        btn.classList.add('tab-active');
+                    } else {
+                        btn.classList.remove('tab-active');
+                    }
                 });
-
-                // Load favorites when switching to favorites tab
+                
+                // Update panels
+                document.querySelectorAll('.tab-panel').forEach(panel => {
+                    panel.classList.toggle('hidden', panel.id !== \`panel-\${tabId}\`);
+                });
+                
+                // Update page title
+                document.getElementById('page-title').textContent = pageTitles[tabId] || 'Dashboard';
+                
+                // Load favorites if needed
                 if (tabId === 'favorites') {
                     favoritesBrowser.loadFavoriteNotes();
                 }
             }
-
-            tabBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    switchTab(btn.dataset.tab);
+            
+            // Sidebar link clicks
+            document.querySelectorAll('.sidebar-link[data-tab], .mobile-sidebar-link[data-tab]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    switchTab(link.dataset.tab);
                 });
             });
-
-            // ==================== NOTE MODAL ====================
-
-            const modal = document.getElementById('note-modal');
-            const modalClose = document.getElementById('modal-close');
-            let currentNote = null;
-
-            function openNoteModal(note) {
-                currentNote = note;
-                
-                // Track view
-                openNotesAPI.incrementViews(note.name).catch(console.error);
-                
-                // Populate modal
-                document.getElementById('modal-title').textContent = note.title;
-                document.getElementById('modal-thumbnail').src = note.thumb;
-                document.getElementById('modal-author').textContent = note.auth || 'Unknown';
-                document.getElementById('modal-format').textContent = (note.fmt || note.format || '').toUpperCase();
-                document.getElementById('modal-views').textContent = (note.v || 0).toLocaleString();
-                document.getElementById('modal-downloads').textContent = (note.d || 0).toLocaleString();
-                document.getElementById('modal-size').textContent = note.size || 'Unknown';
-                document.getElementById('modal-updated').textContent = note.upd 
-                    ? new Date(note.upd).toLocaleDateString() 
-                    : 'Unknown';
-                
-                // Status badges
-                let status = [];
-                if (note.is_verified) status.push('✓ Verified');
-                if (note.is_owner) status.push('👤 Owner');
-                if (note.ai) status.push('🤖 AI Generated');
-                document.getElementById('modal-status').textContent = status.join(' • ') || 'Standard';
-                
-                // Download link
-                document.getElementById('modal-download').href = note.dl;
-                
-                // Open modal
-                modal.classList.add('open');
-                document.body.style.overflow = 'hidden';
-            }
-
-            function closeNoteModal() {
-                modal.classList.remove('open');
-                document.body.style.overflow = '';
-                currentNote = null;
-            }
-
-            modalClose.addEventListener('click', closeNoteModal);
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) closeNoteModal();
+            
+            // Mobile tab clicks
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchTab(btn.dataset.tab));
             });
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && modal.classList.contains('open')) {
-                    closeNoteModal();
-                }
+            
+            // Mobile menu
+            document.getElementById('mobile-menu-btn').addEventListener('click', openMobileSidebar);
+            
+            // Request access button
+            document.getElementById('request-access-btn').addEventListener('click', (e) => {
+                e.preventDefault();
+                openAccessModal();
             });
-
-            // Copy Link button
+            
+            // Copy link button
             document.getElementById('modal-copy-link').addEventListener('click', async () => {
                 if (!currentNote) return;
-                const url = currentNote.dl;
                 try {
-                    await navigator.clipboard.writeText(url);
+                    await navigator.clipboard.writeText(currentNote.dl);
                     const btn = document.getElementById('modal-copy-link');
                     const originalText = btn.textContent;
                     btn.textContent = 'Copied!';
@@ -650,153 +724,36 @@
                     console.error('Failed to copy:', err);
                 }
             });
-
+            
             // Download tracking
             document.getElementById('modal-download').addEventListener('click', () => {
                 if (currentNote) {
                     openNotesAPI.incrementDownloads(currentNote.name).catch(console.error);
                 }
             });
-
-            // ==================== NAVIGATION LINKS ====================
-
-            const navLinks = document.querySelectorAll('.app-nav a[href^="#"]');
-            navLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const tabId = link.getAttribute('href').substring(1);
-                    switchTab(tabId);
-                    
-                    navLinks.forEach(l => l.classList.remove('active'));
-                    link.classList.add('active');
-                });
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    if (!document.getElementById('note-modal').classList.contains('hidden')) {
+                        closeNoteModal();
+                    }
+                    if (!document.getElementById('access-modal').classList.contains('hidden')) {
+                        closeAccessModal();
+                    }
+                    if (!document.getElementById('mobile-sidebar').classList.contains('hidden')) {
+                        closeMobileSidebar();
+                    }
+                }
             });
-
-            // ==================== API EVENTS ====================
-
-            openNotesAPI.on('request:start', (data) => {
-                console.log('API Request:', data.url);
-            });
-
-            openNotesAPI.on('request:error', (data) => {
-                console.error('API Error:', data.error);
-            });
-
-            // ==================== HEALTH CHECK ====================
-
+            
+            // Health check
             openNotesAPI.healthCheck().then(healthy => {
                 if (!healthy) {
-                    console.warn('OpenNotes API may be unavailable');
-                    // Show API status banner
-                    document.getElementById('api-status-banner').classList.add('show');
+                    document.getElementById('api-status-banner').classList.remove('hidden');
                 }
             });
-
-            // ==================== REQUEST ACCESS MODAL ====================
-
-            const accessModal = document.getElementById('access-modal');
-            const accessModalClose = document.getElementById('access-modal-close');
-            const accessCancelBtn = document.getElementById('access-cancel-btn');
-            const accessSubmitBtn = document.getElementById('access-submit-btn');
-            const accessForm = document.getElementById('access-request-form');
-            const accessModalBody = document.getElementById('access-modal-form');
-
-            // Request Access button in nav
-            const requestAccessBtn = document.getElementById('request-access-btn');
-            if (requestAccessBtn) {
-                requestAccessBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    openAccessModal();
-                });
-            }
-
-            accessModalClose.addEventListener('click', closeAccessModal);
-            accessCancelBtn.addEventListener('click', closeAccessModal);
-            accessModal.addEventListener('click', (e) => {
-                if (e.target === accessModal) closeAccessModal();
-            });
-
-            accessSubmitBtn.addEventListener('click', submitAccessRequest);
-
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && accessModal.classList.contains('open')) {
-                    closeAccessModal();
-                }
-            });
-
-            function submitAccessRequest() {
-                const name = document.getElementById('access-name').value;
-                const email = document.getElementById('access-email').value;
-                const tier = document.getElementById('access-tier').value;
-                const useCase = document.getElementById('access-use-case').value;
-                const website = document.getElementById('access-website').value;
-
-                if (!name || !email || !tier || !useCase) {
-                    alert('Please fill in all required fields.');
-                    return;
-                }
-
-                // Show success state
-                accessModalBody.innerHTML = `
-                    <div class="access-success">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                        </svg>
-                        <h3>Request Submitted!</h3>
-                        <p>Thank you, ${name}! We'll review your request and send your API key to <strong>${email}</strong> within 24-48 hours.</p>
-                        <p style="margin-top: var(--spacing-md); font-size: 0.875rem; color: var(--text-muted);">
-                            Selected tier: <strong>${tier.charAt(0).toUpperCase() + tier.slice(1)}</strong>
-                        </p>
-                    </div>
-                `;
-
-                // Hide cancel button, change submit to close
-                accessCancelBtn.style.display = 'none';
-                accessSubmitBtn.textContent = 'Close';
-                accessSubmitBtn.onclick = closeAccessModal;
-
-                // Log the request (in production, this would send to a backend)
-                console.log('API Access Request:', { name, email, tier, useCase, website });
-            }
         });
-
-        // Global functions for opening/closing access modal
-        function openAccessModal() {
-            const modal = document.getElementById('access-modal');
-            modal.classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeAccessModal() {
-            const modal = document.getElementById('access-modal');
-            modal.classList.remove('open');
-            document.body.style.overflow = '';
-            
-            // Reset form after modal close
-            setTimeout(() => {
-                const accessForm = document.getElementById('access-request-form');
-                if (accessForm) {
-                    accessForm.reset();
-                }
-                const accessModalBody = document.getElementById('access-modal-form');
-                const accessCancelBtn = document.getElementById('access-cancel-btn');
-                const accessSubmitBtn = document.getElementById('access-submit-btn');
-                
-                // Check if we need to restore the form
-                if (!accessForm) {
-                    location.reload(); // Simple reset if form was replaced
-                } else {
-                    accessCancelBtn.style.display = '';
-                    accessSubmitBtn.innerHTML = `
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                        </svg>
-                        Submit Request
-                    `;
-                    accessSubmitBtn.onclick = null;
-                }
-            }, 300);
-        }
     </script>
 </body>
 </html>
