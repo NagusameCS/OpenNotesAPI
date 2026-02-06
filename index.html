@@ -39,6 +39,9 @@
     <!-- Material Symbols -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
     
+    <!-- Component Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
         .sidebar-link.active { background: #161b22; border-left: 3px solid #f6821f; }
@@ -642,14 +645,14 @@
             });
             
             // Update stats
-            openNotesAPI.getStats().then(stats => {
+            openNotesAPI.getStatistics().then(stats => {
                 if (stats) {
-                    document.getElementById('stat-total').textContent = (stats.total || 0).toLocaleString();
-                    document.getElementById('stat-views').textContent = (stats.views || 0).toLocaleString();
-                    document.getElementById('stat-downloads').textContent = (stats.downloads || 0).toLocaleString();
-                    document.getElementById('stat-authors').textContent = (stats.authors || 0).toLocaleString();
+                    document.getElementById('stat-total').textContent = (stats.totalNotes || 0).toLocaleString();
+                    document.getElementById('stat-views').textContent = (stats.noteViews || 0).toLocaleString();
+                    document.getElementById('stat-downloads').textContent = (stats.totalDownloads || 0).toLocaleString();
+                    document.getElementById('stat-authors').textContent = Object.keys(stats.authors || {}).length.toLocaleString();
                 }
-            }).catch(() => {});
+            }).catch(err => console.error('Stats error:', err));
             
             // ==================== TAB NAVIGATION ====================
             
