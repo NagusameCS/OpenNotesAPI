@@ -1239,3 +1239,85 @@ input, select, textarea {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
+
+/* ==================== DEVELOPER CONSOLE ==================== */
+.dev-console {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 300px;
+  background: #1e1e1e;
+  border-top: 2px solid #3b82f6;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+.dev-console.hidden {
+  display: none;
+}
+
+.dev-console-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: #2d2d2d;
+  color: #e0e0e0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dev-console-header .icon-btn {
+  color: #9ca3af;
+}
+
+.dev-console-header .icon-btn:hover {
+  color: #fff;
+}
+
+.dev-console-output {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.dev-log {
+  padding: 4px 16px;
+  border-bottom: 1px solid #2d2d2d;
+  display: flex;
+  gap: 12px;
+}
+
+.dev-log:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dev-log.log {
+  color: #e0e0e0;
+}
+
+.dev-log.warn {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.dev-log.error {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.dev-log-time {
+  color: #6b7280;
+  min-width: 70px;
+  flex-shrink: 0;
+}
+
+.dev-log-msg {
+  white-space: pre-wrap;
+  word-break: break-all;
+}

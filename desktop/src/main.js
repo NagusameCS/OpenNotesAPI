@@ -3,6 +3,94 @@
  * Connects to OpenNotesAPI, provides editor, offline storage
  */
 
+// ==================== DEVELOPER CONSOLE ====================
+const devConsole = {
+  logs: [],
+  maxLogs: 200,
+  
+  init() {
+    // Intercept console methods
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+    const originalError = console.error;
+    
+    console.log = (...args) => {
+      this.addLog('log', args);
+      originalLog.apply(console, args);
+    };
+    
+    console.warn = (...args) => {
+      this.addLog('warn', args);
+      originalWarn.apply(console, args);
+    };
+    
+    console.error = (...args) => {
+      this.addLog('error', args);
+      originalError.apply(console, args);
+    };
+    
+    // Catch unhandled errors
+    window.addEventListener('error', (e) => {
+      this.addLog('error', [`Uncaught: ${e.message}`, `at ${e.filename}:${e.lineno}`]);
+    });
+    
+    window.addEventListener('unhandledrejection', (e) => {
+      this.addLog('error', [`Unhandled Promise: ${e.reason}`]);
+    });
+  },
+  
+  addLog(type, args) {
+    const time = new Date().toLocaleTimeString();
+    const message = args.map(a => {
+      if (typeof a === 'object') {
+        try { return JSON.stringify(a, null, 2); } 
+        catch { return String(a); }
+      }
+      return String(a);
+    }).join(' ');
+    
+    this.logs.push({ time, type, message });
+    if (this.logs.length > this.maxLogs) {
+      this.logs.shift();
+    }
+    
+    this.render();
+  },
+  
+  render() {
+    const output = document.getElementById('dev-console-output');
+    if (!output) return;
+    
+    output.innerHTML = this.logs.map(log => `
+      <div class="dev-log ${log.type}">
+        <span class="dev-log-time">${log.time}</span>
+        <span class="dev-log-msg">${this.escapeHtml(log.message)}</span>
+      </div>
+    `).join('');
+    
+    output.scrollTop = output.scrollHeight;
+  },
+  
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+};
+
+// Initialize console interceptor immediately
+devConsole.init();
+
+function toggleDevConsole() {
+  const panel = document.getElementById('dev-console');
+  if (panel) {
+    panel.classList.toggle('hidden');
+    if (!panel.classList.contains('hidden')) {
+      devConsole.render();
+    }
+  }
+}
+
 // ==================== CONFIGURATION ====================
 const CONFIG = {
   API_BASE: 'https://open-notes.tebby2008-li.workers.dev',
@@ -1243,7 +1331,7 @@ async function init() {
     // Initialize HTTP client for API calls (to set custom headers)
     console.log('[INIT] Initializing HTTP client...');
     await initHttpClient();
-    console.log('[INIT] HTTP client ready, httpClient =', !!httpClient);
+    console.log('[INIT] HTTP client ready, tauriInvoke =', !!tauriInvoke);
     
     // Initialize theme
     initTheme();
@@ -1335,6 +1423,12 @@ async function init() {
     if (e.key === 'Escape') {
       closeNoteModal();
       document.getElementById('sidebar')?.classList.remove('open');
+      document.getElementById('dev-console')?.classList.add('hidden');
+    }
+    // Cmd/Ctrl + ` to toggle dev console
+    if ((e.metaKey || e.ctrlKey) && e.key === '`') {
+      e.preventDefault();
+      toggleDevConsole();
     }
   });
   
