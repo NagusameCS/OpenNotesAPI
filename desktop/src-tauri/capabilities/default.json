@@ -15,9 +15,8 @@
     {
       "identifier": "http:allow-fetch",
       "allow": [
-        { "url": "https://open-notes.tebby2008-li.workers.dev/*" },
-        { "url": "https://*.githubusercontent.com/*" },
-        { "url": "https://opennotes.pages.dev/*" }
+        { "url": "https://*" },
+        { "url": "http://*" }
       ]
     }
   ]

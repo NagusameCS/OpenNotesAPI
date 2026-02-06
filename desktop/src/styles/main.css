@@ -749,6 +749,12 @@ input, select, textarea {
   gap: 12px;
 }
 
+.editor-actions .btn .material-symbols-rounded {
+  font-size: 18px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
 /* ==================== UPLOAD ==================== */
 .upload-container {
   max-width: 600px;

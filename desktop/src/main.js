@@ -13,8 +13,8 @@ const CONFIG = {
   NOTES_PER_PAGE: 20, // Match API default
 };
 
-// HTTP client - uses Tauri plugin if available, falls back to fetch
-let httpClient = null;
+// HTTP client - uses Tauri custom command if available, falls back to fetch
+let tauriInvoke = null;
 
 async function initHttpClient() {
   try {
@@ -22,53 +22,53 @@ async function initHttpClient() {
     console.log('[HTTP] window.__TAURI__ =', window.__TAURI__);
     
     if (window.__TAURI__) {
-      console.log('[HTTP] Tauri detected, importing plugin-http...');
-      const httpModule = await import('@tauri-apps/plugin-http');
-      console.log('[HTTP] Plugin loaded:', Object.keys(httpModule));
-      httpClient = httpModule.fetch;
-      console.log('[HTTP] Using Tauri HTTP client - can set custom Origin headers');
+      console.log('[HTTP] Tauri detected, importing core...');
+      const { invoke } = await import('@tauri-apps/api/core');
+      tauriInvoke = invoke;
+      console.log('[HTTP] Using Tauri custom command for API calls');
     } else {
       console.warn('[HTTP] Not running in Tauri, Origin headers will be blocked by browser');
     }
   } catch (e) {
-    console.error('[HTTP] Failed to initialize Tauri HTTP client:', e);
+    console.error('[HTTP] Failed to initialize Tauri:', e);
     console.error('[HTTP] Error details:', e.message, e.stack);
   }
 }
 
 async function httpFetch(url, options = {}) {
-  // Add required headers for API access
-  const headers = {
-    'Content-Type': 'application/json',
-    'Origin': 'https://nagusamecs.github.io',
-    'Referer': 'https://nagusamecs.github.io/OpenNotesAPI/',
-    ...options.headers,
-  };
-  
   console.log('[FETCH] Request:', url);
-  console.log('[FETCH] Using httpClient:', !!httpClient);
-  console.log('[FETCH] Headers:', JSON.stringify(headers));
+  console.log('[FETCH] Using Tauri invoke:', !!tauriInvoke);
   
   try {
-    let response;
-    if (httpClient) {
-      // Use Tauri HTTP client (can set any headers)
-      console.log('[FETCH] Using Tauri native HTTP...');
-      response = await httpClient(url, { ...options, headers });
+    if (tauriInvoke) {
+      // Use Tauri custom command (Rust handles headers)
+      console.log('[FETCH] Calling Rust api_fetch command...');
+      const result = await tauriInvoke('api_fetch', { 
+        url: url,
+        method: options.method || 'GET'
+      });
+      
+      console.log('[FETCH] Rust response status:', result.status, 'ok:', result.ok);
+      
+      // Wrap in fetch-like response object
+      return {
+        ok: result.ok,
+        status: result.status,
+        json: async () => JSON.parse(result.body),
+        text: async () => result.body,
+        blob: async () => new Blob([result.body]),
+      };
     } else {
       // Browser fallback (Origin header will be ignored)
       console.warn('[FETCH] Using browser fetch - Origin header will be stripped!');
-      response = await fetch(url, { ...options, headers, mode: 'cors' });
+      const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      };
+      const response = await fetch(url, { ...options, headers, mode: 'cors' });
+      console.log('[FETCH] Browser response status:', response.status);
+      return response;
     }
-    
-    console.log('[FETCH] Response status:', response.status, response.statusText);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[FETCH] Error response body:', errorText);
-    }
-    
-    return response;
   } catch (e) {
     console.error('[FETCH] Request failed:', e);
     console.error('[FETCH] Error type:', e.constructor.name);
@@ -874,6 +874,11 @@ const editor = {
       this.exportDocument();
     });
     
+    // Upload to OpenNotes
+    document.getElementById('upload-doc')?.addEventListener('click', () => {
+      this.uploadDocument();
+    });
+    
     // Load saved draft
     const draft = storage.get('draft');
     if (draft) {
@@ -1023,6 +1028,53 @@ const editor = {
     URL.revokeObjectURL(url);
     
     showToast('Document exported', 'success');
+  },
+  
+  uploadDocument() {
+    const title = document.getElementById('doc-title').value || 'Untitled';
+    const content = document.getElementById('editor').innerHTML;
+    
+    // Create HTML file from editor content
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>${escapeHtml(title)}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; line-height: 1.6; }
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.25rem; }
+    pre { background: #f5f5f5; padding: 16px; border-radius: 8px; overflow-x: auto; }
+    code { font-family: monospace; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+  </style>
+</head>
+<body>
+  <h1>${escapeHtml(title)}</h1>
+  ${content}
+</body>
+</html>`;
+    
+    // Create a File object
+    const blob = new Blob([html], { type: 'text/html' });
+    const file = new File([blob], `${title}.html`, { type: 'text/html' });
+    
+    // Switch to upload view and add the file to queue
+    switchView('upload');
+    
+    // Use the uploader to handle the file
+    setTimeout(() => {
+      uploader.handleFiles([file]);
+      
+      // Pre-fill the form with document info
+      const titleInput = document.querySelector('#upload-form input[name="title"]');
+      if (titleInput) titleInput.value = title;
+      
+      showToast('Document added to upload queue', 'success');
+    }, 100);
   },
 };
 
