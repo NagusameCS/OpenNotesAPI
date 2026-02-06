@@ -1,0 +1,43 @@
+# OpenNotes API Gateway - Cloudflare Worker Configuration
+# 
+# DEPLOYMENT INSTRUCTIONS:
+# 1. Install Wrangler: npm install -g wrangler
+# 2. Login to Cloudflare: wrangler login
+# 3. Set secrets:
+#    wrangler secret put OPENNOTES_API_KEY
+#    wrangler secret put APP_TOKENS
+#    wrangler secret put ADMIN_TOKEN
+# 4. Deploy: wrangler deploy
+#
+# NEVER commit actual secrets to this file!
+
+name = "opennotes-api-gateway"
+main = "index.js"
+compatibility_date = "2024-01-01"
+
+# Production settings
+[env.production]
+name = "opennotes-api-gateway"
+routes = [
+  { pattern = "api.yourdomain.com/*", zone_name = "yourdomain.com" }
+]
+
+# Development settings
+[env.development]
+name = "opennotes-api-gateway-dev"
+
+# Secrets (set via wrangler secret put)
+# OPENNOTES_API_KEY - The actual API key for OpenNotes
+# APP_TOKENS - JSON object of authorized app tokens
+# ADMIN_TOKEN - Admin token for management
+
+# Example APP_TOKENS format (set as secret):
+# {
+#   "app-1": {
+#     "token": "random-secure-token-here",
+#     "active": true,
+#     "rateLimit": 100,
+#     "name": "My App",
+#     "owner": "developer@example.com"
+#   }
+# }

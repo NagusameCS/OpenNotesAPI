@@ -3,7 +3,7 @@
 A comprehensive API integration for the [OpenNotes](https://opennotes.pages.dev) educational notes platform.
 
 ![OpenNotes API](https://img.shields.io/badge/OpenNotes-API-blue)
-![Version](https://img.shields.io/badge/version-1.0.0-green)
+![Version](https://img.shields.io/badge/version-2.0.0-green)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 ## Overview
@@ -14,6 +14,17 @@ OpenNotes API provides complete programmatic access to the OpenNotes platform, e
 - **Search** - Full-text search with advanced filtering
 - **Track Analytics** - View and download counters, statistics
 - **UI Components** - Ready-to-use browser, search, and analytics widgets
+
+## Security Architecture
+
+This SDK uses a **secure gateway proxy** pattern for A+ security:
+
+- **No exposed API keys** - All secrets are stored server-side in the Cloudflare Worker
+- **App token authorization** - Third-party apps can be authorized with unique tokens
+- **Rate limiting** - Built-in protection against abuse
+- **Origin validation** - Only approved origins can access the API
+
+See the [worker/README.md](worker/README.md) for gateway deployment instructions.
 
 ## Quick Start
 

@@ -4,31 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Examples - OpenNotes API</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png">
+    
     <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    
     <style>
         .examples-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: var(--spacing-lg);
+            padding: 24px;
         }
         
         .example-section {
-            background: var(--bg-primary);
-            border-radius: var(--border-radius-lg);
-            margin-bottom: var(--spacing-lg);
-            box-shadow: var(--shadow-sm);
+            background: white;
+            border-radius: var(--radius);
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
             overflow: hidden;
         }
         
         .example-header {
-            padding: var(--spacing-lg);
-            border-bottom: 1px solid var(--border-color);
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
         }
         
         .example-header h2 {
             font-size: 1.25rem;
             font-weight: 600;
-            margin-bottom: var(--spacing-xs);
+            margin-bottom: 4px;
         }
         
         .example-header p {
@@ -43,14 +51,14 @@
         }
         
         .example-code {
-            background: #0d1117;
-            color: #e6edf3;
-            padding: var(--spacing-lg);
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 0.875rem;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 24px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 0.85rem;
             line-height: 1.6;
             overflow-x: auto;
-            border-right: 1px solid var(--border-color);
+            border-right: 1px solid var(--border);
         }
         
         .example-code pre {
@@ -59,45 +67,55 @@
         }
         
         .example-output {
-            padding: var(--spacing-lg);
-            background: var(--bg-secondary);
+            padding: 24px;
+            background: var(--bg);
         }
         
         .example-actions {
             display: flex;
-            gap: var(--spacing-sm);
-            margin-bottom: var(--spacing-md);
+            gap: 8px;
+            margin-bottom: 16px;
         }
         
         .btn-run {
-            background: var(--primary-color);
+            background: var(--text);
             color: white;
-            padding: var(--spacing-sm) var(--spacing-lg);
-            border-radius: var(--border-radius);
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
             font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all var(--speed) var(--ease-smooth);
         }
         
         .btn-run:hover {
-            background: var(--primary-hover);
+            background: var(--text-secondary);
         }
         
         .btn-copy {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            padding: var(--spacing-sm) var(--spacing-md);
-            border-radius: var(--border-radius);
+            background: white;
+            color: var(--text);
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all var(--speed) var(--ease-smooth);
+        }
+        
+        .btn-copy:hover {
+            border-color: var(--text-muted);
         }
         
         .output-area {
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            padding: var(--spacing-md);
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
             min-height: 200px;
             max-height: 400px;
             overflow-y: auto;
             font-family: monospace;
-            font-size: 0.875rem;
+            font-size: 0.85rem;
         }
         
         .output-area.loading {
@@ -108,7 +126,7 @@
         }
         
         .live-demo {
-            padding: var(--spacing-lg);
+            padding: 24px;
         }
         
         @media (max-width: 1024px) {
@@ -118,7 +136,7 @@
             
             .example-code {
                 border-right: none;
-                border-bottom: 1px solid var(--border-color);
+                border-bottom: 1px solid var(--border);
             }
         }
         
@@ -131,12 +149,29 @@
     </style>
 </head>
 <body>
-    <header class="page-header">
-        <div class="container">
-            <h1 class="page-title">📝 Code Examples</h1>
-            <p class="page-subtitle">Interactive examples to help you get started with the OpenNotes API</p>
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="app-logo">
+                <img src="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png" alt="OpenNotes">
+                OpenNotes<span>API</span>
+            </div>
+            <nav class="app-nav">
+                <a href="index.html">Browse</a>
+                <a href="docs.html">API Docs</a>
+                <a href="examples.html" class="active">Examples</a>
+                <a href="https://opennotes.pages.dev" target="_blank">OpenNotes</a>
+                <a href="https://github.com/Tebby2008/OpenNotes" target="_blank">GitHub</a>
+            </nav>
         </div>
     </header>
+    
+    <div class="page-header">
+        <div class="container">
+            <h1 class="page-title">Code Examples</h1>
+            <p class="text-secondary">Interactive examples to help you get started with the OpenNotes API</p>
+        </div>
+    </div>
 
     <div class="examples-container">
         <!-- Example 1: Get All Notes -->

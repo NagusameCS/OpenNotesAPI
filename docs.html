@@ -4,33 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>API Documentation - OpenNotes API</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png">
+    
     <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    
     <style>
         .docs-container {
             display: grid;
             grid-template-columns: 280px 1fr;
-            gap: var(--spacing-lg);
+            gap: 24px;
             max-width: 1400px;
             margin: 0 auto;
-            padding: var(--spacing-lg);
+            padding: 24px;
         }
         
         .docs-sidebar {
             position: sticky;
-            top: var(--spacing-lg);
+            top: 96px;
             height: fit-content;
-            background: var(--bg-primary);
-            border-radius: var(--border-radius);
-            padding: var(--spacing-lg);
-            box-shadow: var(--shadow-sm);
+            background: white;
+            border-radius: var(--radius);
+            padding: 24px;
+            border: 1px solid var(--border);
         }
         
         .docs-sidebar h3 {
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             font-weight: 600;
             color: var(--text-muted);
             text-transform: uppercase;
-            margin-bottom: var(--spacing-sm);
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            margin-top: 20px;
+        }
+        
+        .docs-sidebar h3:first-child {
+            margin-top: 0;
         }
         
         .docs-nav {
@@ -38,132 +52,133 @@
         }
         
         .docs-nav li {
-            margin-bottom: var(--spacing-xs);
+            margin-bottom: 4px;
         }
         
         .docs-nav a {
             display: block;
-            padding: var(--spacing-xs) var(--spacing-sm);
+            padding: 6px 12px;
             color: var(--text-secondary);
-            border-radius: var(--border-radius-sm);
-            transition: all var(--transition-fast);
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            transition: all var(--speed) var(--ease-smooth);
         }
         
         .docs-nav a:hover,
         .docs-nav a.active {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
+            background: var(--bg);
+            color: var(--text);
         }
         
         .docs-nav .sub-nav {
-            margin-left: var(--spacing-md);
-            font-size: 0.875rem;
+            margin-left: 16px;
+            font-size: 0.85rem;
         }
         
         .docs-content {
-            background: var(--bg-primary);
-            border-radius: var(--border-radius);
-            padding: var(--spacing-xl);
-            box-shadow: var(--shadow-sm);
+            background: white;
+            border-radius: var(--radius);
+            padding: 32px;
+            border: 1px solid var(--border);
         }
         
         .docs-content h1 {
             font-size: 2rem;
             font-weight: 700;
-            margin-bottom: var(--spacing-lg);
-            padding-bottom: var(--spacing-md);
-            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
         }
         
         .docs-content h2 {
             font-size: 1.5rem;
             font-weight: 600;
-            margin: var(--spacing-xl) 0 var(--spacing-md);
-            color: var(--text-primary);
+            margin: 32px 0 16px;
+            color: var(--text);
         }
         
         .docs-content h3 {
             font-size: 1.25rem;
             font-weight: 600;
-            margin: var(--spacing-lg) 0 var(--spacing-sm);
+            margin: 24px 0 8px;
         }
         
         .docs-content p {
-            margin-bottom: var(--spacing-md);
+            margin-bottom: 16px;
             color: var(--text-secondary);
             line-height: 1.7;
         }
         
         .docs-content ul, .docs-content ol {
-            margin: var(--spacing-md) 0;
-            padding-left: var(--spacing-lg);
+            margin: 16px 0;
+            padding-left: 24px;
         }
         
         .docs-content li {
-            margin-bottom: var(--spacing-sm);
+            margin-bottom: 8px;
             color: var(--text-secondary);
         }
         
         .code-block {
-            background: #0d1117;
-            color: #e6edf3;
-            padding: var(--spacing-md);
-            border-radius: var(--border-radius);
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: var(--radius-sm);
             overflow-x: auto;
-            margin: var(--spacing-md) 0;
-            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-            font-size: 0.875rem;
+            margin: 16px 0;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 0.85rem;
             line-height: 1.6;
         }
         
         .code-inline {
-            background: var(--bg-tertiary);
+            background: var(--bg);
             padding: 2px 6px;
-            border-radius: var(--border-radius-sm);
+            border-radius: var(--radius-xs);
             font-family: monospace;
-            font-size: 0.875em;
-            color: var(--primary-color);
+            font-size: 0.85em;
+            color: var(--text);
         }
         
         .method-badge {
             display: inline-block;
             padding: 2px 8px;
-            border-radius: var(--border-radius-sm);
-            font-size: 0.75rem;
+            border-radius: var(--radius-xs);
+            font-size: 0.7rem;
             font-weight: 700;
             text-transform: uppercase;
-            margin-right: var(--spacing-sm);
+            margin-right: 8px;
         }
         
-        .method-get { background: #0078d4; color: white; }
-        .method-post { background: #005a9e; color: white; }
-        .method-put { background: #004578; color: white; }
-        .method-delete { background: #1b1f23; color: white; }
+        .method-get { background: #22c55e; color: white; }
+        .method-post { background: #3b82f6; color: white; }
+        .method-put { background: #f59e0b; color: white; }
+        .method-delete { background: #ef4444; color: white; }
         
         .endpoint-path {
             font-family: monospace;
-            background: var(--bg-tertiary);
-            padding: var(--spacing-xs) var(--spacing-sm);
-            border-radius: var(--border-radius-sm);
+            background: var(--bg);
+            padding: 4px 8px;
+            border-radius: var(--radius-xs);
         }
         
         .params-table {
             width: 100%;
             border-collapse: collapse;
-            margin: var(--spacing-md) 0;
+            margin: 16px 0;
         }
         
         .params-table th,
         .params-table td {
             text-align: left;
-            padding: var(--spacing-sm);
-            border-bottom: 1px solid var(--border-color);
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
         }
         
         .params-table th {
             font-weight: 600;
-            color: var(--text-primary);
-            background: var(--bg-secondary);
+            color: var(--text);
+            background: var(--bg);
         }
         
         .params-table td {
@@ -171,7 +186,7 @@
         }
         
         .param-required {
-            color: var(--error-color);
+            color: #ef4444;
             font-weight: 600;
         }
         
@@ -180,28 +195,28 @@
         }
         
         .response-example {
-            background: var(--bg-secondary);
-            border-radius: var(--border-radius);
-            padding: var(--spacing-md);
-            margin: var(--spacing-md) 0;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            margin: 16px 0;
         }
         
         .warning-box {
-            background: #deecf9;
-            border-left: 4px solid #005a9e;
-            padding: var(--spacing-md);
-            border-radius: var(--border-radius-sm);
-            margin: var(--spacing-md) 0;
-            color: #004578;
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            margin: 16px 0;
+            color: #92400e;
         }
         
         .info-box {
-            background: #deecf9;
-            border-left: 4px solid #0078d4;
-            padding: var(--spacing-md);
-            border-radius: var(--border-radius-sm);
-            margin: var(--spacing-md) 0;
-            color: #004578;
+            background: var(--accent-light);
+            border-left: 4px solid var(--accent);
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            margin: 16px 0;
+            color: var(--text);
         }
         
         @media (max-width: 1024px) {
@@ -216,12 +231,29 @@
     </style>
 </head>
 <body>
-    <header class="page-header">
-        <div class="container">
-            <h1 class="page-title">📚 OpenNotes API Documentation</h1>
-            <p class="page-subtitle">Complete reference for the OpenNotes API integration</p>
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="app-logo">
+                <img src="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png" alt="OpenNotes">
+                OpenNotes<span>API</span>
+            </div>
+            <nav class="app-nav">
+                <a href="index.html">Browse</a>
+                <a href="docs.html" class="active">API Docs</a>
+                <a href="examples.html">Examples</a>
+                <a href="https://opennotes.pages.dev" target="_blank">OpenNotes</a>
+                <a href="https://github.com/Tebby2008/OpenNotes" target="_blank">GitHub</a>
+            </nav>
         </div>
     </header>
+    
+    <div class="page-header">
+        <div class="container">
+            <h1 class="page-title">API Documentation</h1>
+            <p class="text-secondary">Complete reference for the OpenNotes API integration</p>
+        </div>
+    </div>
 
     <div class="docs-container">
         <!-- Sidebar Navigation -->

@@ -16,11 +16,16 @@
 
 class OpenNotesAPIClient {
     constructor(options = {}) {
-        this.apiUrl = options.apiUrl || CONFIG.API_URL;
-        this.apiKey = options.apiKey || CONFIG.API_KEY;
+        // Use gateway if configured, otherwise fall back to direct API
+        this.gatewayUrl = options.gatewayUrl || CONFIG.GATEWAY_URL;
+        this.apiUrl = this.gatewayUrl || options.apiUrl || CONFIG.API_URL;
+        this.appToken = options.appToken || CONFIG.APP_TOKEN;
         this.timeout = options.timeout || CONFIG.DEFAULTS.TIMEOUT;
         this.retries = options.retries || 3;
         this.retryDelay = options.retryDelay || 1000;
+        
+        // Whether we're using the secure gateway
+        this.useGateway = !!this.gatewayUrl;
         
         // Cache storage
         this.cache = new Map();
@@ -180,10 +185,13 @@ class OpenNotesAPIClient {
             }
         };
         
-        // Add authorization if API key is provided
-        if (this.apiKey) {
-            fetchOptions.headers['Authorization'] = this.apiKey;
+        // Add authorization header based on mode
+        if (this.useGateway && this.appToken) {
+            // Using gateway with app token
+            fetchOptions.headers['X-App-Token'] = this.appToken;
         }
+        // Note: When using the gateway from the official frontend (nagusamecs.github.io),
+        // no token is needed - the gateway allows official origins without a token.
 
         if (body && method !== 'GET') {
             fetchOptions.body = JSON.stringify(body);

@@ -2,16 +2,22 @@
  * OpenNotes API Configuration
  * This file contains all configuration settings for the OpenNotes API integration.
  * 
- * IMPORTANT: This file should be kept secure as it contains the API key.
+ * SECURITY: API keys are stored server-side in the gateway proxy.
+ * The frontend never has direct access to the OpenNotes API key.
  */
 
 const CONFIG = {
-    // Base URL of the OpenNotes Worker API
+    // Gateway Proxy URL (handles authentication securely)
+    // Replace with your deployed Cloudflare Worker gateway URL
+    // See /worker folder for the gateway implementation
+    GATEWAY_URL: '', // e.g., 'https://opennotes-gateway.your-subdomain.workers.dev'
+    
+    // Direct API URL (for reference - requires gateway for CORS)
     API_URL: 'https://open-notes.tebby2008-li.workers.dev',
     
-    // API Key for authenticated requests
-    // This key is authorized for use from nagusamecs.github.io
-    API_KEY: 'apreHI*ru$axi!uCeCR&D?EkuhobrUwLRasI&heD_frIsUYuphIprIche&h2TawRE@raPLP!6vEdoJitRiFL7i*OdR*Drib=j0bIquhuV4=R57I_WLJE8re&wU7e9Rwrag6xlsuch6phLnesticeQlrofidAhlyomlswum$d3EwroPicedr5h1qlkOg4Sp',
+    // App Token for gateway authentication (optional)
+    // Leave empty if using from official frontend (nagusamecs.github.io)
+    APP_TOKEN: '',
     
     // OpenNotes GitHub repository base URL
     REPO_URL: 'https://github.com/Tebby2008/OpenNotes',

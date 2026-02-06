@@ -8,292 +8,49 @@
     <title>OpenNotes API</title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>�</text></svg>">
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png">
     
     <!-- Stylesheets -->
     <link rel="stylesheet" href="css/styles.css">
     
+    <!-- Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    
     <style>
-        /* Page-specific styles - Azure Monotone */
-        .app-header {
-            background: linear-gradient(135deg, #0078d4 0%, #004578 100%);
-            color: white;
-            padding: var(--spacing-xl) 0;
-        }
-        
-        .app-header .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .app-logo {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-        
-        .app-nav {
-            display: flex;
-            gap: var(--spacing-md);
-        }
-        
-        .app-nav a {
-            color: rgba(255, 255, 255, 0.8);
-            padding: var(--spacing-sm) var(--spacing-md);
-            border-radius: var(--border-radius);
-            transition: all var(--transition-fast);
-        }
-        
-        .app-nav a:hover,
-        .app-nav a.active {
-            color: white;
-            background: rgba(255, 255, 255, 0.15);
-        }
-        
-        .app-nav a.nav-highlight {
-            background: rgba(255, 255, 255, 0.25);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            font-weight: 600;
-        }
-        
-        .app-nav a.nav-highlight:hover {
-            background: rgba(255, 255, 255, 0.35);
-        }
-        
-        /* API Status Banner */
-        .api-status-banner {
-            background: var(--primary-dark);
-            color: white;
-            padding: var(--spacing-sm) var(--spacing-md);
-            text-align: center;
-            display: none;
-        }
-        
-        .api-status-banner.show {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: var(--spacing-sm);
-        }
-        
-        .api-status-banner .request-link {
-            color: var(--primary-light);
-            text-decoration: underline;
-            cursor: pointer;
-        }
-        
-        /* Request Access Modal */
-        .access-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1100;
-            opacity: 0;
-            visibility: hidden;
-            transition: all var(--transition-normal);
-        }
-        
-        .access-modal.open {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .access-modal-content {
-            background: var(--bg-primary);
-            border-radius: var(--border-radius-lg);
-            max-width: 500px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: var(--shadow-lg);
-            transform: translateY(20px);
-            transition: transform var(--transition-normal);
-        }
-        
-        .access-modal.open .access-modal-content {
-            transform: translateY(0);
-        }
-        
-        .access-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: var(--spacing-lg);
-            border-bottom: 1px solid var(--border-color);
-            background: linear-gradient(135deg, #0078d4 0%, #004578 100%);
-            color: white;
-            border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
-        }
-        
-        .access-modal-header h2 {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-        }
-        
-        .access-modal-body {
-            padding: var(--spacing-lg);
-        }
-        
-        .access-form-group {
-            margin-bottom: var(--spacing-md);
-        }
-        
-        .access-form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: var(--spacing-xs);
-            color: var(--text-primary);
-        }
-        
-        .access-form-group input,
-        .access-form-group textarea,
-        .access-form-group select {
-            width: 100%;
-            padding: var(--spacing-sm) var(--spacing-md);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            font-size: 1rem;
-            transition: border-color var(--transition-fast);
-        }
-        
-        .access-form-group input:focus,
-        .access-form-group textarea:focus,
-        .access-form-group select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.15);
-        }
-        
-        .access-form-group textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-        
-        .access-info-box {
-            background: var(--primary-lighter);
-            border: 1px solid var(--primary-light);
-            border-radius: var(--border-radius);
-            padding: var(--spacing-md);
-            margin-bottom: var(--spacing-md);
-        }
-        
-        .access-info-box h4 {
-            color: var(--primary-dark);
-            margin-bottom: var(--spacing-sm);
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-        }
-        
-        .access-info-box ul {
-            margin-left: var(--spacing-lg);
-            color: var(--text-secondary);
-        }
-        
-        .access-info-box li {
-            margin-bottom: var(--spacing-xs);
-        }
-        
-        .access-modal-footer {
-            display: flex;
-            gap: var(--spacing-sm);
-            padding: var(--spacing-lg);
-            border-top: 1px solid var(--border-color);
-        }
-        
-        .access-modal-footer .btn {
-            flex: 1;
-        }
-        
-        .access-success {
-            text-align: center;
-            padding: var(--spacing-lg) 0;
-        }
-        
-        .access-success svg {
-            width: 64px;
-            height: 64px;
-            color: var(--primary-color);
-            margin-bottom: var(--spacing-md);
-        }
-        
-        .access-success h3 {
-            color: var(--text-primary);
-            margin-bottom: var(--spacing-sm);
-        }
-        
-        .access-success p {
-            color: var(--text-secondary);
-        }
-        
-        .hero {
-            background: var(--bg-secondary);
-            padding: var(--spacing-xl) * 2 0;
-            text-align: center;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .hero h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: var(--spacing-md);
-            color: var(--text-primary);
-            letter-spacing: -1px;
-        }
-        
-        .hero p {
-            font-size: 1.125rem;
-            color: var(--text-secondary);
-            max-width: 600px;
-            margin: 0 auto var(--spacing-lg);
-        }
-        
-        .hero-search {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        
+        /* Page-specific styles - Clean White */
         .main-tabs {
             display: flex;
             justify-content: center;
-            gap: var(--spacing-sm);
-            padding: var(--spacing-md);
-            background: var(--bg-primary);
-            border-bottom: 1px solid var(--border-color);
+            gap: 8px;
+            padding: 16px;
+            background: white;
+            border-bottom: 1px solid var(--border);
         }
         
         .tab-btn {
-            padding: var(--spacing-sm) var(--spacing-lg);
-            border-radius: var(--border-radius);
+            padding: 10px 24px;
+            border-radius: var(--radius-sm);
             color: var(--text-secondary);
             font-weight: 500;
-            transition: all var(--transition-fast);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all var(--speed) var(--ease-smooth);
         }
         
         .tab-btn:hover {
-            background: var(--bg-secondary);
-            color: var(--text-primary);
+            background: var(--bg);
+            color: var(--text);
         }
         
         .tab-btn.active {
-            background: var(--primary-color);
+            background: var(--text);
             color: white;
         }
         
         .tab-panel {
             display: none;
-            padding: var(--spacing-lg);
+            padding: 24px;
         }
         
         .tab-panel.active {
@@ -306,14 +63,15 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 1000;
             opacity: 0;
             visibility: hidden;
-            transition: all var(--transition-normal);
+            transition: all var(--speed) var(--ease-smooth);
         }
         
         .note-modal.open {
@@ -322,15 +80,15 @@
         }
         
         .note-modal-content {
-            background: var(--bg-primary);
-            border-radius: var(--border-radius-lg);
+            background: white;
+            border-radius: var(--radius);
             max-width: 600px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: var(--shadow-lg);
             transform: translateY(20px);
-            transition: transform var(--transition-normal);
+            transition: transform var(--speed-slow) var(--ease);
         }
         
         .note-modal.open .note-modal-content {
@@ -341,8 +99,8 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            padding: var(--spacing-lg);
-            border-bottom: 1px solid var(--border-color);
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
         }
         
         .modal-close {
@@ -353,35 +111,38 @@
             justify-content: center;
             border-radius: 50%;
             color: var(--text-secondary);
+            background: none;
+            border: none;
+            cursor: pointer;
         }
         
         .modal-close:hover {
-            background: var(--bg-tertiary);
+            background: var(--bg);
         }
         
         .modal-body {
-            padding: var(--spacing-lg);
+            padding: 24px;
         }
         
         .modal-thumbnail {
             width: 100%;
             aspect-ratio: 16 / 9;
             object-fit: cover;
-            border-radius: var(--border-radius);
-            margin-bottom: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            margin-bottom: 16px;
         }
         
         .modal-info {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: var(--spacing-md);
-            margin-bottom: var(--spacing-lg);
+            gap: 16px;
+            margin-bottom: 24px;
         }
         
         .info-item {
             display: flex;
             flex-direction: column;
-            gap: var(--spacing-xs);
+            gap: 4px;
         }
         
         .info-label {
@@ -393,54 +154,106 @@
         
         .info-value {
             font-size: 1rem;
-            color: var(--text-primary);
+            color: var(--text);
         }
         
         .modal-footer {
             display: flex;
-            gap: var(--spacing-sm);
-            padding: var(--spacing-lg);
-            border-top: 1px solid var(--border-color);
+            gap: 12px;
+            padding: 24px;
+            border-top: 1px solid var(--border);
         }
         
         .modal-footer .btn {
             flex: 1;
         }
         
-        .app-footer {
-            background: var(--bg-primary);
-            border-top: 1px solid var(--border-color);
-            padding: var(--spacing-xl) 0;
-            text-align: center;
+        .access-form-group {
+            margin-bottom: 16px;
+        }
+        
+        .access-form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+        
+        .access-form-group input,
+        .access-form-group textarea,
+        .access-form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            transition: all var(--speed) var(--ease-smooth);
+        }
+        
+        .access-form-group input:focus,
+        .access-form-group textarea:focus,
+        .access-form-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        
+        .access-form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .access-info-box {
+            background: var(--accent-light);
+            border: 1px solid var(--accent-glow);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .access-info-box h4 {
+            color: var(--text);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .access-info-box ul {
+            margin-left: 24px;
             color: var(--text-secondary);
         }
         
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: var(--spacing-lg);
-            margin-bottom: var(--spacing-md);
+        .access-info-box li {
+            margin-bottom: 4px;
         }
         
+        .access-success {
+            text-align: center;
+            padding: 24px 0;
+        }
+        
+        .access-success svg {
+            width: 64px;
+            height: 64px;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+        
+        .access-success h3 {
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        
+        .access-success p {
+            color: var(--text-secondary);
+        }
+
         @media (max-width: 768px) {
-            .app-header .container {
-                flex-direction: column;
-                gap: var(--spacing-md);
-            }
-            
-            .app-nav {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-            
-            .hero h1 {
-                font-size: 1.75rem;
-            }
-            
             .main-tabs {
                 overflow-x: auto;
                 justify-content: flex-start;
-                padding: var(--spacing-sm);
+                padding: 12px;
             }
             
             .tab-btn {
@@ -452,24 +265,22 @@
 <body>
     <!-- API Status Banner -->
     <div class="api-status-banner show" id="api-status-banner">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-        </svg>
-        <span>This is an SDK demo. The OpenNotes API restricts cross-origin requests. <a href="https://opennotes.pages.dev" target="_blank" class="request-link">Visit OpenNotes</a> to browse notes.</span>
+        <span class="material-symbols-rounded" style="font-size: 18px;">info</span>
+        <span>This is an SDK demo. The OpenNotes API restricts cross-origin requests. <a href="https://opennotes.pages.dev" target="_blank">Visit OpenNotes</a> to browse notes.</span>
     </div>
 
     <!-- Header -->
     <header class="app-header">
-        <div class="container">
+        <div class="header-container">
             <div class="app-logo">
-                <span>📚</span>
-                <span>OpenNotes API</span>
+                <img src="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png" alt="OpenNotes">
+                OpenNotes<span>API</span>
             </div>
             <nav class="app-nav">
                 <a href="#browse" class="active">Browse</a>
                 <a href="#analytics">Analytics</a>
                 <a href="docs.html">API Docs</a>
-                <a href="#" id="request-access-btn" class="nav-highlight">Request Access</a>
+                <a href="#" id="request-access-btn">Request Access</a>
                 <a href="https://opennotes.pages.dev" target="_blank">OpenNotes</a>
                 <a href="https://github.com/Tebby2008/OpenNotes" target="_blank">GitHub</a>
             </nav>
