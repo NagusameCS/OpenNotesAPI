@@ -95,11 +95,16 @@ window.toggleDevConsole = function() {
 // ==================== CONFIGURATION ====================
 const CONFIG = {
   API_BASE: 'https://open-notes.tebby2008-li.workers.dev',
+  AUTH_URL: 'https://open-notes.tebby2008-li.workers.dev/auth/login',
+  SUBMIT_URL: 'https://open-notes.tebby2008-li.workers.dev/upload/submit',
+  NOTES_RAW_BASE: 'https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes',
+  FALLBACK_THUMBNAIL: 'https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/fallback.svg',
   GATEWAY_URL: '', // Set via secrets if using gateway
   APP_TOKEN: '', // Set via secrets
   STORAGE_KEY: 'opennotes_desktop',
   MAX_STORAGE_MB: 500,
   NOTES_PER_PAGE: 20, // Match API default
+  DOWNLOAD_EXPIRY_DAYS: 10, // Downloads expire after 10 days
 };
 
 // HTTP client - uses Tauri custom command if available, falls back to fetch
@@ -191,6 +196,7 @@ async function loadSecrets() {
 const state = {
   notes: [],
   allNotes: [], // All loaded notes for infinite scroll
+  cachedNotes: [], // Cached notes for offline filtering/sorting
   savedNotes: [],
   currentPage: 1,
   totalNotes: 0,
@@ -204,6 +210,8 @@ const state = {
   currentNote: null,
   isDarkMode: false,
   storageUsed: 0,
+  isAuthenticated: false,
+  user: null,
 };
 
 // ==================== API CLIENT ====================
@@ -300,8 +308,8 @@ const api = {
     }
   },
   
-  async fetchTrending() {
-    return this.fetchNotes({ sort: 'views', limit: 12 });
+  async fetchRecent() {
+    return this.fetchNotes({ sort: 'recent', limit: 12 });
   },
   
   async incrementViews(name) {
@@ -355,7 +363,16 @@ const storage = {
   },
   
   getSavedNotes() {
-    return this.get('saved_notes') || [];
+    const notes = this.get('saved_notes') || [];
+    // Filter out expired downloads
+    const now = Date.now();
+    const validNotes = notes.filter(n => !n.expiresAt || n.expiresAt > now);
+    if (validNotes.length !== notes.length) {
+      // Some notes expired, update storage
+      this.set('saved_notes', validNotes);
+      console.log(`[STORAGE] Purged ${notes.length - validNotes.length} expired downloads`);
+    }
+    return validNotes;
   },
   
   async saveNoteOffline(note) {
@@ -363,7 +380,7 @@ const storage = {
     
     // Check if already saved
     if (saved.find(n => n.name === note.name)) {
-      showToast('Note already saved offline', 'info');
+      showToast('Note already downloaded', 'info');
       return false;
     }
     
@@ -373,10 +390,14 @@ const storage = {
       const blob = await response.blob();
       const base64 = await this.blobToBase64(blob);
       
+      // Calculate expiry date (10 days from now)
+      const expiresAt = Date.now() + (CONFIG.DOWNLOAD_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+      
       const noteData = {
         ...note,
         cachedFile: base64,
         cachedAt: Date.now(),
+        expiresAt: expiresAt,
         fileSize: blob.size,
       };
       
@@ -384,11 +405,11 @@ const storage = {
       this.set('saved_notes', saved);
       state.savedNotes = saved;
       
-      showToast('Note saved for offline access', 'success');
+      showToast('Note downloaded for offline access', 'success');
       return true;
     } catch (error) {
-      console.error('Failed to save note offline:', error);
-      showToast('Failed to save note offline', 'error');
+      console.error('Failed to download note:', error);
+      showToast('Failed to download note', 'error');
       return false;
     }
   },
@@ -398,7 +419,7 @@ const storage = {
     saved = saved.filter(n => n.name !== name);
     this.set('saved_notes', saved);
     state.savedNotes = saved;
-    showToast('Note removed from offline storage', 'info');
+    showToast('Download removed', 'info');
   },
   
   isNoteSaved(name) {
@@ -495,7 +516,15 @@ const storage = {
     state.savedNotes = [];
     showToast('All offline data cleared', 'success');
     this.updateStorageIndicator();
-    renderSavedNotes();
+    renderDownloads();
+  },
+  
+  purgeExpiredDownloads() {
+    // This is called on app start to clean up expired downloads
+    // getSavedNotes already filters and removes expired downloads
+    const notes = this.getSavedNotes();
+    state.savedNotes = notes;
+    console.log(`[STORAGE] ${notes.length} valid downloads, expired downloads purged`);
   },
 };
 
@@ -548,7 +577,7 @@ function createNoteCard(note) {
   const format = getFileFormat(note.name);
   const isSaved = storage.isNoteSaved(note.name);
   // API uses: thumb (not img), auth (not author), v (not views), d (not downloads)
-  const thumbnail = note.thumb || note.img || '';
+  const thumbnail = note.thumb || note.img || CONFIG.FALLBACK_THUMBNAIL;
   const author = note.auth || note.author || 'Unknown';
   const views = note.v || note.views || 0;
   const downloads = note.d || note.downloads || 0;
@@ -560,7 +589,7 @@ function createNoteCard(note) {
           `<img src="${thumbnail}" 
                alt="${escapeHtml(note.name)}" 
                loading="lazy"
-               onerror="this.parentElement.innerHTML='<div class=\\'no-thumb\\'><span class=\\'material-symbols-rounded\\'>description</span></div>'">` :
+               onerror="this.src='${CONFIG.FALLBACK_THUMBNAIL}'">` :
           `<div class="no-thumb"><span class="material-symbols-rounded">description</span></div>`
         }
         <span class="format-badge ${format}">${format.toUpperCase()}</span>
@@ -585,8 +614,8 @@ function createNoteCard(note) {
         </div>
       </div>
       <div class="note-actions">
-        <button class="note-action-btn btn-save-offline ${isSaved ? 'saved' : ''}" title="${isSaved ? 'Remove from offline' : 'Save offline'}">
-          <span class="material-symbols-rounded">${isSaved ? 'bookmark' : 'bookmark_border'}</span>
+        <button class="note-action-btn btn-save-offline ${isSaved ? 'saved' : ''}" title="${isSaved ? 'Downloaded' : 'Download for offline'}">
+          <span class="material-symbols-rounded">${isSaved ? 'download_done' : 'download'}</span>
         </button>
       </div>
     </article>
@@ -615,9 +644,9 @@ function renderPagination() {
   }
 }
 
-function renderSavedNotes() {
-  const container = document.getElementById('saved-grid');
-  const emptyState = document.getElementById('saved-empty');
+function renderDownloads() {
+  const container = document.getElementById('downloads-grid');
+  const emptyState = document.getElementById('downloads-empty');
   
   if (!container) return;
   
@@ -631,12 +660,17 @@ function renderSavedNotes() {
   
   if (emptyState) emptyState.style.display = 'none';
   
-  container.innerHTML = state.savedNotes.map(note => `
+  container.innerHTML = state.savedNotes.map(note => {
+    const daysLeft = note.expiresAt ? Math.ceil((note.expiresAt - Date.now()) / (24 * 60 * 60 * 1000)) : null;
+    const expiryClass = daysLeft && daysLeft <= 2 ? 'expiring-soon' : '';
+    
+    return `
     <article class="note-card" data-note-id="${escapeHtml(note.name)}">
       <div class="note-thumbnail">
-        <img src="${note.img || 'https://via.placeholder.com/320x200?text=No+Preview'}" 
+        <img src="${note.thumb || note.img || CONFIG.FALLBACK_THUMBNAIL}" 
              alt="${escapeHtml(note.name)}" 
-             loading="lazy">
+             loading="lazy"
+             onerror="this.src='${CONFIG.FALLBACK_THUMBNAIL}'">
         <span class="format-badge ${getFileFormat(note.name)}">${getFileFormat(note.name).toUpperCase()}</span>
       </div>
       <div class="note-content">
@@ -644,24 +678,30 @@ function renderSavedNotes() {
         <div class="note-meta">
           <span class="note-author">
             <span class="material-symbols-rounded">person</span>
-            ${escapeHtml(note.author || 'Unknown')}
+            ${escapeHtml(note.auth || note.author || 'Unknown')}
           </span>
           <span class="note-stat">
             <span class="material-symbols-rounded">save</span>
             ${formatBytes(note.fileSize || 0)}
           </span>
         </div>
+        ${daysLeft !== null ? `
+          <div class="download-expiry ${expiryClass}">
+            <span class="material-symbols-rounded">schedule</span>
+            Expires in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}
+          </div>
+        ` : ''}
       </div>
       <div class="note-actions">
         <button class="note-action-btn" onclick="openOfflineNote('${escapeHtml(note.name)}')" title="Open">
           <span class="material-symbols-rounded">open_in_new</span>
         </button>
-        <button class="note-action-btn" onclick="storage.removeOfflineNote('${escapeHtml(note.name)}'); renderSavedNotes();" title="Remove">
+        <button class="note-action-btn" onclick="storage.removeOfflineNote('${escapeHtml(note.name)}'); renderDownloads();" title="Remove">
           <span class="material-symbols-rounded">delete</span>
         </button>
       </div>
     </article>
-  `).join('');
+  `}).join('');
 }
 
 function renderStorageBreakdown() {
@@ -815,19 +855,19 @@ async function loadAllNotes() {
   }
 }
 
-async function loadTrending() {
-  const container = document.getElementById('trending-content');
+async function loadRecent() {
+  const container = document.getElementById('recent-content');
   if (!container) return;
   
   try {
-    const result = await api.fetchTrending();
+    const result = await api.fetchRecent();
     const notes = result.notes || result.data || [];
-    renderNotesGrid(notes, 'trending-content');
+    renderNotesGrid(notes, 'recent-content');
   } catch (error) {
     container.innerHTML = `
       <div class="empty-state">
-        <span class="material-symbols-rounded">trending_up</span>
-        <h3>Failed to load trending</h3>
+        <span class="material-symbols-rounded">schedule</span>
+        <h3>Failed to load recent notes</h3>
         <p>Please check your connection</p>
       </div>
     `;
@@ -1030,8 +1070,8 @@ function switchView(viewId) {
   // Update title
   const titles = {
     browse: 'All Notes',
-    trending: 'Trending',
-    saved: 'Saved Offline',
+    recent: 'Recent',
+    downloads: 'Downloads',
     editor: 'New Document',
     upload: 'Upload Notes',
     'my-uploads': 'My Uploads',
@@ -1043,8 +1083,8 @@ function switchView(viewId) {
   
   // Load data for specific views
   if (viewId === 'browse' && state.notes.length === 0) loadNotes();
-  if (viewId === 'trending') loadTrending();
-  if (viewId === 'saved') renderSavedNotes();
+  if (viewId === 'recent') loadRecent();
+  if (viewId === 'downloads') renderDownloads();
   if (viewId === 'storage') {
     storage.updateStorageIndicator();
     renderStorageBreakdown();
@@ -1393,7 +1433,10 @@ function getFileFormat(filename) {
   if (['doc', 'docx'].includes(ext)) return 'docx';
   if (['ppt', 'pptx'].includes(ext)) return 'pptx';
   if (['xls', 'xlsx'].includes(ext)) return 'xlsx';
-  return 'pdf';
+  if (['txt'].includes(ext)) return 'txt';
+  if (['md', 'markdown'].includes(ext)) return 'md';
+  if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp'].includes(ext)) return 'images';
+  return 'other';
 }
 
 function showToast(message, type = 'info') {
@@ -1455,56 +1498,227 @@ function initSearch() {
   });
 }
 
-// ==================== WINDOW CONTROLS ====================
-async function setupWindowControls() {
-  // Check if we're in Tauri
-  if (!window.__TAURI__) {
-    console.log('[WINDOW] Not in Tauri, hiding titlebar');
-    const titlebar = document.getElementById('titlebar');
-    if (titlebar) titlebar.style.display = 'none';
-    const app = document.getElementById('app');
-    if (app) app.style.paddingTop = '0';
+// ==================== AUTHENTICATION ====================
+function checkAuth() {
+  const token = localStorage.getItem('auth_token_fallback');
+  const userStr = localStorage.getItem('opennotes_user');
+  
+  if (token && userStr) {
+    try {
+      state.user = JSON.parse(userStr);
+      state.isAuthenticated = true;
+      updateUserProfile();
+      return true;
+    } catch (e) {
+      console.error('[AUTH] Failed to parse user data:', e);
+    }
+  }
+  return false;
+}
+
+function showAuthModal() {
+  const modal = document.getElementById('auth-modal');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function hideAuthModal() {
+  const modal = document.getElementById('auth-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+async function handleGoogleSignIn() {
+  try {
+    // Open the auth URL
+    const authWindow = window.open(CONFIG.AUTH_URL, 'Google Sign In', 'width=500,height=600');
+    
+    // Listen for the auth callback
+    const handleMessage = (event) => {
+      console.log('[AUTH] Received message:', event.origin);
+      
+      // Validate origin
+      if (!event.origin.includes('tebby2008-li.workers.dev') && !event.origin.includes('localhost')) {
+        return;
+      }
+      
+      const { token, user } = event.data;
+      if (token) {
+        localStorage.setItem('auth_token_fallback', token);
+        if (user) {
+          localStorage.setItem('opennotes_user', JSON.stringify(user));
+          state.user = user;
+        }
+        state.isAuthenticated = true;
+        updateUserProfile();
+        hideAuthModal();
+        showToast('Successfully signed in!', 'success');
+        window.removeEventListener('message', handleMessage);
+      }
+    };
+    
+    window.addEventListener('message', handleMessage);
+    
+    // Fallback: Check for token in URL hash after redirect
+    const checkForToken = setInterval(() => {
+      try {
+        if (authWindow && authWindow.closed) {
+          clearInterval(checkForToken);
+          // Check localStorage in case callback already set it
+          if (checkAuth()) {
+            hideAuthModal();
+          }
+        }
+      } catch (e) {
+        // Cross-origin access error - window is on different domain
+      }
+    }, 500);
+    
+    // Timeout after 5 minutes
+    setTimeout(() => {
+      clearInterval(checkForToken);
+      window.removeEventListener('message', handleMessage);
+    }, 300000);
+    
+  } catch (error) {
+    console.error('[AUTH] Sign in error:', error);
+    showToast('Sign in failed. Please try again.', 'error');
+  }
+}
+
+function handleLogout() {
+  localStorage.removeItem('auth_token_fallback');
+  localStorage.removeItem('opennotes_user');
+  state.isAuthenticated = false;
+  state.user = null;
+  updateUserProfile();
+  showToast('Signed out successfully', 'info');
+  showAuthModal();
+}
+
+function updateUserProfile() {
+  const profileEl = document.getElementById('user-profile');
+  const avatarEl = document.getElementById('user-avatar');
+  const nameEl = document.getElementById('user-name');
+  
+  if (!profileEl) return;
+  
+  if (state.isAuthenticated && state.user) {
+    profileEl.classList.remove('hidden');
+    if (avatarEl) avatarEl.src = state.user.picture || state.user.avatar || '';
+    if (nameEl) nameEl.textContent = state.user.name || state.user.email || 'User';
+  } else {
+    profileEl.classList.add('hidden');
+  }
+}
+
+function requireAuth(action) {
+  if (!state.isAuthenticated) {
+    showToast('Please sign in to ' + action, 'info');
+    showAuthModal();
+    return false;
+  }
+  return true;
+}
+
+// ==================== CONTENT PREVIEW ====================
+async function fetchNoteContent(filename) {
+  const contentUrl = `${CONFIG.NOTES_RAW_BASE}/${encodeURIComponent(filename)}`;
+  try {
+    const response = await fetch(contentUrl);
+    if (!response.ok) throw new Error('Content not found');
+    return {
+      url: contentUrl,
+      blob: await response.blob(),
+    };
+  } catch (error) {
+    console.error('[CONTENT] Failed to fetch:', error);
+    return null;
+  }
+}
+
+// ==================== API CACHING ====================
+function getCachedNotes() {
+  const cached = localStorage.getItem(`${CONFIG.STORAGE_KEY}_notes_cache`);
+  if (cached) {
+    try {
+      const data = JSON.parse(cached);
+      // Cache valid for 5 minutes
+      if (Date.now() - data.timestamp < 5 * 60 * 1000) {
+        return data.notes;
+      }
+    } catch (e) {
+      console.error('[CACHE] Failed to parse cache:', e);
+    }
+  }
+  return null;
+}
+
+function setCachedNotes(notes) {
+  localStorage.setItem(`${CONFIG.STORAGE_KEY}_notes_cache`, JSON.stringify({
+    notes,
+    timestamp: Date.now(),
+  }));
+  state.cachedNotes = notes;
+}
+
+function clearNotesCache() {
+  localStorage.removeItem(`${CONFIG.STORAGE_KEY}_notes_cache`);
+  state.cachedNotes = [];
+}
+
+async function refreshNotes() {
+  const refreshBtn = document.getElementById('refresh-btn');
+  if (refreshBtn) refreshBtn.classList.add('spinning');
+  
+  clearNotesCache();
+  await loadNotes(true);
+  
+  if (refreshBtn) refreshBtn.classList.remove('spinning');
+  showToast('Notes refreshed', 'success');
+}
+
+// ==================== SUBMIT FOR REVIEW ====================
+async function submitForReview() {
+  if (!requireAuth('submit documents for review')) return;
+  
+  const title = document.getElementById('doc-title').value || 'Untitled';
+  const content = document.getElementById('editor').innerHTML;
+  
+  if (!content || content.trim() === '' || content === '<p>Start typing your document...</p>') {
+    showToast('Please write some content before submitting', 'error');
     return;
   }
   
   try {
-    const { getCurrentWindow } = await import('@tauri-apps/api/window');
-    const appWindow = getCurrentWindow();
-    
-    // Minimize
-    document.getElementById('titlebar-minimize')?.addEventListener('click', async () => {
-      await appWindow.minimize();
+    const token = localStorage.getItem('auth_token_fallback');
+    const response = await fetch(CONFIG.SUBMIT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        title,
+        content,
+        format: 'html',
+        author: state.user?.name || 'Anonymous',
+      }),
     });
     
-    // Maximize / Restore
-    document.getElementById('titlebar-maximize')?.addEventListener('click', async () => {
-      const isMaximized = await appWindow.isMaximized();
-      if (isMaximized) {
-        await appWindow.unmaximize();
-      } else {
-        await appWindow.maximize();
-      }
-    });
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error || 'Submission failed');
+    }
     
-    // Update maximize icon on state change
-    appWindow.onResized(async () => {
-      const maximizeBtn = document.getElementById('titlebar-maximize');
-      if (maximizeBtn) {
-        const isMaximized = await appWindow.isMaximized();
-        maximizeBtn.innerHTML = isMaximized 
-          ? '<span class="material-symbols-rounded">filter_none</span>'
-          : '<span class="material-symbols-rounded">crop_square</span>';
-      }
-    });
+    showToast('Document submitted for review!', 'success');
     
-    // Close
-    document.getElementById('titlebar-close')?.addEventListener('click', async () => {
-      await appWindow.close();
-    });
+    // Clear the editor
+    document.getElementById('doc-title').value = '';
+    document.getElementById('editor').innerHTML = '<p>Start typing your document...</p>';
+    storage.remove('draft');
     
-    console.log('[WINDOW] Window controls initialized');
-  } catch (err) {
-    console.error('[WINDOW] Failed to setup window controls:', err);
+  } catch (error) {
+    console.error('[SUBMIT] Error:', error);
+    showToast('Failed to submit: ' + error.message, 'error');
   }
 }
 
@@ -1659,7 +1873,26 @@ async function init() {
   // Load initial data
   console.log('[INIT] Loading initial notes...');
   console.log('[INIT] API Base URL:', api.getBaseUrl());
+  
+  // Check authentication
+  console.log('[INIT] Checking authentication...');
+  if (!checkAuth()) {
+    // Show auth modal if not signed in
+    showAuthModal();
+    console.log('[INIT] User not authenticated, showing sign-in modal');
+  } else {
+    console.log('[INIT] User authenticated:', state.user?.name || state.user?.email);
+    hideAuthModal();
+  }
+  
+  // Auth event listeners
+  document.getElementById('google-signin-btn')?.addEventListener('click', handleGoogleSignIn);
+  document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
+  
   loadNotes();
+  
+  // Purge expired downloads
+  storage.purgeExpiredDownloads();
   
   console.log('[INIT] OpenNotes Desktop ready!');
   } catch (initError) {

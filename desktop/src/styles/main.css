@@ -60,79 +60,6 @@
   --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
 }
 
-/* ==================== CUSTOM TITLE BAR ==================== */
-#titlebar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: var(--titlebar-height);
-  background: var(--bg-sidebar);
-  padding: 0 8px 0 12px;
-  user-select: none;
-  -webkit-user-select: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 9999;
-}
-
-.titlebar-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.titlebar-icon {
-  width: 18px;
-  height: 18px;
-  pointer-events: none;
-}
-
-.titlebar-title {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-sidebar);
-  opacity: 0.8;
-  pointer-events: none;
-}
-
-.titlebar-controls {
-  display: flex;
-  gap: 2px;
-}
-
-.titlebar-btn {
-  width: 36px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  color: var(--text-sidebar);
-  border-radius: var(--radius-xs);
-  transition: background 0.15s ease;
-}
-
-.titlebar-btn .material-symbols-rounded {
-  font-size: 16px;
-}
-
-.titlebar-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.titlebar-btn.titlebar-close:hover {
-  background: var(--danger);
-  color: white;
-}
-
-/* Adjust app container for titlebar */
-#app {
-  padding-top: var(--titlebar-height);
-}
-
 /* ==================== BASE RESET ==================== */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -195,6 +122,13 @@ input, select, textarea {
   gap: 12px;
   padding: 20px;
   border-bottom: 1px solid var(--sidebar-border);
+  -webkit-app-region: drag;
+  app-region: drag;
+  cursor: grab;
+}
+
+.sidebar-header * {
+  pointer-events: none;
 }
 
 .logo {
@@ -467,12 +401,47 @@ input, select, textarea {
 }
 
 .sort-select {
-  padding: 8px 12px;
+  padding: 10px 36px 10px 14px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--bg-panel);
   color: var(--text);
   font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: var(--transition);
+}
+
+.sort-select:hover {
+  border-color: var(--accent);
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#refresh-btn {
+  transition: transform 0.3s ease;
+}
+
+#refresh-btn:hover {
+  transform: rotate(180deg);
+}
+
+#refresh-btn.spinning .material-symbols-rounded {
+  animation: spin 1s linear infinite;
 }
 
 /* ==================== NOTES GRID ==================== */
@@ -539,6 +508,26 @@ input, select, textarea {
 .format-badge.xlsx {
   background: #f0fdf4;
   color: #22c55e;
+}
+
+.format-badge.txt {
+  background: #f5f5f4;
+  color: #78716c;
+}
+
+.format-badge.md {
+  background: #faf5ff;
+  color: #a855f7;
+}
+
+.format-badge.images {
+  background: #fdf2f8;
+  color: #ec4899;
+}
+
+.format-badge.other {
+  background: #f5f5f5;
+  color: #737373;
 }
 
 .note-content {
@@ -1443,3 +1432,158 @@ input, select, textarea {
   white-space: pre-wrap;
   word-break: break-all;
 }
+
+/* ==================== AUTH MODAL ==================== */
+.auth-modal-content {
+  max-width: 420px;
+  text-align: center;
+}
+
+.auth-modal-body {
+  padding: 48px 40px;
+}
+
+.auth-logo {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 24px;
+}
+
+.auth-modal-body h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.auth-subtitle {
+  color: var(--text-muted);
+  margin-bottom: 32px;
+  font-size: 0.95rem;
+}
+
+.btn-google {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 24px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 500;
+  color: #1f2937;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-google:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  box-shadow: var(--shadow-sm);
+}
+
+.dark-mode .btn-google {
+  background: #374151;
+  border-color: #4b5563;
+  color: #f9fafb;
+}
+
+.dark-mode .btn-google:hover {
+  background: #4b5563;
+}
+
+/* ==================== USER PROFILE ==================== */
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+
+.user-profile.hidden {
+  display: none;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent);
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-sidebar);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--text-sidebar-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.logout-btn:hover {
+  color: var(--danger);
+}
+
+.logout-btn .material-symbols-rounded {
+  font-size: 14px;
+}
+
+/* ==================== FILTER CHIPS OVERFLOW ==================== */
+.filter-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.view-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+/* ==================== DOWNLOAD EXPIRY INDICATOR ==================== */
+.download-expiry {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.download-expiry.expiring-soon {
+  color: var(--warning);
+}
+
+.download-expiry .material-symbols-rounded {
+  font-size: 14px;
+}
+
