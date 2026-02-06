@@ -803,27 +803,29 @@
 .text-muted { color: var(--text-muted); }
 .text-secondary { color: var(--text-secondary); }
 
-.mt-1 { margin-top: 8px; }
-.mt-2 { margin-top: 16px; }
-.mt-3 { margin-top: 24px; }
-.mt-4 { margin-top: 32px; }
+/* Component-specific utility classes - prefixed to avoid Tailwind conflicts */
+.on-mt-1 { margin-top: 8px; }
+.on-mt-2 { margin-top: 16px; }
+.on-mt-3 { margin-top: 24px; }
+.on-mt-4 { margin-top: 32px; }
 
-.mb-1 { margin-bottom: 8px; }
-.mb-2 { margin-bottom: 16px; }
-.mb-3 { margin-bottom: 24px; }
-.mb-4 { margin-bottom: 32px; }
+.on-mb-1 { margin-bottom: 8px; }
+.on-mb-2 { margin-bottom: 16px; }
+.on-mb-3 { margin-bottom: 24px; }
+.on-mb-4 { margin-bottom: 32px; }
 
-.hidden { display: none !important; }
-.visible { visibility: visible; }
-.invisible { visibility: hidden; }
+/* NOTE: Do not redefine .hidden - it conflicts with Tailwind responsive classes */
+.on-hidden { display: none; }
+.on-visible { visibility: visible; }
+.on-invisible { visibility: hidden; }
 
-.flex { display: flex; }
-.flex-center { display: flex; align-items: center; justify-content: center; }
-.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.on-flex { display: flex; }
+.on-flex-center { display: flex; align-items: center; justify-content: center; }
+.on-flex-between { display: flex; align-items: center; justify-content: space-between; }
 
-.gap-1 { gap: 8px; }
-.gap-2 { gap: 16px; }
-.gap-3 { gap: 24px; }
+.on-gap-1 { gap: 8px; }
+.on-gap-2 { gap: 16px; }
+.on-gap-3 { gap: 24px; }
 
 /* ==================== RESPONSIVE ==================== */
 
