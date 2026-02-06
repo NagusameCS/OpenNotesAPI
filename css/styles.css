@@ -1267,11 +1267,64 @@ pre code {
     display: flex;
     align-items: center;
     gap: 8px;
+    padding: 12px 20px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
 }
 
 .notes-sorting label {
     font-size: 0.875rem;
     color: var(--text-secondary);
+}
+
+.sort-select {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    background: white;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.notes-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+}
+
+.view-toggle {
+    display: flex;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.view-toggle .btn-view {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.view-toggle .btn-view:hover {
+    background: var(--bg);
+    color: var(--text);
+}
+
+.view-toggle .btn-view.active {
+    background: var(--accent);
+    color: white;
 }
 
 .notes-container {
