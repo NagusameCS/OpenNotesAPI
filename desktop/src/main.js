@@ -18,13 +18,21 @@ let httpClient = null;
 
 async function initHttpClient() {
   try {
+    console.log('[HTTP] Checking for Tauri environment...');
+    console.log('[HTTP] window.__TAURI__ =', window.__TAURI__);
+    
     if (window.__TAURI__) {
-      const { fetch: tauriFetch } = await import('@tauri-apps/plugin-http');
-      httpClient = tauriFetch;
-      console.log('Using Tauri HTTP client');
+      console.log('[HTTP] Tauri detected, importing plugin-http...');
+      const httpModule = await import('@tauri-apps/plugin-http');
+      console.log('[HTTP] Plugin loaded:', Object.keys(httpModule));
+      httpClient = httpModule.fetch;
+      console.log('[HTTP] Using Tauri HTTP client - can set custom Origin headers');
+    } else {
+      console.warn('[HTTP] Not running in Tauri, Origin headers will be blocked by browser');
     }
   } catch (e) {
-    console.log('Tauri HTTP not available, using browser fetch');
+    console.error('[HTTP] Failed to initialize Tauri HTTP client:', e);
+    console.error('[HTTP] Error details:', e.message, e.stack);
   }
 }
 
@@ -37,13 +45,35 @@ async function httpFetch(url, options = {}) {
     ...options.headers,
   };
   
-  if (httpClient) {
-    // Use Tauri HTTP client (can set any headers)
-    const response = await httpClient(url, { ...options, headers });
+  console.log('[FETCH] Request:', url);
+  console.log('[FETCH] Using httpClient:', !!httpClient);
+  console.log('[FETCH] Headers:', JSON.stringify(headers));
+  
+  try {
+    let response;
+    if (httpClient) {
+      // Use Tauri HTTP client (can set any headers)
+      console.log('[FETCH] Using Tauri native HTTP...');
+      response = await httpClient(url, { ...options, headers });
+    } else {
+      // Browser fallback (Origin header will be ignored)
+      console.warn('[FETCH] Using browser fetch - Origin header will be stripped!');
+      response = await fetch(url, { ...options, headers, mode: 'cors' });
+    }
+    
+    console.log('[FETCH] Response status:', response.status, response.statusText);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[FETCH] Error response body:', errorText);
+    }
+    
     return response;
-  } else {
-    // Browser fallback (Origin header will be ignored)
-    return fetch(url, { ...options, headers, mode: 'cors' });
+  } catch (e) {
+    console.error('[FETCH] Request failed:', e);
+    console.error('[FETCH] Error type:', e.constructor.name);
+    console.error('[FETCH] Error message:', e.message);
+    throw e;
   }
 }
 
@@ -112,13 +142,24 @@ const api = {
       });
       // Note: API ignores limit param and always returns up to 20 items
       
-      const response = await httpFetch(`${this.getBaseUrl()}?${queryParams}`, {
+      const requestUrl = `${this.getBaseUrl()}?${queryParams}`;
+      console.log('[API] Fetching notes from:', requestUrl);
+      
+      const response = await httpFetch(requestUrl, {
         headers: this.getHeaders(),
       });
-      if (!response.ok) throw new Error(`Failed to fetch notes: ${response.status}`);
+      
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.error('[API] Error response:', response.status, errorBody);
+        throw new Error(`Failed to fetch notes: ${response.status} - ${errorBody}`);
+      }
+      
       const data = await response.json();
+      console.log('[API] Response data keys:', Object.keys(data));
       
       const items = data.items || data.notes || data.data || [];
+      console.log('[API] Got', items.length, 'notes');
       
       // API returns up to 20 items per request
       // hasMore = true if we got exactly 20 (likely more exist)
@@ -128,7 +169,8 @@ const api = {
         hasMore: items.length === 20, // If we got 20, there might be more
       };
     } catch (error) {
-      console.error('API Error:', error);
+      console.error('[API] fetchNotes Error:', error);
+      console.error('[API] Error stack:', error.stack);
       throw error;
     }
   },
@@ -599,14 +641,24 @@ async function loadNotes(reset = true) {
     renderNotesGrid(state.allNotes);
     renderPagination();
   } catch (error) {
-    console.error('Load error:', error);
+    console.error('[LOAD] Error loading notes:', error);
+    console.error('[LOAD] Error name:', error.name);
+    console.error('[LOAD] Error message:', error.message);
+    console.error('[LOAD] Error stack:', error.stack);
+    
+    const errorDetails = `${error.name}: ${error.message}`;
+    
     if (container && state.allNotes.length === 0) {
       container.innerHTML = `
         <div class="empty-state">
           <span class="material-symbols-rounded">cloud_off</span>
           <h3>Failed to load notes</h3>
           <p>Please check your connection and try again</p>
-          <button class="btn btn-primary" onclick="loadNotes()">Retry</button>
+          <details style="margin-top: 16px; text-align: left; max-width: 400px;">
+            <summary style="cursor: pointer; color: var(--text-secondary);">Error Details</summary>
+            <pre style="margin-top: 8px; padding: 12px; background: var(--bg-tertiary); border-radius: 8px; font-size: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-all;">${errorDetails}</pre>
+          </details>
+          <button class="btn btn-primary" onclick="loadNotes()" style="margin-top: 16px;">Retry</button>
         </div>
       `;
     }
@@ -1126,19 +1178,28 @@ function initSearch() {
 
 // ==================== INITIALIZATION ====================
 async function init() {
-  console.log('OpenNotes Desktop initializing...');
+  console.log('[INIT] OpenNotes Desktop initializing...');
+  console.log('[INIT] User Agent:', navigator.userAgent);
+  console.log('[INIT] window.__TAURI__:', typeof window.__TAURI__, window.__TAURI__);
   
-  // Load secrets from Tauri store first
-  await loadSecrets();
-  
-  // Initialize HTTP client for API calls (to set custom headers)
-  await initHttpClient();
-  
-  // Initialize theme
-  initTheme();
-  
-  // Initialize search
-  initSearch();
+  try {
+    // Load secrets from Tauri store first
+    console.log('[INIT] Loading secrets...');
+    await loadSecrets();
+    console.log('[INIT] Secrets loaded');
+    
+    // Initialize HTTP client for API calls (to set custom headers)
+    console.log('[INIT] Initializing HTTP client...');
+    await initHttpClient();
+    console.log('[INIT] HTTP client ready, httpClient =', !!httpClient);
+    
+    // Initialize theme
+    initTheme();
+    console.log('[INIT] Theme initialized');
+    
+    // Initialize search
+    initSearch();
+    console.log('[INIT] Search initialized');
   
   // Initialize storage indicator
   state.savedNotes = storage.getSavedNotes();
@@ -1226,9 +1287,29 @@ async function init() {
   });
   
   // Load initial data
+  console.log('[INIT] Loading initial notes...');
+  console.log('[INIT] API Base URL:', api.getBaseUrl());
   loadNotes();
   
-  console.log('OpenNotes Desktop ready!');
+  console.log('[INIT] OpenNotes Desktop ready!');
+  } catch (initError) {
+    console.error('[INIT] Critical initialization error:', initError);
+    console.error('[INIT] Error stack:', initError.stack);
+    const container = document.getElementById('notes-grid');
+    if (container) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <span class="material-symbols-rounded">error</span>
+          <h3>Initialization Failed</h3>
+          <p>The app failed to start properly</p>
+          <details style="margin-top: 16px; text-align: left; max-width: 400px;">
+            <summary style="cursor: pointer;">Error Details</summary>
+            <pre style="margin-top: 8px; padding: 12px; background: var(--bg-tertiary); border-radius: 8px; font-size: 12px; overflow-x: auto; white-space: pre-wrap;">${initError.message}\n${initError.stack}</pre>
+          </details>
+        </div>
+      `;
+    }
+  }
 }
 
 // Settings management
