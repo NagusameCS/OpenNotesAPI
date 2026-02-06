@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examples - OpenNotes API</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .examples-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--spacing-lg);
+        }
+        
+        .example-section {
+            background: var(--bg-primary);
+            border-radius: var(--border-radius-lg);
+            margin-bottom: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+        
+        .example-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .example-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .example-header p {
+            color: var(--text-secondary);
+            margin: 0;
+        }
+        
+        .example-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+        
+        .example-code {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: var(--spacing-lg);
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            border-right: 1px solid var(--border-color);
+        }
+        
+        .example-code pre {
+            margin: 0;
+            white-space: pre-wrap;
+        }
+        
+        .example-output {
+            padding: var(--spacing-lg);
+            background: var(--bg-secondary);
+        }
+        
+        .example-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .btn-run {
+            background: var(--primary-color);
+            color: white;
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border-radius: var(--border-radius);
+            font-weight: 500;
+        }
+        
+        .btn-run:hover {
+            background: var(--primary-hover);
+        }
+        
+        .btn-copy {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--border-radius);
+        }
+        
+        .output-area {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.875rem;
+        }
+        
+        .output-area.loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+        }
+        
+        .live-demo {
+            padding: var(--spacing-lg);
+        }
+        
+        @media (max-width: 1024px) {
+            .example-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .example-code {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+        }
+        
+        .syntax-keyword { color: #c792ea; }
+        .syntax-string { color: #c3e88d; }
+        .syntax-number { color: #f78c6c; }
+        .syntax-comment { color: #637777; font-style: italic; }
+        .syntax-function { color: #82aaff; }
+        .syntax-property { color: #ffcb6b; }
+    </style>
+</head>
+<body>
+    <header class="page-header">
+        <div class="container">
+            <h1 class="page-title">📝 Code Examples</h1>
+            <p class="page-subtitle">Interactive examples to help you get started with the OpenNotes API</p>
+        </div>
+    </header>
+
+    <div class="examples-container">
+        <!-- Example 1: Get All Notes -->
+        <section class="example-section">
+            <div class="example-header">
+                <h2>Get All Notes</h2>
+                <p>Fetch a list of notes with optional sorting and limiting</p>
+            </div>
+            <div class="example-content">
+                <div class="example-code">
+<pre><span class="syntax-comment">// Get notes sorted by views</span>
+<span class="syntax-keyword">const</span> response = <span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">getNotes</span>({
+    <span class="syntax-property">sort</span>: <span class="syntax-string">'views'</span>,
+    <span class="syntax-property">limit</span>: <span class="syntax-number">5</span>
+});
+
+<span class="syntax-comment">// Display results</span>
+response.items.<span class="syntax-function">forEach</span>(note => {
+    <span class="syntax-function">console.log</span>(note.title, <span class="syntax-string">'-'</span>, note.v, <span class="syntax-string">'views'</span>);
+});</pre>
+                </div>
+                <div class="example-output">
+                    <div class="example-actions">
+                        <button class="btn-run" onclick="runExample1()">Run Example</button>
+                        <button class="btn-copy" onclick="copyCode(this)">Copy Code</button>
+                    </div>
+                    <div class="output-area" id="output-1">Click "Run Example" to see results</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Example 2: Search Notes -->
+        <section class="example-section">
+            <div class="example-header">
+                <h2>Search Notes</h2>
+                <p>Search for notes by keyword with filtering options</p>
+            </div>
+            <div class="example-content">
+                <div class="example-code">
+<pre><span class="syntax-comment">// Search for physics notes</span>
+<span class="syntax-keyword">const</span> results = <span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">searchNotes</span>(<span class="syntax-string">'physics'</span>, {
+    <span class="syntax-property">format</span>: <span class="syntax-string">'pdf'</span>,
+    <span class="syntax-property">limit</span>: <span class="syntax-number">10</span>
+});
+
+<span class="syntax-function">console.log</span>(<span class="syntax-string">'Found'</span>, results.items.length, <span class="syntax-string">'notes'</span>);
+
+results.items.<span class="syntax-function">forEach</span>(note => {
+    <span class="syntax-function">console.log</span>(<span class="syntax-string">`- ${note.title} by ${note.auth}`</span>);
+});</pre>
+                </div>
+                <div class="example-output">
+                    <div class="example-actions">
+                        <button class="btn-run" onclick="runExample2()">Run Example</button>
+                        <button class="btn-copy" onclick="copyCode(this)">Copy Code</button>
+                    </div>
+                    <div class="output-area" id="output-2">Click "Run Example" to see results</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Example 3: Get Statistics -->
+        <section class="example-section">
+            <div class="example-header">
+                <h2>Get Statistics</h2>
+                <p>Retrieve comprehensive statistics about the notes collection</p>
+            </div>
+            <div class="example-content">
+                <div class="example-code">
+<pre><span class="syntax-comment">// Get comprehensive statistics</span>
+<span class="syntax-keyword">const</span> stats = <span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">getStatistics</span>();
+
+<span class="syntax-function">console.log</span>(<span class="syntax-string">'Total Notes:'</span>, stats.totalNotes);
+<span class="syntax-function">console.log</span>(<span class="syntax-string">'Total Views:'</span>, stats.totalViews);
+<span class="syntax-function">console.log</span>(<span class="syntax-string">'Total Downloads:'</span>, stats.totalDownloads);
+
+<span class="syntax-function">console.log</span>(<span class="syntax-string">'\nFormat Distribution:'</span>);
+Object.<span class="syntax-function">entries</span>(stats.formats).<span class="syntax-function">forEach</span>(([fmt, count]) => {
+    <span class="syntax-function">console.log</span>(<span class="syntax-string">`  ${fmt}: ${count} notes`</span>);
+});</pre>
+                </div>
+                <div class="example-output">
+                    <div class="example-actions">
+                        <button class="btn-run" onclick="runExample3()">Run Example</button>
+                        <button class="btn-copy" onclick="copyCode(this)">Copy Code</button>
+                    </div>
+                    <div class="output-area" id="output-3">Click "Run Example" to see results</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Example 4: Get Notes by Author -->
+        <section class="example-section">
+            <div class="example-header">
+                <h2>Get Notes by Author</h2>
+                <p>Filter notes by a specific author</p>
+            </div>
+            <div class="example-content">
+                <div class="example-code">
+<pre><span class="syntax-comment">// Get all notes by Chenyu Li</span>
+<span class="syntax-keyword">const</span> authorNotes = <span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">getNotesByAuthor</span>(
+    <span class="syntax-string">'Chenyu Li'</span>
+);
+
+<span class="syntax-function">console.log</span>(<span class="syntax-string">'Notes by Chenyu Li:'</span>);
+authorNotes.items.<span class="syntax-function">forEach</span>(note => {
+    <span class="syntax-function">console.log</span>(<span class="syntax-string">`  - ${note.title}`</span>);
+    <span class="syntax-function">console.log</span>(<span class="syntax-string">`    Views: ${note.v}, Downloads: ${note.d}`</span>);
+});</pre>
+                </div>
+                <div class="example-output">
+                    <div class="example-actions">
+                        <button class="btn-run" onclick="runExample4()">Run Example</button>
+                        <button class="btn-copy" onclick="copyCode(this)">Copy Code</button>
+                    </div>
+                    <div class="output-area" id="output-4">Click "Run Example" to see results</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Example 5: Trending Notes -->
+        <section class="example-section">
+            <div class="example-header">
+                <h2>Trending Notes</h2>
+                <p>Get the most viewed notes</p>
+            </div>
+            <div class="example-content">
+                <div class="example-code">
+<pre><span class="syntax-comment">// Get top 5 trending notes</span>
+<span class="syntax-keyword">const</span> trending = <span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">getTrendingNotes</span>(<span class="syntax-number">5</span>);
+
+<span class="syntax-function">console.log</span>(<span class="syntax-string">'🔥 Trending Notes:\n'</span>);
+
+trending.items.<span class="syntax-function">forEach</span>((note, i) => {
+    <span class="syntax-function">console.log</span>(<span class="syntax-string">`${i + 1}. ${note.title}`</span>);
+    <span class="syntax-function">console.log</span>(<span class="syntax-string">`   👀 ${note.v} views | 📥 ${note.d} downloads`</span>);
+    <span class="syntax-function">console.log</span>(<span class="syntax-string">`   Author: ${note.auth}\n`</span>);
+});</pre>
+                </div>
+                <div class="example-output">
+                    <div class="example-actions">
+                        <button class="btn-run" onclick="runExample5()">Run Example</button>
+                        <button class="btn-copy" onclick="copyCode(this)">Copy Code</button>
+                    </div>
+                    <div class="output-area" id="output-5">Click "Run Example" to see results</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Example 6: Event Handling -->
+        <section class="example-section">
+            <div class="example-header">
+                <h2>Event Handling</h2>
+                <p>Listen to API events for logging and monitoring</p>
+            </div>
+            <div class="example-content">
+                <div class="example-code">
+<pre><span class="syntax-comment">// Set up event listeners</span>
+openNotesAPI.<span class="syntax-function">on</span>(<span class="syntax-string">'request:start'</span>, (data) => {
+    <span class="syntax-function">console.log</span>(<span class="syntax-string">'🚀 Request started'</span>);
+});
+
+openNotesAPI.<span class="syntax-function">on</span>(<span class="syntax-string">'request:success'</span>, (data) => {
+    <span class="syntax-function">console.log</span>(<span class="syntax-string">'✅ Request succeeded'</span>);
+});
+
+openNotesAPI.<span class="syntax-function">on</span>(<span class="syntax-string">'cache:hit'</span>, (data) => {
+    <span class="syntax-function">console.log</span>(<span class="syntax-string">'📦 Cache hit!'</span>);
+});
+
+<span class="syntax-comment">// Make a request to trigger events</span>
+<span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">getNotes</span>({ <span class="syntax-property">limit</span>: <span class="syntax-number">1</span> });
+
+<span class="syntax-comment">// Second request will hit cache</span>
+<span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">getNotes</span>({ <span class="syntax-property">limit</span>: <span class="syntax-number">1</span> });</pre>
+                </div>
+                <div class="example-output">
+                    <div class="example-actions">
+                        <button class="btn-run" onclick="runExample6()">Run Example</button>
+                        <button class="btn-copy" onclick="copyCode(this)">Copy Code</button>
+                    </div>
+                    <div class="output-area" id="output-6">Click "Run Example" to see results</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Example 7: Client Statistics -->
+        <section class="example-section">
+            <div class="example-header">
+                <h2>Client Statistics</h2>
+                <p>Monitor API client performance and cache efficiency</p>
+            </div>
+            <div class="example-content">
+                <div class="example-code">
+<pre><span class="syntax-comment">// Make several requests</span>
+<span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">getNotes</span>();
+<span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">getNotes</span>(); <span class="syntax-comment">// Will use cache</span>
+<span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">getStatistics</span>();
+
+<span class="syntax-comment">// Get client statistics</span>
+<span class="syntax-keyword">const</span> clientStats = openNotesAPI.<span class="syntax-function">getClientStats</span>();
+
+<span class="syntax-function">console.log</span>(<span class="syntax-string">'API Client Statistics:'</span>);
+<span class="syntax-function">console.log</span>(<span class="syntax-string">'  Total Requests:'</span>, clientStats.requestCount);
+<span class="syntax-function">console.log</span>(<span class="syntax-string">'  Successful:'</span>, clientStats.successCount);
+<span class="syntax-function">console.log</span>(<span class="syntax-string">'  Errors:'</span>, clientStats.errorCount);
+<span class="syntax-function">console.log</span>(<span class="syntax-string">'  Cache Hits:'</span>, clientStats.cacheHits);
+<span class="syntax-function">console.log</span>(<span class="syntax-string">'  Cache Misses:'</span>, clientStats.cacheMisses);</pre>
+                </div>
+                <div class="example-output">
+                    <div class="example-actions">
+                        <button class="btn-run" onclick="runExample7()">Run Example</button>
+                        <button class="btn-copy" onclick="copyCode(this)">Copy Code</button>
+                    </div>
+                    <div class="output-area" id="output-7">Click "Run Example" to see results</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Example 8: Full Integration -->
+        <section class="example-section">
+            <div class="example-header">
+                <h2>Full Integration Example</h2>
+                <p>Complete example showing multiple API features together</p>
+            </div>
+            <div class="example-content">
+                <div class="example-code">
+<pre><span class="syntax-keyword">async function</span> <span class="syntax-function">displayDashboard</span>() {
+    <span class="syntax-comment">// Check API health</span>
+    <span class="syntax-keyword">const</span> healthy = <span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">healthCheck</span>();
+    <span class="syntax-function">console.log</span>(<span class="syntax-string">'API Status:'</span>, healthy ? <span class="syntax-string">'✅ Online'</span> : <span class="syntax-string">'❌ Offline'</span>);
+    
+    <span class="syntax-keyword">if</span> (!healthy) <span class="syntax-keyword">return</span>;
+    
+    <span class="syntax-comment">// Get stats</span>
+    <span class="syntax-keyword">const</span> stats = <span class="syntax-keyword">await</span> openNotesAPI.<span class="syntax-function">getStatistics</span>();
+    
+    <span class="syntax-function">console.log</span>(<span class="syntax-string">'\n📊 Dashboard\n'</span>);
+    <span class="syntax-function">console.log</span>(<span class="syntax-string">`Total Notes: ${stats.totalNotes}`</span>);
+    <span class="syntax-function">console.log</span>(<span class="syntax-string">`Total Views: ${stats.totalViews}`</span>);
+    
+    <span class="syntax-comment">// Show top note</span>
+    <span class="syntax-keyword">if</span> (stats.topViewedNotes[<span class="syntax-number">0</span>]) {
+        <span class="syntax-keyword">const</span> top = stats.topViewedNotes[<span class="syntax-number">0</span>];
+        <span class="syntax-function">console.log</span>(<span class="syntax-string">`\n🏆 Top Note: "${top.title}"`</span>);
+        <span class="syntax-function">console.log</span>(<span class="syntax-string">`   ${top.v} views, ${top.d} downloads`</span>);
+    }
+}
+
+<span class="syntax-function">displayDashboard</span>();</pre>
+                </div>
+                <div class="example-output">
+                    <div class="example-actions">
+                        <button class="btn-run" onclick="runExample8()">Run Example</button>
+                        <button class="btn-copy" onclick="copyCode(this)">Copy Code</button>
+                    </div>
+                    <div class="output-area" id="output-8">Click "Run Example" to see results</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Demo: Notes Browser -->
+        <section class="example-section">
+            <div class="example-header">
+                <h2>Live Demo: Notes Browser Component</h2>
+                <p>Interactive notes browser with full functionality</p>
+            </div>
+            <div class="live-demo">
+                <div id="demo-browser"></div>
+            </div>
+        </section>
+
+        <!-- Live Demo: Search -->
+        <section class="example-section">
+            <div class="example-header">
+                <h2>Live Demo: Search Component</h2>
+                <p>Try the search with autocomplete suggestions</p>
+            </div>
+            <div class="live-demo">
+                <div id="demo-search" style="max-width: 400px;"></div>
+                <div id="search-results" style="margin-top: var(--spacing-lg);"></div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="app-footer">
+        <p>OpenNotes API Examples &copy; 2026</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/api-client.js"></script>
+    <script src="js/notes-browser.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/analytics.js"></script>
+    
+    <script>
+        // Helper to write output
+        function writeOutput(id, text) {
+            const output = document.getElementById(id);
+            output.textContent = text;
+            output.classList.remove('loading');
+        }
+
+        function appendOutput(id, text) {
+            const output = document.getElementById(id);
+            output.textContent += text + '\n';
+        }
+
+        function showLoading(id) {
+            const output = document.getElementById(id);
+            output.textContent = 'Loading...';
+            output.classList.add('loading');
+        }
+
+        // Copy code function
+        function copyCode(btn) {
+            const codeBlock = btn.closest('.example-content').querySelector('.example-code pre');
+            const text = codeBlock.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = originalText, 2000);
+            });
+        }
+
+        // Example 1: Get All Notes
+        async function runExample1() {
+            showLoading('output-1');
+            try {
+                const response = await openNotesAPI.getNotes({
+                    sort: 'views',
+                    limit: 5
+                });
+                
+                let output = '';
+                response.items.forEach(note => {
+                    output += `${note.title} - ${note.v} views\n`;
+                });
+                writeOutput('output-1', output);
+            } catch (error) {
+                writeOutput('output-1', 'Error: ' + error.message);
+            }
+        }
+
+        // Example 2: Search Notes
+        async function runExample2() {
+            showLoading('output-2');
+            try {
+                const results = await openNotesAPI.searchNotes('physics', {
+                    format: 'pdf',
+                    limit: 10
+                });
+                
+                let output = `Found ${results.items.length} notes\n\n`;
+                results.items.forEach(note => {
+                    output += `- ${note.title} by ${note.auth}\n`;
+                });
+                writeOutput('output-2', output);
+            } catch (error) {
+                writeOutput('output-2', 'Error: ' + error.message);
+            }
+        }
+
+        // Example 3: Get Statistics
+        async function runExample3() {
+            showLoading('output-3');
+            try {
+                const stats = await openNotesAPI.getStatistics();
+                
+                let output = '';
+                output += `Total Notes: ${stats.totalNotes}\n`;
+                output += `Total Views: ${stats.totalViews}\n`;
+                output += `Total Downloads: ${stats.totalDownloads}\n`;
+                output += `\nFormat Distribution:\n`;
+                
+                Object.entries(stats.formats).forEach(([fmt, count]) => {
+                    output += `  ${fmt}: ${count} notes\n`;
+                });
+                
+                writeOutput('output-3', output);
+            } catch (error) {
+                writeOutput('output-3', 'Error: ' + error.message);
+            }
+        }
+
+        // Example 4: Get Notes by Author
+        async function runExample4() {
+            showLoading('output-4');
+            try {
+                const authorNotes = await openNotesAPI.getNotesByAuthor('Chenyu Li');
+                
+                let output = 'Notes by Chenyu Li:\n\n';
+                authorNotes.items.forEach(note => {
+                    output += `  - ${note.title}\n`;
+                    output += `    Views: ${note.v}, Downloads: ${note.d}\n\n`;
+                });
+                writeOutput('output-4', output);
+            } catch (error) {
+                writeOutput('output-4', 'Error: ' + error.message);
+            }
+        }
+
+        // Example 5: Trending Notes
+        async function runExample5() {
+            showLoading('output-5');
+            try {
+                const trending = await openNotesAPI.getTrendingNotes(5);
+                
+                let output = '🔥 Trending Notes:\n\n';
+                trending.items.forEach((note, i) => {
+                    output += `${i + 1}. ${note.title}\n`;
+                    output += `   👀 ${note.v} views | 📥 ${note.d} downloads\n`;
+                    output += `   Author: ${note.auth}\n\n`;
+                });
+                writeOutput('output-5', output);
+            } catch (error) {
+                writeOutput('output-5', 'Error: ' + error.message);
+            }
+        }
+
+        // Example 6: Event Handling
+        async function runExample6() {
+            const outputId = 'output-6';
+            writeOutput(outputId, '');
+            
+            const onStart = () => appendOutput(outputId, '🚀 Request started');
+            const onSuccess = () => appendOutput(outputId, '✅ Request succeeded');
+            const onCache = () => appendOutput(outputId, '📦 Cache hit!');
+            
+            openNotesAPI.on('request:start', onStart);
+            openNotesAPI.on('request:success', onSuccess);
+            openNotesAPI.on('cache:hit', onCache);
+            
+            try {
+                // Clear cache first
+                openNotesAPI.clearCache();
+                
+                await openNotesAPI.getNotes({ limit: 1 });
+                appendOutput(outputId, '\n--- Making second request (should hit cache) ---\n');
+                await openNotesAPI.getNotes({ limit: 1 });
+            } catch (error) {
+                appendOutput(outputId, 'Error: ' + error.message);
+            }
+            
+            // Cleanup listeners
+            openNotesAPI.off('request:start', onStart);
+            openNotesAPI.off('request:success', onSuccess);
+            openNotesAPI.off('cache:hit', onCache);
+        }
+
+        // Example 7: Client Statistics
+        async function runExample7() {
+            showLoading('output-7');
+            
+            // Reset stats for demo
+            openNotesAPI.resetClientStats();
+            openNotesAPI.clearCache();
+            
+            try {
+                await openNotesAPI.getNotes();
+                await openNotesAPI.getNotes(); // Cache hit
+                await openNotesAPI.getStatistics();
+                
+                const clientStats = openNotesAPI.getClientStats();
+                
+                let output = 'API Client Statistics:\n\n';
+                output += `  Total Requests: ${clientStats.requestCount}\n`;
+                output += `  Successful: ${clientStats.successCount}\n`;
+                output += `  Errors: ${clientStats.errorCount}\n`;
+                output += `  Cache Hits: ${clientStats.cacheHits}\n`;
+                output += `  Cache Misses: ${clientStats.cacheMisses}\n`;
+                
+                writeOutput('output-7', output);
+            } catch (error) {
+                writeOutput('output-7', 'Error: ' + error.message);
+            }
+        }
+
+        // Example 8: Full Integration
+        async function runExample8() {
+            showLoading('output-8');
+            
+            try {
+                const healthy = await openNotesAPI.healthCheck();
+                let output = 'API Status: ' + (healthy ? '✅ Online' : '❌ Offline') + '\n';
+                
+                if (!healthy) {
+                    writeOutput('output-8', output);
+                    return;
+                }
+                
+                const stats = await openNotesAPI.getStatistics();
+                
+                output += '\n📊 Dashboard\n\n';
+                output += `Total Notes: ${stats.totalNotes}\n`;
+                output += `Total Views: ${stats.totalViews}\n`;
+                
+                if (stats.topViewedNotes[0]) {
+                    const top = stats.topViewedNotes[0];
+                    output += `\n🏆 Top Note: "${top.title}"\n`;
+                    output += `   ${top.v} views, ${top.d} downloads\n`;
+                }
+                
+                writeOutput('output-8', output);
+            } catch (error) {
+                writeOutput('output-8', 'Error: ' + error.message);
+            }
+        }
+
+        // Initialize Live Demos
+        document.addEventListener('DOMContentLoaded', () => {
+            // Notes Browser Demo
+            const demoBrowser = new NotesBrowser('#demo-browser', {
+                viewMode: 'grid',
+                pageSize: 6,
+                showFilters: true,
+                showSorting: true,
+                showPagination: true,
+                enableFavorites: true,
+                onNoteClick: (note) => {
+                    alert(`Selected: ${note.title}\n\nViews: ${note.v}\nDownloads: ${note.d}`);
+                }
+            });
+
+            // Search Demo
+            const demoSearch = new OpenNotesSearch({
+                container: '#demo-search',
+                placeholder: 'Try searching for "calculus" or "physics"...',
+                onSearch: async (query) => {
+                    const resultsContainer = document.getElementById('search-results');
+                    resultsContainer.innerHTML = '<div class="spinner"></div>';
+                    
+                    if (!query) {
+                        resultsContainer.innerHTML = '';
+                        return;
+                    }
+                    
+                    try {
+                        const results = await openNotesAPI.searchNotes(query, { limit: 5 });
+                        
+                        if (results.items.length === 0) {
+                            resultsContainer.innerHTML = '<p>No results found</p>';
+                            return;
+                        }
+                        
+                        resultsContainer.innerHTML = results.items.map(note => `
+                            <div style="padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px;">
+                                <strong>${note.title}</strong>
+                                <p style="margin: 5px 0 0; color: var(--text-secondary); font-size: 0.875rem;">
+                                    ${note.auth} · ${note.v} views · ${(note.fmt || note.format).toUpperCase()}
+                                </p>
+                            </div>
+                        `).join('');
+                    } catch (error) {
+                        resultsContainer.innerHTML = `<p style="color: var(--error-color);">Error: ${error.message}</p>`;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

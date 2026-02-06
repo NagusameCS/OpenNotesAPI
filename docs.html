@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation - OpenNotes API</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .docs-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: var(--spacing-lg);
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--spacing-lg);
+        }
+        
+        .docs-sidebar {
+            position: sticky;
+            top: var(--spacing-lg);
+            height: fit-content;
+            background: var(--bg-primary);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .docs-sidebar h3 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .docs-nav {
+            list-style: none;
+        }
+        
+        .docs-nav li {
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .docs-nav a {
+            display: block;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            color: var(--text-secondary);
+            border-radius: var(--border-radius-sm);
+            transition: all var(--transition-fast);
+        }
+        
+        .docs-nav a:hover,
+        .docs-nav a.active {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .docs-nav .sub-nav {
+            margin-left: var(--spacing-md);
+            font-size: 0.875rem;
+        }
+        
+        .docs-content {
+            background: var(--bg-primary);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-xl);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .docs-content h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .docs-content h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: var(--spacing-xl) 0 var(--spacing-md);
+            color: var(--text-primary);
+        }
+        
+        .docs-content h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: var(--spacing-lg) 0 var(--spacing-sm);
+        }
+        
+        .docs-content p {
+            margin-bottom: var(--spacing-md);
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+        
+        .docs-content ul, .docs-content ol {
+            margin: var(--spacing-md) 0;
+            padding-left: var(--spacing-lg);
+        }
+        
+        .docs-content li {
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-secondary);
+        }
+        
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius);
+            overflow-x: auto;
+            margin: var(--spacing-md) 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+        
+        .code-inline {
+            background: var(--bg-tertiary);
+            padding: 2px 6px;
+            border-radius: var(--border-radius-sm);
+            font-family: monospace;
+            font-size: 0.875em;
+            color: var(--primary-color);
+        }
+        
+        .method-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: var(--border-radius-sm);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-right: var(--spacing-sm);
+        }
+        
+        .method-get { background: #22c55e; color: white; }
+        .method-post { background: #3b82f6; color: white; }
+        .method-put { background: #f59e0b; color: white; }
+        .method-delete { background: #ef4444; color: white; }
+        
+        .endpoint-path {
+            font-family: monospace;
+            background: var(--bg-tertiary);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--border-radius-sm);
+        }
+        
+        .params-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: var(--spacing-md) 0;
+        }
+        
+        .params-table th,
+        .params-table td {
+            text-align: left;
+            padding: var(--spacing-sm);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .params-table th {
+            font-weight: 600;
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+        }
+        
+        .params-table td {
+            color: var(--text-secondary);
+        }
+        
+        .param-required {
+            color: var(--error-color);
+            font-weight: 600;
+        }
+        
+        .param-optional {
+            color: var(--text-muted);
+        }
+        
+        .response-example {
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            margin: var(--spacing-md) 0;
+        }
+        
+        .warning-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius-sm);
+            margin: var(--spacing-md) 0;
+            color: #92400e;
+        }
+        
+        .info-box {
+            background: var(--primary-light);
+            border-left: 4px solid var(--primary-color);
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius-sm);
+            margin: var(--spacing-md) 0;
+            color: #1e40af;
+        }
+        
+        @media (max-width: 1024px) {
+            .docs-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .docs-sidebar {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="page-header">
+        <div class="container">
+            <h1 class="page-title">📚 OpenNotes API Documentation</h1>
+            <p class="page-subtitle">Complete reference for the OpenNotes API integration</p>
+        </div>
+    </header>
+
+    <div class="docs-container">
+        <!-- Sidebar Navigation -->
+        <aside class="docs-sidebar">
+            <h3>Getting Started</h3>
+            <ul class="docs-nav">
+                <li><a href="#introduction">Introduction</a></li>
+                <li><a href="#authentication">Authentication</a></li>
+                <li><a href="#quick-start">Quick Start</a></li>
+            </ul>
+            
+            <h3>API Reference</h3>
+            <ul class="docs-nav">
+                <li><a href="#notes-endpoints">Notes</a></li>
+                <ul class="sub-nav">
+                    <li><a href="#get-notes">Get Notes List</a></li>
+                    <li><a href="#get-note">Get Single Note</a></li>
+                    <li><a href="#search-notes">Search Notes</a></li>
+                </ul>
+                <li><a href="#counters-endpoints">Counters</a></li>
+                <ul class="sub-nav">
+                    <li><a href="#increment-views">Increment Views</a></li>
+                    <li><a href="#increment-downloads">Increment Downloads</a></li>
+                </ul>
+                <li><a href="#statistics-endpoints">Statistics</a></li>
+            </ul>
+            
+            <h3>JavaScript SDK</h3>
+            <ul class="docs-nav">
+                <li><a href="#sdk-installation">Installation</a></li>
+                <li><a href="#sdk-client">API Client</a></li>
+                <li><a href="#sdk-browser">Notes Browser</a></li>
+                <li><a href="#sdk-search">Search Module</a></li>
+                <li><a href="#sdk-analytics">Analytics</a></li>
+            </ul>
+            
+            <h3>More</h3>
+            <ul class="docs-nav">
+                <li><a href="#response-format">Response Format</a></li>
+                <li><a href="#error-handling">Error Handling</a></li>
+                <li><a href="#rate-limiting">Rate Limiting</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="docs-content">
+            <h1>API Documentation</h1>
+            
+            <section id="introduction">
+                <h2>Introduction</h2>
+                <p>The OpenNotes API provides programmatic access to the OpenNotes educational content platform. Use this API to browse, search, and integrate notes into your applications.</p>
+                
+                <div class="info-box">
+                    <strong>Base URL:</strong> <code class="code-inline">https://opennotes.tebby.workers.dev</code>
+                </div>
+            </section>
+
+            <section id="authentication">
+                <h2>Authentication</h2>
+                <p>All API requests must include the <code class="code-inline">X-Api-Key</code> header with your secret API key.</p>
+                
+                <div class="warning-box">
+                    <strong>Important:</strong> Your API key is sensitive. Never expose it in client-side code that could be viewed by users. Requests must also originate from an approved domain.
+                </div>
+                
+                <h3>Required Headers</h3>
+                <table class="params-table">
+                    <thead>
+                        <tr>
+                            <th>Header</th>
+                            <th>Value</th>
+                            <th>Required</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code class="code-inline">X-Api-Key</code></td>
+                            <td>Your secret API key</td>
+                            <td class="param-required">Yes</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">Content-Type</code></td>
+                            <td>application/json</td>
+                            <td class="param-optional">Recommended</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="quick-start">
+                <h2>Quick Start</h2>
+                <p>Get up and running in minutes with this quick start guide.</p>
+                
+                <h3>1. Include the SDK</h3>
+                <div class="code-block">
+&lt;script src="js/config.js"&gt;&lt;/script&gt;
+&lt;script src="js/api-client.js"&gt;&lt;/script&gt;
+                </div>
+                
+                <h3>2. Make Your First Request</h3>
+                <div class="code-block">
+// Get list of notes
+const response = await openNotesAPI.getNotes({
+    limit: 10,
+    sort: 'views'
+});
+
+console.log(response.items); // Array of notes
+console.log(response.meta);  // Metadata including total views
+                </div>
+                
+                <h3>3. Search for Notes</h3>
+                <div class="code-block">
+// Search by keyword
+const results = await openNotesAPI.searchNotes('physics', {
+    format: 'pdf',
+    limit: 20
+});
+
+results.items.forEach(note => {
+    console.log(note.title, note.auth);
+});
+                </div>
+            </section>
+
+            <section id="notes-endpoints">
+                <h2>Notes Endpoints</h2>
+                
+                <article id="get-notes">
+                    <h3><span class="method-badge method-get">GET</span> Get Notes List</h3>
+                    <p>Retrieve a list of all notes with optional filtering and sorting.</p>
+                    
+                    <p><span class="endpoint-path">?type=list</span></p>
+                    
+                    <h4>Query Parameters</h4>
+                    <table class="params-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code class="code-inline">type</code></td>
+                                <td>string</td>
+                                <td><span class="param-required">Required.</span> Must be "list"</td>
+                            </tr>
+                            <tr>
+                                <td><code class="code-inline">sort</code></td>
+                                <td>string</td>
+                                <td>Sort order: relevance, views, downloads, updated, name</td>
+                            </tr>
+                            <tr>
+                                <td><code class="code-inline">limit</code></td>
+                                <td>integer</td>
+                                <td>Number of results (default: 20, max: 100)</td>
+                            </tr>
+                            <tr>
+                                <td><code class="code-inline">offset</code></td>
+                                <td>integer</td>
+                                <td>Pagination offset (default: 0)</td>
+                            </tr>
+                            <tr>
+                                <td><code class="code-inline">q</code></td>
+                                <td>string</td>
+                                <td>Search query</td>
+                            </tr>
+                            <tr>
+                                <td><code class="code-inline">format</code></td>
+                                <td>string</td>
+                                <td>Filter by format: pdf, docx, pptx, etc.</td>
+                            </tr>
+                            <tr>
+                                <td><code class="code-inline">author</code></td>
+                                <td>string</td>
+                                <td>Filter by author name</td>
+                            </tr>
+                            <tr>
+                                <td><code class="code-inline">verified</code></td>
+                                <td>boolean</td>
+                                <td>Filter to verified notes only</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h4>Example Request</h4>
+                    <div class="code-block">
+const notes = await openNotesAPI.getNotes({
+    sort: 'views',
+    limit: 10,
+    filters: { format: 'pdf' }
+});
+                    </div>
+                </article>
+
+                <article id="get-note">
+                    <h3><span class="method-badge method-get">GET</span> Get Single Note</h3>
+                    <p>Retrieve details for a specific note by ID or name.</p>
+                    
+                    <p><span class="endpoint-path">?type=note&amp;noteId={noteId}</span></p>
+                    
+                    <h4>Example Request</h4>
+                    <div class="code-block">
+const note = await openNotesAPI.getNote('IB Physics (Magnetism).pdf');
+console.log(note.title, note.v, note.d);
+                    </div>
+                </article>
+
+                <article id="search-notes">
+                    <h3><span class="method-badge method-get">GET</span> Search Notes</h3>
+                    <p>Search for notes by keyword with advanced filtering.</p>
+                    
+                    <h4>Example Request</h4>
+                    <div class="code-block">
+// Simple search
+const results = await openNotesAPI.searchNotes('calculus');
+
+// Advanced search with filters
+const physicsNotes = await openNotesAPI.searchNotes('physics', {
+    format: 'pdf',
+    verifiedOnly: true,
+    sort: 'views',
+    limit: 10
+});
+                    </div>
+                </article>
+            </section>
+
+            <section id="counters-endpoints">
+                <h2>Counters Endpoints</h2>
+                
+                <article id="increment-views">
+                    <h3><span class="method-badge method-post">POST</span> Increment Views</h3>
+                    <p>Increment the view counter for a note. Call this when a user views a note.</p>
+                    
+                    <p><span class="endpoint-path">?type=note&amp;noteId={noteId}&amp;counter=views</span></p>
+                    
+                    <h4>Example Request</h4>
+                    <div class="code-block">
+await openNotesAPI.incrementViews('AP Calculus AB Notes.pdf');
+                    </div>
+                </article>
+
+                <article id="increment-downloads">
+                    <h3><span class="method-badge method-post">POST</span> Increment Downloads</h3>
+                    <p>Increment the download counter for a note. Call this when a user downloads a note.</p>
+                    
+                    <p><span class="endpoint-path">?type=note&amp;noteId={noteId}&amp;counter=downloads</span></p>
+                    
+                    <h4>Example Request</h4>
+                    <div class="code-block">
+await openNotesAPI.incrementDownloads('AP Calculus AB Notes.pdf');
+                    </div>
+                </article>
+            </section>
+
+            <section id="statistics-endpoints">
+                <h2>Statistics</h2>
+                <p>Get comprehensive statistics about the notes collection.</p>
+                
+                <h4>Example Request</h4>
+                <div class="code-block">
+const stats = await openNotesAPI.getStatistics();
+
+console.log('Total Notes:', stats.totalNotes);
+console.log('Total Views:', stats.totalViews);
+console.log('Format Distribution:', stats.formats);
+console.log('Top Authors:', stats.authors);
+console.log('Top Viewed:', stats.topViewedNotes);
+                </div>
+                
+                <h4>Statistics Object Properties</h4>
+                <table class="params-table">
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code class="code-inline">totalNotes</code></td>
+                            <td>number</td>
+                            <td>Total number of notes</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">totalViews</code></td>
+                            <td>number</td>
+                            <td>Total site-wide views</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">totalDownloads</code></td>
+                            <td>number</td>
+                            <td>Total downloads across all notes</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">verifiedNotes</code></td>
+                            <td>number</td>
+                            <td>Count of verified notes</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">formats</code></td>
+                            <td>object</td>
+                            <td>Notes count by format</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">authors</code></td>
+                            <td>object</td>
+                            <td>Notes count by author</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">topViewedNotes</code></td>
+                            <td>array</td>
+                            <td>Top 5 most viewed notes</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">topDownloadedNotes</code></td>
+                            <td>array</td>
+                            <td>Top 5 most downloaded notes</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="sdk-installation">
+                <h2>JavaScript SDK Installation</h2>
+                <p>Include the SDK files in your HTML page:</p>
+                
+                <div class="code-block">
+&lt;!-- Configuration (contains API key) --&gt;
+&lt;script src="js/config.js"&gt;&lt;/script&gt;
+
+&lt;!-- Core Modules --&gt;
+&lt;script src="js/utils.js"&gt;&lt;/script&gt;
+&lt;script src="js/events.js"&gt;&lt;/script&gt;
+&lt;script src="js/api-client.js"&gt;&lt;/script&gt;
+
+&lt;!-- UI Components --&gt;
+&lt;script src="js/notes-browser.js"&gt;&lt;/script&gt;
+&lt;script src="js/search.js"&gt;&lt;/script&gt;
+&lt;script src="js/analytics.js"&gt;&lt;/script&gt;
+
+&lt;!-- Feature Modules --&gt;
+&lt;script src="js/favorites.js"&gt;&lt;/script&gt;
+&lt;script src="js/export.js"&gt;&lt;/script&gt;
+&lt;script src="js/theme.js"&gt;&lt;/script&gt;
+
+&lt;!-- SDK Bundle --&gt;
+&lt;script src="js/opennotes.js"&gt;&lt;/script&gt;
+
+&lt;!-- Styles --&gt;
+&lt;link rel="stylesheet" href="css/styles.css"&gt;
+                </div>
+            </section>
+
+            <section id="sdk-client">
+                <h2>API Client</h2>
+                <p>The <code class="code-inline">OpenNotesAPIClient</code> class provides all core API functionality.</p>
+                
+                <h3>Creating a Custom Instance</h3>
+                <div class="code-block">
+// Use the default instance
+const api = openNotesAPI;
+
+// Or create a custom instance
+const customApi = new OpenNotesAPIClient({
+    apiUrl: 'https://opennotes.tebby.workers.dev',
+    apiKey: 'your-api-key',
+    timeout: 10000,
+    retries: 3
+});
+                </div>
+                
+                <h3>Available Methods</h3>
+                <table class="params-table">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code class="code-inline">getNotes(options)</code></td>
+                            <td>Get list of notes with options</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">getNote(noteId)</code></td>
+                            <td>Get single note by ID</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">searchNotes(query, options)</code></td>
+                            <td>Search notes by keyword</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">getNotesByAuthor(author)</code></td>
+                            <td>Get notes by author</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">getNotesByFormat(format)</code></td>
+                            <td>Get notes by format</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">getTrendingNotes(limit)</code></td>
+                            <td>Get most viewed notes</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">getMostDownloaded(limit)</code></td>
+                            <td>Get most downloaded notes</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">getRecentNotes(limit)</code></td>
+                            <td>Get recently updated notes</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">incrementViews(noteId)</code></td>
+                            <td>Increment view counter</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">incrementDownloads(noteId)</code></td>
+                            <td>Increment download counter</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">getStatistics()</code></td>
+                            <td>Get comprehensive statistics</td>
+                        </tr>
+                        <tr>
+                            <td><code class="code-inline">healthCheck()</code></td>
+                            <td>Check API availability</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Events</h3>
+                <div class="code-block">
+// Listen for API events
+openNotesAPI.on('request:start', (data) => {
+    console.log('Request started:', data.url);
+});
+
+openNotesAPI.on('request:success', (data) => {
+    console.log('Request succeeded:', data);
+});
+
+openNotesAPI.on('request:error', (data) => {
+    console.error('Request failed:', data.error);
+});
+
+openNotesAPI.on('cache:hit', (data) => {
+    console.log('Cache hit:', data.key);
+});
+                </div>
+            </section>
+
+            <section id="sdk-browser">
+                <h2>Notes Browser Component</h2>
+                <p>Create interactive notes browsing interfaces easily.</p>
+                
+                <div class="code-block">
+const browser = new NotesBrowser('#container', {
+    viewMode: 'grid',          // 'grid' or 'list'
+    pageSize: 20,              // Notes per page
+    showFilters: true,         // Show filter controls
+    showSorting: true,         // Show sort dropdown
+    showPagination: true,      // Show pagination controls
+    enableFavorites: true,     // Enable favorites feature
+    showThumbnails: true,      // Show note thumbnails
+    infiniteScroll: false,     // Enable infinite scroll
+    
+    // Callbacks
+    onNoteClick: (note) => {
+        console.log('Note clicked:', note);
+    },
+    onDownload: (note) => {
+        console.log('Download started:', note);
+    }
+});
+
+// Methods
+browser.refresh();                    // Reload notes
+browser.setFilter('format', 'pdf');   // Set filter
+browser.setSort('views');             // Change sort order
+browser.getNotes();                   // Get current notes
+browser.loadFavoriteNotes();          // Load favorites only
+                </div>
+            </section>
+
+            <section id="sdk-search">
+                <h2>Search Component</h2>
+                <p>Add powerful search functionality with autocomplete.</p>
+                
+                <div class="code-block">
+const search = new OpenNotesSearch({
+    container: '#search-container',
+    placeholder: 'Search notes...',
+    debounceMs: 300,
+    minChars: 2,
+    maxSuggestions: 8,
+    showHistory: true,
+    
+    onSearch: (query) => {
+        console.log('Search for:', query);
+    },
+    onSelect: (value) => {
+        console.log('Selected:', value);
+    }
+});
+
+// Advanced search
+const results = await search.advancedSearch('author:Chenyu format:pdf physics');
+
+// Full-text search
+const matches = await search.fullTextSearch('calculus');
+                </div>
+            </section>
+
+            <section id="sdk-analytics">
+                <h2>Analytics Dashboard</h2>
+                <p>Display comprehensive statistics and charts.</p>
+                
+                <div class="code-block">
+const analytics = new OpenNotesAnalytics({
+    container: '#analytics',
+    showCharts: true,
+    refreshInterval: 60000,  // Auto-refresh every minute
+    theme: 'light'
+});
+
+// Get current stats
+const stats = analytics.getStats();
+
+// Export data
+analytics.exportData('json');  // or 'csv'
+                </div>
+            </section>
+
+            <section id="response-format">
+                <h2>Response Format</h2>
+                <p>All API responses follow this structure:</p>
+                
+                <h3>Notes List Response</h3>
+                <div class="code-block">
+{
+    "items": [
+        {
+            "id": 1,
+            "name": "AP Calculus AB Notes.pdf",
+            "title": "AP Calculus AB Notes",
+            "format": "pdf",
+            "created_at": 1769830616519,
+            "v": 110,          // Views
+            "d": 5,            // Downloads
+            "auth": "Chenyu Li",
+            "is_verified": true,
+            "is_owner": false,
+            "thumb": "https://...",  // Thumbnail URL
+            "dl": "https://...",     // Download URL
+            "upd": "2025-08-19T03:41:58Z",
+            "fmt": "pdf",
+            "ai": false,
+            "size": "9.18 MiB"
+        }
+    ],
+    "meta": {
+        "views": 4734,
+        "user": {
+            "name": "Chenyu Li",
+            "picture": "https://...",
+            "is_admin": true
+        }
+    }
+}
+                </div>
+            </section>
+
+            <section id="error-handling">
+                <h2>Error Handling</h2>
+                <p>Handle API errors gracefully using try-catch:</p>
+                
+                <div class="code-block">
+try {
+    const notes = await openNotesAPI.getNotes();
+} catch (error) {
+    if (error instanceof OpenNotesAPIError) {
+        if (error.is403()) {
+            console.error('Access denied - check API key and origin');
+        } else if (error.is404()) {
+            console.error('Note not found');
+        } else if (error.is500()) {
+            console.error('Server error - try again later');
+        }
+    } else {
+        console.error('Network error:', error);
+    }
+}
+                </div>
+                
+                <h3>Common Error Codes</h3>
+                <table class="params-table">
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Meaning</th>
+                            <th>Solution</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>401</td>
+                            <td>Unauthorized</td>
+                            <td>Check X-Api-Key header</td>
+                        </tr>
+                        <tr>
+                            <td>403</td>
+                            <td>Forbidden</td>
+                            <td>Verify origin domain and API key</td>
+                        </tr>
+                        <tr>
+                            <td>404</td>
+                            <td>Not Found</td>
+                            <td>Check note ID/name</td>
+                        </tr>
+                        <tr>
+                            <td>429</td>
+                            <td>Rate Limited</td>
+                            <td>Slow down requests</td>
+                        </tr>
+                        <tr>
+                            <td>500</td>
+                            <td>Server Error</td>
+                            <td>Retry later</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="rate-limiting">
+                <h2>Rate Limiting</h2>
+                <p>To ensure fair usage, the API implements rate limiting:</p>
+                
+                <ul>
+                    <li>Maximum 60 requests per minute</li>
+                    <li>Maximum 1000 requests per hour</li>
+                    <li>Counter increment endpoints are limited to 10 per minute per note</li>
+                </ul>
+                
+                <p>The SDK includes built-in retry logic with exponential backoff to handle rate limiting gracefully.</p>
+            </section>
+        </main>
+    </div>
+
+    <footer class="app-footer">
+        <p>OpenNotes API Documentation &copy; 2026</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="OpenNotes API - Access educational notes through a powerful API">
+    <meta name="author" content="NagusameCS">
+    <title>OpenNotes API</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <style>
+        /* Page-specific styles */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
+            color: white;
+            padding: var(--spacing-xl) 0;
+        }
+        
+        .app-header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .app-logo {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .app-nav {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+        
+        .app-nav a {
+            color: rgba(255, 255, 255, 0.8);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--border-radius);
+            transition: all var(--transition-fast);
+        }
+        
+        .app-nav a:hover,
+        .app-nav a.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .hero {
+            background: var(--bg-primary);
+            padding: var(--spacing-xl) * 2 0;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: var(--spacing-md);
+            color: var(--text-primary);
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto var(--spacing-lg);
+        }
+        
+        .hero-search {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .main-tabs {
+            display: flex;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-md);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .tab-btn {
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border-radius: var(--border-radius);
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: all var(--transition-fast);
+        }
+        
+        .tab-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .tab-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .tab-panel {
+            display: none;
+            padding: var(--spacing-lg);
+        }
+        
+        .tab-panel.active {
+            display: block;
+        }
+        
+        .note-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-normal);
+        }
+        
+        .note-modal.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .note-modal-content {
+            background: var(--bg-primary);
+            border-radius: var(--border-radius-lg);
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            transform: translateY(20px);
+            transition: transform var(--transition-normal);
+        }
+        
+        .note-modal.open .note-modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: var(--text-secondary);
+        }
+        
+        .modal-close:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .modal-body {
+            padding: var(--spacing-lg);
+        }
+        
+        .modal-thumbnail {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+            border-radius: var(--border-radius);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .modal-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+        
+        .info-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        
+        .info-value {
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-lg);
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .modal-footer .btn {
+            flex: 1;
+        }
+        
+        .app-footer {
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border-color);
+            padding: var(--spacing-xl) 0;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+        }
+        
+        @media (max-width: 768px) {
+            .app-header .container {
+                flex-direction: column;
+                gap: var(--spacing-md);
+            }
+            
+            .app-nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .hero h1 {
+                font-size: 1.75rem;
+            }
+            
+            .main-tabs {
+                overflow-x: auto;
+                justify-content: flex-start;
+                padding: var(--spacing-sm);
+            }
+            
+            .tab-btn {
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <div class="container">
+            <div class="app-logo">
+                <span>📚</span>
+                <span>OpenNotes API</span>
+            </div>
+            <nav class="app-nav">
+                <a href="#browse" class="active">Browse</a>
+                <a href="#analytics">Analytics</a>
+                <a href="docs.html">API Docs</a>
+                <a href="https://opennotes.pages.dev" target="_blank">OpenNotes</a>
+                <a href="https://github.com/Tebby2008/OpenNotes" target="_blank">GitHub</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Access Educational Notes via API</h1>
+            <p>Browse, search, and integrate OpenNotes content into your applications with our comprehensive API.</p>
+            <div class="hero-search" id="main-search"></div>
+        </div>
+    </section>
+
+    <!-- Main Tabs -->
+    <div class="main-tabs">
+        <button class="tab-btn active" data-tab="browse">Browse Notes</button>
+        <button class="tab-btn" data-tab="trending">Trending</button>
+        <button class="tab-btn" data-tab="analytics">Analytics</button>
+        <button class="tab-btn" data-tab="favorites">Favorites</button>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Browse Panel -->
+            <div class="tab-panel active" id="panel-browse">
+                <div id="notes-browser"></div>
+            </div>
+
+            <!-- Trending Panel -->
+            <div class="tab-panel" id="panel-trending">
+                <h2 class="mb-2">Trending Notes</h2>
+                <div id="trending-notes"></div>
+            </div>
+
+            <!-- Analytics Panel -->
+            <div class="tab-panel" id="panel-analytics">
+                <div id="analytics-dashboard"></div>
+            </div>
+
+            <!-- Favorites Panel -->
+            <div class="tab-panel" id="panel-favorites">
+                <h2 class="mb-2">Your Favorites</h2>
+                <div id="favorites-browser"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Note Detail Modal -->
+    <div class="note-modal" id="note-modal">
+        <div class="note-modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title"></h2>
+                <button class="modal-close" id="modal-close">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <img class="modal-thumbnail" id="modal-thumbnail" src="" alt="">
+                <div class="modal-info">
+                    <div class="info-item">
+                        <span class="info-label">Author</span>
+                        <span class="info-value" id="modal-author"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Format</span>
+                        <span class="info-value" id="modal-format"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Views</span>
+                        <span class="info-value" id="modal-views"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Downloads</span>
+                        <span class="info-value" id="modal-downloads"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Size</span>
+                        <span class="info-value" id="modal-size"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Updated</span>
+                        <span class="info-value" id="modal-updated"></span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Status</span>
+                    <span class="info-value" id="modal-status"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="modal-copy-link">Copy Link</button>
+                <a class="btn btn-primary" id="modal-download" href="" target="_blank" download>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                    </svg>
+                    Download
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="container">
+            <div class="footer-links">
+                <a href="docs.html">API Documentation</a>
+                <a href="examples.html">Examples</a>
+                <a href="https://github.com/NagusameCS/OpenNotesAPI" target="_blank">Source Code</a>
+            </div>
+            <p>OpenNotes API &copy; 2026. Built for the OpenNotes platform.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/events.js"></script>
+    <script src="js/api-client.js"></script>
+    <script src="js/notes-browser.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/analytics.js"></script>
+    <script src="js/favorites.js"></script>
+    <script src="js/export.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/opennotes.js"></script>
+    
+    <script>
+        // ==================== APP INITIALIZATION ====================
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize main search
+            const mainSearch = new OpenNotesSearch({
+                container: '#main-search',
+                placeholder: 'Search for notes...',
+                onSearch: (query) => {
+                    // Switch to browse tab and search
+                    switchTab('browse');
+                    if (notesBrowser) {
+                        notesBrowser.setFilter('query', query);
+                    }
+                }
+            });
+
+            // Initialize notes browser
+            const notesBrowser = new NotesBrowser('#notes-browser', {
+                viewMode: 'grid',
+                pageSize: 20,
+                showFilters: true,
+                showSorting: true,
+                showPagination: true,
+                enableFavorites: true,
+                showThumbnails: true,
+                onNoteClick: openNoteModal,
+                onDownload: (note) => {
+                    console.log('Downloaded:', note.name);
+                }
+            });
+
+            // Initialize trending notes browser
+            const trendingBrowser = new NotesBrowser('#trending-notes', {
+                viewMode: 'grid',
+                pageSize: 12,
+                showFilters: false,
+                showSorting: false,
+                showPagination: false,
+                enableFavorites: true,
+                onNoteClick: openNoteModal
+            });
+            
+            // Set trending sort
+            trendingBrowser.setSort('views');
+
+            // Initialize favorites browser
+            const favoritesBrowser = new NotesBrowser('#favorites-browser', {
+                viewMode: 'grid',
+                pageSize: 20,
+                showFilters: false,
+                showSorting: false,
+                showPagination: false,
+                enableFavorites: true,
+                onNoteClick: openNoteModal
+            });
+
+            // Initialize analytics
+            const analytics = new OpenNotesAnalytics({
+                container: '#analytics-dashboard',
+                showCharts: true,
+                theme: 'light'
+            });
+
+            // ==================== TAB NAVIGATION ====================
+
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabPanels = document.querySelectorAll('.tab-panel');
+
+            function switchTab(tabId) {
+                tabBtns.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.tab === tabId);
+                });
+                
+                tabPanels.forEach(panel => {
+                    panel.classList.toggle('active', panel.id === `panel-${tabId}`);
+                });
+
+                // Load favorites when switching to favorites tab
+                if (tabId === 'favorites') {
+                    favoritesBrowser.loadFavoriteNotes();
+                }
+            }
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    switchTab(btn.dataset.tab);
+                });
+            });
+
+            // ==================== NOTE MODAL ====================
+
+            const modal = document.getElementById('note-modal');
+            const modalClose = document.getElementById('modal-close');
+            let currentNote = null;
+
+            function openNoteModal(note) {
+                currentNote = note;
+                
+                // Track view
+                openNotesAPI.incrementViews(note.name).catch(console.error);
+                
+                // Populate modal
+                document.getElementById('modal-title').textContent = note.title;
+                document.getElementById('modal-thumbnail').src = note.thumb;
+                document.getElementById('modal-author').textContent = note.auth || 'Unknown';
+                document.getElementById('modal-format').textContent = (note.fmt || note.format || '').toUpperCase();
+                document.getElementById('modal-views').textContent = (note.v || 0).toLocaleString();
+                document.getElementById('modal-downloads').textContent = (note.d || 0).toLocaleString();
+                document.getElementById('modal-size').textContent = note.size || 'Unknown';
+                document.getElementById('modal-updated').textContent = note.upd 
+                    ? new Date(note.upd).toLocaleDateString() 
+                    : 'Unknown';
+                
+                // Status badges
+                let status = [];
+                if (note.is_verified) status.push('✓ Verified');
+                if (note.is_owner) status.push('👤 Owner');
+                if (note.ai) status.push('🤖 AI Generated');
+                document.getElementById('modal-status').textContent = status.join(' • ') || 'Standard';
+                
+                // Download link
+                document.getElementById('modal-download').href = note.dl;
+                
+                // Open modal
+                modal.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeNoteModal() {
+                modal.classList.remove('open');
+                document.body.style.overflow = '';
+                currentNote = null;
+            }
+
+            modalClose.addEventListener('click', closeNoteModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeNoteModal();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.classList.contains('open')) {
+                    closeNoteModal();
+                }
+            });
+
+            // Copy Link button
+            document.getElementById('modal-copy-link').addEventListener('click', async () => {
+                if (!currentNote) return;
+                const url = currentNote.dl;
+                try {
+                    await navigator.clipboard.writeText(url);
+                    const btn = document.getElementById('modal-copy-link');
+                    const originalText = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => btn.textContent = originalText, 2000);
+                } catch (err) {
+                    console.error('Failed to copy:', err);
+                }
+            });
+
+            // Download tracking
+            document.getElementById('modal-download').addEventListener('click', () => {
+                if (currentNote) {
+                    openNotesAPI.incrementDownloads(currentNote.name).catch(console.error);
+                }
+            });
+
+            // ==================== NAVIGATION LINKS ====================
+
+            const navLinks = document.querySelectorAll('.app-nav a[href^="#"]');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const tabId = link.getAttribute('href').substring(1);
+                    switchTab(tabId);
+                    
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                });
+            });
+
+            // ==================== API EVENTS ====================
+
+            openNotesAPI.on('request:start', (data) => {
+                console.log('API Request:', data.url);
+            });
+
+            openNotesAPI.on('request:error', (data) => {
+                console.error('API Error:', data.error);
+            });
+
+            // ==================== HEALTH CHECK ====================
+
+            openNotesAPI.healthCheck().then(healthy => {
+                if (!healthy) {
+                    console.warn('OpenNotes API may be unavailable');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
