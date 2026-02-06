@@ -1,0 +1,132 @@
+{
+  "id": "physics-thermal",
+  "schemaVersion": "1.0",
+  "title": "IB Physics - Thermal Physics",
+  "subject": "physics",
+  "topic": "Thermal Physics",
+  "difficulty": "medium",
+  "description": "Quiz covering temperature, internal energy, specific heat, ideal gases, and thermodynamics for IB Physics",
+  "tags": ["ib", "physics", "thermal", "heat", "ideal gas", "thermodynamics"],
+  "author": "OpenNotes",
+  "createdAt": "2026-02-06T00:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "mcq",
+      "question": "Convert $100°C$ to kelvin:",
+      "options": ["$373$ K", "$273$ K", "$100$ K", "$173$ K"],
+      "correctAnswers": [0],
+      "explanation": "$T(K) = T(°C) + 273 = 100 + 273 = 373$ K",
+      "points": 1
+    },
+    {
+      "id": "q2",
+      "type": "frq",
+      "question": "How much energy (in kJ) is needed to heat $2$ kg of water from $20°C$ to $80°C$? Specific heat capacity of water $= 4200 \\text{ J kg}^{-1}\\text{K}^{-1}$.",
+      "correctAnswers": ["504"],
+      "explanation": "$Q = mc\\Delta T = 2 \\times 4200 \\times 60 = 504{,}000$ J $= 504$ kJ",
+      "points": 1
+    },
+    {
+      "id": "q3",
+      "type": "mcq",
+      "question": "According to the kinetic theory, the average kinetic energy of gas molecules is proportional to:",
+      "options": [
+        "Absolute temperature",
+        "Celsius temperature",
+        "Pressure",
+        "Volume"
+      ],
+      "correctAnswers": [0],
+      "explanation": "$\\bar{E_k} = \\frac{3}{2}k_BT$. Average kinetic energy is directly proportional to absolute temperature in kelvin.",
+      "points": 1
+    },
+    {
+      "id": "q4",
+      "type": "mcq",
+      "question": "An ideal gas at $300$ K and $100$ kPa is compressed to half its volume at constant temperature. The new pressure is:",
+      "options": ["$200$ kPa", "$50$ kPa", "$100$ kPa", "$400$ kPa"],
+      "correctAnswers": [0],
+      "explanation": "Boyle's Law: $P_1V_1 = P_2V_2$. $100 \\times V = P_2 \\times \\frac{V}{2}$. $P_2 = 200$ kPa",
+      "points": 1
+    },
+    {
+      "id": "q5",
+      "type": "mcq",
+      "question": "During an isothermal expansion of an ideal gas:",
+      "options": [
+        "Internal energy stays constant, heat equals work done by gas",
+        "Temperature increases, internal energy increases",
+        "No heat is transferred",
+        "Both temperature and pressure remain constant"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Isothermal means constant T, so $\\Delta U = 0$ (internal energy depends only on T for ideal gas). By first law: $Q = W$.",
+      "points": 1
+    },
+    {
+      "id": "q6",
+      "type": "frq",
+      "question": "Find the number of moles in $3.01 \\times 10^{23}$ molecules of $O_2$. ($N_A = 6.02 \\times 10^{23}$)",
+      "correctAnswers": ["0.5", "0.50"],
+      "explanation": "$n = \\frac{N}{N_A} = \\frac{3.01 \\times 10^{23}}{6.02 \\times 10^{23}} = 0.5$ mol",
+      "points": 1
+    },
+    {
+      "id": "q7",
+      "type": "mcq",
+      "question": "Specific latent heat of vaporization is the energy needed to:",
+      "options": [
+        "Change 1 kg of liquid to gas at constant temperature",
+        "Change 1 kg of solid to liquid at constant temperature",
+        "Raise 1 kg of liquid by 1 K",
+        "Change all liquid to gas at constant temperature"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Specific latent heat of vaporization = energy per unit mass to change state from liquid to gas at constant temperature.",
+      "points": 1
+    },
+    {
+      "id": "q8",
+      "type": "mcq",
+      "question": "Using $pV = nRT$, calculate the volume of 1 mol of ideal gas at STP ($T = 273$ K, $P = 101.3$ kPa, $R = 8.31 \\text{ J mol}^{-1}\\text{K}^{-1}$):",
+      "options": [
+        "$0.0224 \\text{ m}^3$",
+        "$22.4 \\text{ m}^3$",
+        "$2.24 \\text{ m}^3$",
+        "$0.224 \\text{ m}^3$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "$V = \\frac{nRT}{P} = \\frac{1 \\times 8.31 \\times 273}{101300} = \\frac{2268.6}{101300} \\approx 0.0224 \\text{ m}^3 = 22.4$ L",
+      "points": 1
+    },
+    {
+      "id": "q9",
+      "type": "mcq",
+      "question": "In an adiabatic process:",
+      "options": [
+        "$Q = 0$, so $\\Delta U = -W$",
+        "Temperature remains constant",
+        "Volume remains constant",
+        "Pressure remains constant"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Adiabatic means no heat transfer ($Q = 0$). By the first law: $\\Delta U = Q - W = -W$. Work done by gas decreases internal energy.",
+      "points": 1
+    },
+    {
+      "id": "q10",
+      "type": "mcq",
+      "question": "The internal energy of an ideal gas depends on:",
+      "options": [
+        "Temperature only",
+        "Pressure and volume",
+        "Volume only",
+        "Pressure, volume, and temperature"
+      ],
+      "correctAnswers": [0],
+      "explanation": "For an ideal gas, internal energy is purely kinetic and depends only on temperature: $U = \\frac{3}{2}nRT$",
+      "points": 1
+    }
+  ]
+}

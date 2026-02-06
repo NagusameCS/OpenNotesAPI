@@ -1,0 +1,164 @@
+{
+  "id": "math-aa-hl-calculus",
+  "schemaVersion": "1.0",
+  "title": "IB Math AA HL - Calculus",
+  "subject": "math-aa-hl",
+  "topic": "Calculus",
+  "difficulty": "hard",
+  "description": "Comprehensive quiz covering differentiation, integration, differential equations, and Maclaurin series for IB Math AA HL",
+  "tags": ["ib", "math", "calculus", "differentiation", "integration", "differential equations"],
+  "author": "OpenNotes",
+  "createdAt": "2026-02-06T00:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "mcq",
+      "question": "Find $\\frac{dy}{dx}$ if $y = x^2 e^{3x}$",
+      "options": [
+        "$e^{3x}(2x + 3x^2)$",
+        "$2xe^{3x}$",
+        "$3x^2e^{3x}$",
+        "$e^{3x}(2x + 3x)$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Product rule: $\\frac{dy}{dx} = 2xe^{3x} + x^2 \\cdot 3e^{3x} = e^{3x}(2x + 3x^2)$",
+      "points": 1
+    },
+    {
+      "id": "q2",
+      "type": "frq",
+      "question": "Find $\\int_0^1 x e^x \\, dx$ (give exact answer as $a - be^c$ or similar form)",
+      "correctAnswers": ["1", "e - (e-1)", "1.000"],
+      "explanation": "Integration by parts: $u = x$, $dv = e^x dx$. $\\int_0^1 xe^x dx = [xe^x]_0^1 - \\int_0^1 e^x dx = e - [e^x]_0^1 = e - (e-1) = 1$",
+      "points": 2
+    },
+    {
+      "id": "q3",
+      "type": "mcq",
+      "question": "Find $\\frac{dy}{dx}$ if $x^2 + y^2 + 2xy = 4$ using implicit differentiation",
+      "options": [
+        "$-1$",
+        "$-\\frac{x+y}{x+y}$",
+        "$\\frac{-2x-2y}{2y+2x}$",
+        "All of the above"
+      ],
+      "correctAnswers": [3],
+      "explanation": "Differentiating: $2x + 2y\\frac{dy}{dx} + 2y + 2x\\frac{dy}{dx} = 0$. $\\frac{dy}{dx}(2y+2x) = -2x-2y$. $\\frac{dy}{dx} = \\frac{-(2x+2y)}{2x+2y} = -1$",
+      "points": 1
+    },
+    {
+      "id": "q4",
+      "type": "mcq",
+      "question": "Evaluate $\\int \\frac{1}{x^2 + 4} \\, dx$",
+      "options": [
+        "$\\frac{1}{2}\\arctan\\frac{x}{2} + C$",
+        "$\\arctan\\frac{x}{2} + C$",
+        "$\\frac{1}{4}\\arctan\\frac{x}{4} + C$",
+        "$\\ln(x^2+4) + C$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "$\\int \\frac{1}{x^2+a^2}dx = \\frac{1}{a}\\arctan\\frac{x}{a} + C$. With $a=2$: $\\frac{1}{2}\\arctan\\frac{x}{2} + C$",
+      "points": 1
+    },
+    {
+      "id": "q5",
+      "type": "mcq",
+      "question": "Find the general solution of $\\frac{dy}{dx} = \\frac{y}{x}$",
+      "options": [
+        "$y = Cx$",
+        "$y = x + C$",
+        "$y = Ce^x$",
+        "$y = \\frac{C}{x}$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Separating variables: $\\frac{dy}{y} = \\frac{dx}{x}$. $\\ln|y| = \\ln|x| + c$. $y = Cx$ where $C = \\pm e^c$",
+      "points": 1
+    },
+    {
+      "id": "q6",
+      "type": "mcq",
+      "question": "The Maclaurin series for $e^x$ up to the $x^3$ term is:",
+      "options": [
+        "$1 + x + \\frac{x^2}{2!} + \\frac{x^3}{3!}$",
+        "$1 + x + x^2 + x^3$",
+        "$x + \\frac{x^2}{2} + \\frac{x^3}{6}$",
+        "$1 + x + \\frac{x^2}{2} + \\frac{x^3}{3}$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "$e^x = \\sum_{n=0}^{\\infty}\\frac{x^n}{n!} = 1 + x + \\frac{x^2}{2!} + \\frac{x^3}{3!} + \\ldots$",
+      "points": 1
+    },
+    {
+      "id": "q7",
+      "type": "frq",
+      "question": "Find the second derivative of $f(x) = \\ln(x^2 + 1)$ at $x = 0$.",
+      "correctAnswers": ["2"],
+      "explanation": "$f'(x) = \\frac{2x}{x^2+1}$. $f''(x) = \\frac{2(x^2+1) - 2x \\cdot 2x}{(x^2+1)^2} = \\frac{2-2x^2}{(x^2+1)^2}$. $f''(0) = \\frac{2}{1} = 2$",
+      "points": 2
+    },
+    {
+      "id": "q8",
+      "type": "mcq",
+      "question": "Find $\\int_0^{\\pi/2} \\sin^2 x \\, dx$",
+      "options": [
+        "$\\frac{\\pi}{4}$",
+        "$\\frac{\\pi}{2}$",
+        "$\\frac{1}{2}$",
+        "$1$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "$\\sin^2 x = \\frac{1-\\cos 2x}{2}$. $\\int_0^{\\pi/2}\\frac{1-\\cos 2x}{2}dx = \\frac{1}{2}[x - \\frac{\\sin 2x}{2}]_0^{\\pi/2} = \\frac{1}{2}(\\frac{\\pi}{2} - 0) = \\frac{\\pi}{4}$",
+      "points": 1
+    },
+    {
+      "id": "q9",
+      "type": "mcq",
+      "question": "Solve the differential equation $\\frac{dy}{dx} + 2y = e^{-x}$ with integrating factor method. The integrating factor is:",
+      "options": [
+        "$e^{2x}$",
+        "$e^{-2x}$",
+        "$2x$",
+        "$e^x$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "For $\\frac{dy}{dx} + P(x)y = Q(x)$, the integrating factor is $\\mu = e^{\\int P(x)dx} = e^{\\int 2dx} = e^{2x}$",
+      "points": 1
+    },
+    {
+      "id": "q10",
+      "type": "mcq",
+      "question": "The volume of revolution when $y = \\sqrt{x}$ is rotated about the x-axis from $x = 0$ to $x = 4$ is:",
+      "options": [
+        "$8\\pi$",
+        "$4\\pi$",
+        "$16\\pi$",
+        "$2\\pi$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "$V = \\pi\\int_0^4 y^2 dx = \\pi\\int_0^4 x \\, dx = \\pi[\\frac{x^2}{2}]_0^4 = \\pi \\cdot 8 = 8\\pi$",
+      "points": 1
+    },
+    {
+      "id": "q11",
+      "type": "mcq",
+      "question": "Using L'Hôpital's rule, evaluate $\\lim_{x \\to 0} \\frac{e^x - 1 - x}{x^2}$",
+      "options": [
+        "$\\frac{1}{2}$",
+        "$0$",
+        "$1$",
+        "$\\infty$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Apply L'Hôpital's twice: $\\lim \\frac{e^x - 1}{2x} = \\lim \\frac{e^x}{2} = \\frac{1}{2}$",
+      "points": 1
+    },
+    {
+      "id": "q12",
+      "type": "frq",
+      "question": "Find the area enclosed between $y = x^2$ and $y = 2x$ for $x \\geq 0$.",
+      "correctAnswers": ["4/3", "1.33", "1.333"],
+      "explanation": "Intersection: $x^2 = 2x$, so $x = 0, 2$. Area $= \\int_0^2 (2x - x^2)dx = [x^2 - \\frac{x^3}{3}]_0^2 = 4 - \\frac{8}{3} = \\frac{4}{3}$",
+      "points": 2
+    }
+  ]
+}

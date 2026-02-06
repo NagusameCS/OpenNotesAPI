@@ -1,0 +1,132 @@
+{
+  "id": "math-aa-hl-stats-probability",
+  "schemaVersion": "1.0",
+  "title": "IB Math AA HL - Statistics & Probability",
+  "subject": "math-aa-hl",
+  "topic": "Statistics and Probability",
+  "difficulty": "hard",
+  "description": "Comprehensive quiz covering probability, distributions, Bayes' theorem, and hypothesis testing for IB Math AA HL",
+  "tags": ["ib", "math", "statistics", "probability", "distributions", "hypothesis testing"],
+  "author": "OpenNotes",
+  "createdAt": "2026-02-06T00:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "mcq",
+      "question": "If $X \\sim N(50, 16)$, find $P(X > 54)$",
+      "options": [
+        "$P(Z > 1) \\approx 0.159$",
+        "$P(Z > 0.25) \\approx 0.401$",
+        "$P(Z > 2) \\approx 0.023$",
+        "$P(Z > 4) \\approx 0$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "$\\sigma = \\sqrt{16} = 4$. $Z = \\frac{54-50}{4} = 1$. $P(X > 54) = P(Z > 1) \\approx 0.159$",
+      "points": 1
+    },
+    {
+      "id": "q2",
+      "type": "mcq",
+      "question": "A bag contains 5 red and 3 blue balls. Two are drawn without replacement. Find $P(\\text{both red})$.",
+      "options": ["$\\frac{5}{14}$", "$\\frac{25}{64}$", "$\\frac{10}{28}$", "$\\frac{5}{8}$"],
+      "correctAnswers": [0],
+      "explanation": "$P(\\text{both red}) = \\frac{5}{8} \\times \\frac{4}{7} = \\frac{20}{56} = \\frac{5}{14}$",
+      "points": 1
+    },
+    {
+      "id": "q3",
+      "type": "mcq",
+      "question": "Events A and B are such that $P(A) = 0.4$, $P(B) = 0.5$, and $P(A \\cup B) = 0.7$. Find $P(A|B)$.",
+      "options": ["$0.4$", "$0.2$", "$0.5$", "$0.6$"],
+      "correctAnswers": [0],
+      "explanation": "$P(A \\cap B) = P(A) + P(B) - P(A \\cup B) = 0.4 + 0.5 - 0.7 = 0.2$. $P(A|B) = \\frac{P(A \\cap B)}{P(B)} = \\frac{0.2}{0.5} = 0.4$",
+      "points": 1
+    },
+    {
+      "id": "q4",
+      "type": "frq",
+      "question": "If $X \\sim B(10, 0.3)$, find $E(X)$.",
+      "correctAnswers": ["3"],
+      "explanation": "For $X \\sim B(n, p)$, $E(X) = np = 10 \\times 0.3 = 3$",
+      "points": 1
+    },
+    {
+      "id": "q5",
+      "type": "mcq",
+      "question": "A factory has two machines. Machine A produces 60% of items and has a 2% defect rate. Machine B produces 40% and has a 5% defect rate. An item is defective. What is the probability it came from Machine B?",
+      "options": [
+        "$\\frac{5}{8}$",
+        "$\\frac{20}{32}$",
+        "$\\frac{10}{16}$",
+        "$\\frac{20}{52}$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "By Bayes' theorem: $P(B|D) = \\frac{0.4 \\times 0.05}{0.6 \\times 0.02 + 0.4 \\times 0.05} = \\frac{0.02}{0.012 + 0.02} = \\frac{0.02}{0.032} = \\frac{5}{8}$",
+      "points": 2
+    },
+    {
+      "id": "q6",
+      "type": "mcq",
+      "question": "If $X \\sim \\text{Po}(4)$, find $P(X = 3)$",
+      "options": [
+        "$\\frac{32e^{-4}}{3}$",
+        "$\\frac{32}{3}e^{-4}$",
+        "$\\frac{64}{6}e^{-4}$",
+        "$\\frac{16}{3}e^{-4}$"
+      ],
+      "correctAnswers": [1],
+      "explanation": "$P(X=3) = \\frac{e^{-4} \\cdot 4^3}{3!} = \\frac{64e^{-4}}{6} = \\frac{32}{3}e^{-4}$",
+      "points": 1
+    },
+    {
+      "id": "q7",
+      "type": "mcq",
+      "question": "The number of ways to arrange the letters of the word MISSISSIPPI is:",
+      "options": [
+        "$\\frac{11!}{4!4!2!}$",
+        "$\\frac{11!}{4!4!2!1!}$",
+        "$11!$",
+        "$\\frac{11!}{2!4!4!}$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "MISSISSIPPI has 11 letters: M(1), I(4), S(4), P(2). Arrangements = $\\frac{11!}{1!4!4!2!} = \\frac{11!}{4!4!2!}$",
+      "points": 1
+    },
+    {
+      "id": "q8",
+      "type": "frq",
+      "question": "For a Poisson distribution with mean $\\lambda = 3$, find $\\text{Var}(X)$.",
+      "correctAnswers": ["3"],
+      "explanation": "For a Poisson distribution, $\\text{Var}(X) = \\lambda = 3$",
+      "points": 1
+    },
+    {
+      "id": "q9",
+      "type": "mcq",
+      "question": "In a hypothesis test at the 5% significance level, $H_0: \\mu = 100$ vs $H_1: \\mu > 100$. The p-value is 0.032. The conclusion is:",
+      "options": [
+        "Reject $H_0$; sufficient evidence $\\mu > 100$",
+        "Do not reject $H_0$; insufficient evidence",
+        "Accept $H_1$ definitively",
+        "The test is inconclusive"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Since p-value (0.032) < significance level (0.05), we reject $H_0$ and conclude there is sufficient evidence that $\\mu > 100$",
+      "points": 1
+    },
+    {
+      "id": "q10",
+      "type": "mcq",
+      "question": "If $E(X) = 5$ and $\\text{Var}(X) = 2$, find $E(3X - 4)$ and $\\text{Var}(3X - 4)$",
+      "options": [
+        "$E = 11$, $\\text{Var} = 18$",
+        "$E = 11$, $\\text{Var} = 6$",
+        "$E = 15$, $\\text{Var} = 18$",
+        "$E = 11$, $\\text{Var} = 2$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "$E(3X-4) = 3E(X) - 4 = 15 - 4 = 11$. $\\text{Var}(3X-4) = 9\\text{Var}(X) = 9 \\times 2 = 18$",
+      "points": 1
+    }
+  ]
+}

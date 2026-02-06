@@ -98,6 +98,18 @@
         </div>
         
         <div class="nav-section">
+          <span class="nav-label">Quizzes</span>
+          <a href="#" class="nav-item" data-view="quiz-browse">
+            <span class="material-symbols-rounded">quiz</span>
+            Browse Quizzes
+          </a>
+          <a href="#" class="nav-item" data-view="quiz-create">
+            <span class="material-symbols-rounded">add_circle</span>
+            Create Quiz
+          </a>
+        </div>
+        
+        <div class="nav-section">
           <span class="nav-label">Manage</span>
           <a href="#" class="nav-item" data-view="my-uploads">
             <span class="material-symbols-rounded">folder_managed</span>
@@ -389,6 +401,185 @@
               <button class="btn btn-danger" id="clear-all">
                 <span class="material-symbols-rounded">delete_forever</span>
                 Clear All Offline Data
+              </button>
+            </div>
+          </div>
+        </section>
+        
+        <!-- Quiz Browse View -->
+        <section id="view-quiz-browse" class="view">
+          <div class="quiz-browser">
+            <div class="view-toolbar quiz-toolbar">
+              <div class="filter-chips">
+                <button class="filter-chip active" data-subject="all">All Subjects</button>
+                <button class="filter-chip" data-subject="math-aa-hl">Math AA HL</button>
+                <button class="filter-chip" data-subject="physics">Physics</button>
+                <button class="filter-chip" data-subject="chemistry">Chemistry</button>
+                <button class="filter-chip" data-subject="biology">Biology</button>
+              </div>
+              <div class="toolbar-actions">
+                <button id="quiz-shuffle-btn" class="btn btn-secondary" title="Shuffle selected quizzes">
+                  <span class="material-symbols-rounded">shuffle</span>
+                  Shuffle Selected
+                </button>
+                <button id="quiz-refresh-btn" class="icon-btn" title="Refresh quizzes">
+                  <span class="material-symbols-rounded">refresh</span>
+                </button>
+              </div>
+            </div>
+            <div id="quiz-grid" class="quiz-grid">
+              <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading quizzes...</p>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- Quiz Create View -->
+        <section id="view-quiz-create" class="view">
+          <div class="quiz-creator">
+            <div class="quiz-meta">
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="quiz-title">Quiz Title</label>
+                  <input type="text" id="quiz-title" placeholder="e.g., Calculus Integration Practice">
+                </div>
+                <div class="form-group">
+                  <label for="quiz-subject">Subject</label>
+                  <select id="quiz-subject">
+                    <option value="">Select subject...</option>
+                    <option value="math-aa-hl">IB Math AA HL</option>
+                    <option value="math-aa-sl">IB Math AA SL</option>
+                    <option value="math-ai-hl">IB Math AI HL</option>
+                    <option value="math-ai-sl">IB Math AI SL</option>
+                    <option value="physics">IB Physics</option>
+                    <option value="chemistry">IB Chemistry</option>
+                    <option value="biology">IB Biology</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="quiz-topic">Topic</label>
+                  <input type="text" id="quiz-topic" placeholder="e.g., Integration by Parts">
+                </div>
+                <div class="form-group">
+                  <label for="quiz-difficulty">Difficulty</label>
+                  <select id="quiz-difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="quiz-tags">Tags (comma-separated)</label>
+                <input type="text" id="quiz-tags" placeholder="e.g., calculus, integration, ib">
+              </div>
+            </div>
+            
+            <div class="questions-container">
+              <div class="questions-header">
+                <h3>Questions</h3>
+                <div class="question-add-btns">
+                  <button class="btn btn-secondary" id="add-mcq-btn">
+                    <span class="material-symbols-rounded">radio_button_checked</span>
+                    Add MCQ
+                  </button>
+                  <button class="btn btn-secondary" id="add-frq-btn">
+                    <span class="material-symbols-rounded">edit</span>
+                    Add FRQ
+                  </button>
+                </div>
+              </div>
+              <div id="questions-list" class="questions-list">
+                <div class="empty-state">
+                  <span class="material-symbols-rounded">help_outline</span>
+                  <h3>No questions yet</h3>
+                  <p>Click "Add MCQ" or "Add FRQ" to add questions to your quiz</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="quiz-actions">
+              <button class="btn btn-secondary" id="preview-quiz-btn">
+                <span class="material-symbols-rounded">visibility</span>
+                Preview Quiz
+              </button>
+              <button class="btn btn-primary" id="save-quiz-btn">
+                <span class="material-symbols-rounded">save</span>
+                Save Quiz
+              </button>
+            </div>
+          </div>
+        </section>
+        
+        <!-- Quiz Taking View -->
+        <section id="view-quiz-take" class="view">
+          <div class="quiz-player">
+            <div class="quiz-header">
+              <div class="quiz-info">
+                <h2 id="quiz-player-title">Quiz Title</h2>
+                <span id="quiz-player-progress" class="quiz-progress">Question 1 of 10</span>
+              </div>
+              <button class="btn btn-text" id="quit-quiz-btn">
+                <span class="material-symbols-rounded">close</span>
+                Quit
+              </button>
+            </div>
+            
+            <div class="quiz-question-container" id="quiz-question-container">
+              <!-- Question content rendered here -->
+            </div>
+            
+            <div class="quiz-navigation">
+              <button class="btn btn-secondary" id="quiz-prev-btn">
+                <span class="material-symbols-rounded">arrow_back</span>
+                Previous
+              </button>
+              <button class="btn btn-primary" id="quiz-next-btn">
+                Next
+                <span class="material-symbols-rounded">arrow_forward</span>
+              </button>
+              <button class="btn btn-success hidden" id="quiz-submit-btn">
+                <span class="material-symbols-rounded">check</span>
+                Submit Quiz
+              </button>
+            </div>
+          </div>
+        </section>
+        
+        <!-- Quiz Results View -->
+        <section id="view-quiz-results" class="view">
+          <div class="quiz-results">
+            <div class="results-header">
+              <span class="material-symbols-rounded results-icon">emoji_events</span>
+              <h2>Quiz Complete!</h2>
+              <div class="results-score">
+                <span id="results-correct">0</span>
+                <span class="results-divider">/</span>
+                <span id="results-total">0</span>
+              </div>
+              <span id="results-percent" class="results-percent">0%</span>
+            </div>
+            
+            <div id="results-breakdown" class="results-breakdown">
+              <!-- Question-by-question breakdown -->
+            </div>
+            
+            <div class="results-actions">
+              <button class="btn btn-secondary" id="review-quiz-btn">
+                <span class="material-symbols-rounded">visibility</span>
+                Review Answers
+              </button>
+              <button class="btn btn-primary" id="retake-quiz-btn">
+                <span class="material-symbols-rounded">replay</span>
+                Retake Quiz
+              </button>
+              <button class="btn btn-text" id="back-to-quizzes-btn">
+                Back to Quizzes
               </button>
             </div>
           </div>

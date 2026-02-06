@@ -1,0 +1,127 @@
+{
+  "id": "physics-waves",
+  "schemaVersion": "1.0",
+  "title": "IB Physics - Waves",
+  "subject": "physics",
+  "topic": "Waves",
+  "difficulty": "medium",
+  "description": "Comprehensive quiz covering wave properties, standing waves, interference, diffraction, and the Doppler effect for IB Physics",
+  "tags": ["ib", "physics", "waves", "interference", "diffraction", "doppler", "standing waves"],
+  "author": "OpenNotes",
+  "createdAt": "2026-02-06T00:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "mcq",
+      "question": "A wave has frequency $50$ Hz and wavelength $0.4$ m. Its speed is:",
+      "options": ["$20 \\text{ m s}^{-1}$", "$125 \\text{ m s}^{-1}$", "$0.008 \\text{ m s}^{-1}$", "$50.4 \\text{ m s}^{-1}$"],
+      "correctAnswers": [0],
+      "explanation": "$v = f\\lambda = 50 \\times 0.4 = 20 \\text{ m s}^{-1}$",
+      "points": 1
+    },
+    {
+      "id": "q2",
+      "type": "mcq",
+      "question": "In a standing wave on a string fixed at both ends, the distance between adjacent nodes is:",
+      "options": ["$\\frac{\\lambda}{2}$", "$\\lambda$", "$\\frac{\\lambda}{4}$", "$2\\lambda$"],
+      "correctAnswers": [0],
+      "explanation": "Adjacent nodes in a standing wave are separated by half a wavelength.",
+      "points": 1
+    },
+    {
+      "id": "q3",
+      "type": "mcq",
+      "question": "In Young's double-slit experiment, the fringe spacing is $s = \\frac{\\lambda D}{d}$. If the slit separation $d$ is halved, the fringe spacing:",
+      "options": ["Doubles", "Halves", "Stays the same", "Quadruples"],
+      "correctAnswers": [0],
+      "explanation": "$s \\propto \\frac{1}{d}$, so halving $d$ doubles the fringe spacing.",
+      "points": 1
+    },
+    {
+      "id": "q4",
+      "type": "frq",
+      "question": "A pipe open at both ends has fundamental frequency $440$ Hz. The speed of sound is $340 \\text{ m s}^{-1}$. Find the length of the pipe in metres (to 3 s.f.).",
+      "correctAnswers": ["0.386", "0.39"],
+      "explanation": "For open pipe, fundamental $\\lambda = 2L$. $f = \\frac{v}{2L}$. $L = \\frac{v}{2f} = \\frac{340}{880} = 0.386$ m",
+      "points": 1
+    },
+    {
+      "id": "q5",
+      "type": "mcq",
+      "question": "The condition for constructive interference in a double slit is:",
+      "options": [
+        "Path difference $= n\\lambda$",
+        "Path difference $= (n+\\frac{1}{2})\\lambda$",
+        "Path difference $= 0$ only",
+        "Path difference $= \\frac{n\\lambda}{2}$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Constructive interference occurs when path difference is a whole number of wavelengths: $\\Delta = n\\lambda$ where $n = 0, 1, 2, \\ldots$",
+      "points": 1
+    },
+    {
+      "id": "q6",
+      "type": "mcq",
+      "question": "A source emitting sound at $500$ Hz moves toward a stationary observer at $34 \\text{ m s}^{-1}$. The speed of sound is $340 \\text{ m s}^{-1}$. The observed frequency is:",
+      "options": [
+        "$\\approx 556$ Hz",
+        "$\\approx 450$ Hz",
+        "$\\approx 500$ Hz",
+        "$\\approx 600$ Hz"
+      ],
+      "correctAnswers": [0],
+      "explanation": "$f' = f\\frac{v}{v - v_s} = 500 \\times \\frac{340}{340 - 34} = 500 \\times \\frac{340}{306} \\approx 556$ Hz",
+      "points": 1
+    },
+    {
+      "id": "q7",
+      "type": "mcq",
+      "question": "Polarization is a property of:",
+      "options": [
+        "Transverse waves only",
+        "Longitudinal waves only",
+        "Both transverse and longitudinal waves",
+        "Neither type of wave"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Only transverse waves can be polarized because their oscillations are perpendicular to the direction of propagation.",
+      "points": 1
+    },
+    {
+      "id": "q8",
+      "type": "mcq",
+      "question": "The first minimum in a single-slit diffraction pattern occurs at angle $\\theta$ where:",
+      "options": [
+        "$b\\sin\\theta = \\lambda$",
+        "$b\\sin\\theta = \\frac{\\lambda}{2}$",
+        "$b\\sin\\theta = 2\\lambda$",
+        "$b\\cos\\theta = \\lambda$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "For single-slit diffraction, minima occur at $b\\sin\\theta = n\\lambda$ where $b$ is slit width and $n = 1, 2, 3, \\ldots$",
+      "points": 1
+    },
+    {
+      "id": "q9",
+      "type": "mcq",
+      "question": "Intensity of a wave is proportional to:",
+      "options": [
+        "Amplitude squared",
+        "Amplitude",
+        "Frequency",
+        "Wavelength"
+      ],
+      "correctAnswers": [0],
+      "explanation": "$I \\propto A^2$. Doubling the amplitude quadruples the intensity.",
+      "points": 1
+    },
+    {
+      "id": "q10",
+      "type": "frq",
+      "question": "Two loudspeakers in phase are $2.0$ m apart. A listener is $5.0$ m from one speaker and $5.5$ m from the other. The wavelength is $0.50$ m. Is this a maximum or minimum? Answer 'maximum' or 'minimum'.",
+      "correctAnswers": ["maximum"],
+      "explanation": "Path difference $= 5.5 - 5.0 = 0.5$ m $= 1\\lambda$. Since the path difference is a whole wavelength (and sources are in phase), this is constructive → maximum.",
+      "points": 1
+    }
+  ]
+}

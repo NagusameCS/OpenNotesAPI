@@ -1,0 +1,140 @@
+{
+  "id": "physics-atomic-nuclear",
+  "schemaVersion": "1.0",
+  "title": "IB Physics - Atomic, Nuclear & Particle Physics",
+  "subject": "physics",
+  "topic": "Atomic, Nuclear, and Particle Physics",
+  "difficulty": "hard",
+  "description": "Quiz covering atomic structure, radioactive decay, nuclear reactions, and particle physics for IB Physics",
+  "tags": ["ib", "physics", "atomic", "nuclear", "particle", "radioactivity", "fission", "fusion"],
+  "author": "OpenNotes",
+  "createdAt": "2026-02-06T00:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "mcq",
+      "question": "In alpha decay, the nucleus emits:",
+      "options": [
+        "A helium-4 nucleus ($^4_2He$)",
+        "An electron",
+        "A photon",
+        "A neutron"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Alpha decay: nucleus emits $^4_2\\text{He}$ (2 protons + 2 neutrons). Atomic number decreases by 2, mass number by 4.",
+      "points": 1
+    },
+    {
+      "id": "q2",
+      "type": "mcq",
+      "question": "The half-life of a radioactive isotope is $8$ days. What fraction of the original sample remains after $24$ days?",
+      "options": ["$\\frac{1}{8}$", "$\\frac{1}{4}$", "$\\frac{1}{3}$", "$\\frac{1}{16}$"],
+      "correctAnswers": [0],
+      "explanation": "Number of half-lives $= \\frac{24}{8} = 3$. Fraction remaining $= (\\frac{1}{2})^3 = \\frac{1}{8}$",
+      "points": 1
+    },
+    {
+      "id": "q3",
+      "type": "frq",
+      "question": "Calculate the energy released (in MeV) when 1 u of mass is converted to energy. Use $1 \\text{ u} = 1.661 \\times 10^{-27}$ kg and $c = 3 \\times 10^8$ m s$^{-1}$. ($1 \\text{ MeV} = 1.6 \\times 10^{-13}$ J). Round to nearest whole number.",
+      "correctAnswers": ["931", "932"],
+      "explanation": "$E = mc^2 = 1.661 \\times 10^{-27} \\times (3 \\times 10^8)^2 = 1.495 \\times 10^{-10}$ J $= \\frac{1.495 \\times 10^{-10}}{1.6 \\times 10^{-13}} \\approx 931$ MeV",
+      "points": 2
+    },
+    {
+      "id": "q4",
+      "type": "mcq",
+      "question": "In beta-minus ($\\beta^-$) decay:",
+      "options": [
+        "A neutron converts to a proton, emitting an electron and antineutrino",
+        "A proton converts to a neutron, emitting a positron and neutrino",
+        "A neutron is simply ejected from the nucleus",
+        "An electron is captured by the nucleus"
+      ],
+      "correctAnswers": [0],
+      "explanation": "$\\beta^-$ decay: $n \\rightarrow p + e^- + \\bar{\\nu}_e$. A neutron converts to a proton, emitting an electron and an electron antineutrino.",
+      "points": 1
+    },
+    {
+      "id": "q5",
+      "type": "mcq",
+      "question": "The binding energy per nucleon is highest for:",
+      "options": ["Iron-56", "Hydrogen-1", "Uranium-238", "Helium-4"],
+      "correctAnswers": [0],
+      "explanation": "Iron-56 has the highest binding energy per nucleon (~8.8 MeV). This is why fusion releases energy for elements lighter than Fe, and fission for heavier elements.",
+      "points": 1
+    },
+    {
+      "id": "q6",
+      "type": "mcq",
+      "question": "Which fundamental force is responsible for holding quarks together inside a proton?",
+      "options": ["Strong nuclear force", "Electromagnetic force", "Weak nuclear force", "Gravitational force"],
+      "correctAnswers": [0],
+      "explanation": "The strong nuclear force (mediated by gluons) binds quarks together inside hadrons (protons and neutrons).",
+      "points": 1
+    },
+    {
+      "id": "q7",
+      "type": "mcq",
+      "question": "A proton is composed of which combination of quarks?",
+      "options": ["$uud$", "$udd$", "$uds$", "$uuu$"],
+      "correctAnswers": [0],
+      "explanation": "Proton = up + up + down ($uud$). Charge: $+\\frac{2}{3} + \\frac{2}{3} - \\frac{1}{3} = +1$",
+      "points": 1
+    },
+    {
+      "id": "q8",
+      "type": "mcq",
+      "question": "In nuclear fission of $^{235}U$:",
+      "options": [
+        "A heavy nucleus splits into smaller nuclei, releasing energy and neutrons",
+        "Two light nuclei combine to form a heavier nucleus",
+        "A nucleus emits an alpha particle",
+        "A nucleus captures an electron"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Fission: $^{235}U + n \\rightarrow$ fission products + neutrons + energy. The mass defect is converted to kinetic energy.",
+      "points": 1
+    },
+    {
+      "id": "q9",
+      "type": "mcq",
+      "question": "The activity of a radioactive sample is measured as $800$ Bq. After two half-lives, the activity will be:",
+      "options": ["$200$ Bq", "$400$ Bq", "$100$ Bq", "$0$ Bq"],
+      "correctAnswers": [0],
+      "explanation": "After 1 half-life: $400$ Bq. After 2 half-lives: $200$ Bq. Activity halves each half-life period.",
+      "points": 1
+    },
+    {
+      "id": "q10",
+      "type": "mcq",
+      "question": "Which of the following particles is a lepton?",
+      "options": ["Electron", "Proton", "Neutron", "Pion"],
+      "correctAnswers": [0],
+      "explanation": "Leptons: electron, muon, tau, and their neutrinos. Proton and neutron are baryons (hadrons). Pion is a meson (hadron).",
+      "points": 1
+    },
+    {
+      "id": "q11",
+      "type": "mcq",
+      "question": "In the Bohr model, the energy of the $n$-th level of hydrogen is $E_n = \\frac{-13.6}{n^2}$ eV. The energy of the photon emitted in a transition from $n=3$ to $n=2$ is:",
+      "options": [
+        "$1.89$ eV",
+        "$3.40$ eV",
+        "$10.2$ eV",
+        "$1.51$ eV"
+      ],
+      "correctAnswers": [0],
+      "explanation": "$E_3 = \\frac{-13.6}{9} = -1.51$ eV, $E_2 = \\frac{-13.6}{4} = -3.40$ eV. $\\Delta E = -1.51 - (-3.40) = 1.89$ eV",
+      "points": 1
+    },
+    {
+      "id": "q12",
+      "type": "frq",
+      "question": "In nuclear fusion: $^2_1H + ^3_1H \\rightarrow ^4_2He + ^1_0n$. The total mass of reactants is $5.03014$ u and of products is $5.01101$ u. Calculate the mass defect in atomic mass units (u).",
+      "correctAnswers": ["0.01913"],
+      "explanation": "Mass defect $= 5.03014 - 5.01101 = 0.01913$ u",
+      "points": 1
+    }
+  ]
+}

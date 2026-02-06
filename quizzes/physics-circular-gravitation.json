@@ -1,0 +1,137 @@
+{
+  "id": "physics-circular-gravitation",
+  "schemaVersion": "1.0",
+  "title": "IB Physics - Circular Motion & Gravitation",
+  "subject": "physics",
+  "topic": "Circular Motion and Gravitation",
+  "difficulty": "hard",
+  "description": "Quiz covering uniform circular motion, gravitational fields, Kepler's laws, and orbital mechanics for IB Physics",
+  "tags": ["ib", "physics", "circular motion", "gravitation", "orbits", "kepler"],
+  "author": "OpenNotes",
+  "createdAt": "2026-02-06T00:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "mcq",
+      "question": "A 2 kg mass moves in a circle of radius 3 m at a constant speed of 6 m s$^{-1}$. The centripetal force is:",
+      "options": ["$24$ N", "$12$ N", "$36$ N", "$4$ N"],
+      "correctAnswers": [0],
+      "explanation": "$F = \\frac{mv^2}{r} = \\frac{2 \\times 36}{3} = 24$ N",
+      "points": 1
+    },
+    {
+      "id": "q2",
+      "type": "mcq",
+      "question": "Newton's law of gravitation states that the force between two masses is:",
+      "options": [
+        "$F = \\frac{Gm_1m_2}{r^2}$",
+        "$F = \\frac{Gm_1m_2}{r}$",
+        "$F = Gm_1m_2r^2$",
+        "$F = \\frac{G(m_1+m_2)}{r^2}$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Newton's law of gravitation: $F = \\frac{Gm_1m_2}{r^2}$, where $G = 6.67 \\times 10^{-11}$ N m² kg⁻²",
+      "points": 1
+    },
+    {
+      "id": "q3",
+      "type": "frq",
+      "question": "A satellite orbits Earth at radius $R$ with period $T$. If the orbital radius is increased to $4R$, the new period is $nT$. Find $n$.",
+      "correctAnswers": ["8"],
+      "explanation": "Kepler's third law: $T^2 \\propto r^3$. $\\frac{T_2^2}{T^2} = \\frac{(4R)^3}{R^3} = 64$. $T_2 = 8T$, so $n = 8$.",
+      "points": 2
+    },
+    {
+      "id": "q4",
+      "type": "mcq",
+      "question": "The gravitational field strength on the surface of a planet of mass $M$ and radius $R$ is:",
+      "options": [
+        "$g = \\frac{GM}{R^2}$",
+        "$g = \\frac{GM}{R}$",
+        "$g = \\frac{GM^2}{R^2}$",
+        "$g = GMR^2$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "$g = \\frac{GM}{R^2}$. This is derived by equating gravitational force to weight: $\\frac{GMm}{R^2} = mg$",
+      "points": 1
+    },
+    {
+      "id": "q5",
+      "type": "mcq",
+      "question": "For an object in uniform circular motion, which statement is correct?",
+      "options": [
+        "Speed is constant but velocity changes",
+        "Both speed and velocity are constant",
+        "Acceleration is zero",
+        "The net force is tangential"
+      ],
+      "correctAnswers": [0],
+      "explanation": "In uniform circular motion, speed (magnitude) is constant, but direction changes continuously, so velocity changes. Acceleration is centripetal (toward center).",
+      "points": 1
+    },
+    {
+      "id": "q6",
+      "type": "mcq",
+      "question": "The escape velocity from a planet of mass $M$ and radius $R$ is:",
+      "options": [
+        "$v = \\sqrt{\\frac{2GM}{R}}$",
+        "$v = \\sqrt{\\frac{GM}{R}}$",
+        "$v = \\frac{2GM}{R}$",
+        "$v = \\sqrt{\\frac{GM}{2R}}$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Setting kinetic energy equal to gravitational potential energy: $\\frac{1}{2}mv^2 = \\frac{GMm}{R}$, giving $v = \\sqrt{\\frac{2GM}{R}}$",
+      "points": 1
+    },
+    {
+      "id": "q7",
+      "type": "mcq",
+      "question": "The angular velocity $\\omega$ of an object completing one revolution in $4$ s is:",
+      "options": [
+        "$\\frac{\\pi}{2}$ rad s$^{-1}$",
+        "$2\\pi$ rad s$^{-1}$",
+        "$\\pi$ rad s$^{-1}$",
+        "$4\\pi$ rad s$^{-1}$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "$\\omega = \\frac{2\\pi}{T} = \\frac{2\\pi}{4} = \\frac{\\pi}{2}$ rad s$^{-1}$",
+      "points": 1
+    },
+    {
+      "id": "q8",
+      "type": "mcq",
+      "question": "The gravitational potential at distance $r$ from a point mass $M$ is:",
+      "options": [
+        "$V = -\\frac{GM}{r}$ (always negative)",
+        "$V = \\frac{GM}{r}$ (always positive)",
+        "$V = -\\frac{GM}{r^2}$",
+        "$V = 0$ at the surface"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Gravitational potential $V = -\\frac{GM}{r}$. It is always negative (zero at infinity), representing the work done per unit mass to bring a test mass from infinity.",
+      "points": 1
+    },
+    {
+      "id": "q9",
+      "type": "frq",
+      "question": "A car rounds a flat, unbanked curve of radius $50$ m. The coefficient of static friction is $0.4$. Find the maximum speed in m s$^{-1}$ ($g = 10$ m s$^{-2}$). Round to the nearest integer.",
+      "correctAnswers": ["14"],
+      "explanation": "$\\mu mg = \\frac{mv^2}{r}$. $v = \\sqrt{\\mu g r} = \\sqrt{0.4 \\times 10 \\times 50} = \\sqrt{200} \\approx 14.1$ m s$^{-1}$",
+      "points": 1
+    },
+    {
+      "id": "q10",
+      "type": "mcq",
+      "question": "The orbital speed of a satellite at distance $r$ from the center of Earth (mass $M$) is:",
+      "options": [
+        "$v = \\sqrt{\\frac{GM}{r}}$",
+        "$v = \\sqrt{\\frac{2GM}{r}}$",
+        "$v = \\frac{GM}{r}$",
+        "$v = \\sqrt{GMr}$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Equating gravitational force to centripetal force: $\\frac{GMm}{r^2} = \\frac{mv^2}{r}$, giving $v = \\sqrt{\\frac{GM}{r}}$",
+      "points": 1
+    }
+  ]
+}

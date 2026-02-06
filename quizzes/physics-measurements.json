@@ -1,0 +1,100 @@
+{
+  "id": "physics-measurements",
+  "schemaVersion": "1.0",
+  "title": "IB Physics - Measurements & Uncertainties",
+  "subject": "physics",
+  "topic": "Measurements and Uncertainties",
+  "difficulty": "medium",
+  "description": "Quiz covering SI units, uncertainties, significant figures, and error propagation for IB Physics",
+  "tags": ["ib", "physics", "measurements", "uncertainties", "errors"],
+  "author": "OpenNotes",
+  "createdAt": "2026-02-06T00:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "mcq",
+      "question": "Which of the following is a fundamental SI base unit?",
+      "options": ["Ampere (A)", "Newton (N)", "Joule (J)", "Pascal (Pa)"],
+      "correctAnswers": [0],
+      "explanation": "The ampere is one of the 7 SI base units. The newton, joule, and pascal are all derived units.",
+      "points": 1
+    },
+    {
+      "id": "q2",
+      "type": "mcq",
+      "question": "A student measures the length of a rod as $5.0 \\pm 0.1$ cm and the width as $2.0 \\pm 0.1$ cm. The percentage uncertainty in the area is:",
+      "options": ["$7\\%$", "$5\\%$", "$10\\%$", "$2\\%$"],
+      "correctAnswers": [0],
+      "explanation": "Percentage uncertainties: length $= \\frac{0.1}{5.0} \\times 100 = 2\\%$, width $= \\frac{0.1}{2.0} \\times 100 = 5\\%$. For multiplication, add percentages: $2\\% + 5\\% = 7\\%$",
+      "points": 1
+    },
+    {
+      "id": "q3",
+      "type": "mcq",
+      "question": "The order of magnitude of the mass of a proton ($1.67 \\times 10^{-27}$ kg) is:",
+      "options": ["$10^{-27}$ kg", "$10^{-26}$ kg", "$10^{-28}$ kg", "$10^{-24}$ kg"],
+      "correctAnswers": [0],
+      "explanation": "$1.67 \\times 10^{-27}$ is closer to $10^{-27}$ than $10^{-26}$, so the order of magnitude is $10^{-27}$ kg",
+      "points": 1
+    },
+    {
+      "id": "q4",
+      "type": "frq",
+      "question": "How many significant figures are in the measurement $0.00340$ m?",
+      "correctAnswers": ["3", "three"],
+      "explanation": "Leading zeros are not significant. The digits 3, 4, and the trailing 0 are significant. Answer: 3",
+      "points": 1
+    },
+    {
+      "id": "q5",
+      "type": "mcq",
+      "question": "If $T = 2\\pi\\sqrt{\\frac{l}{g}}$, the percentage uncertainty in $T$ when $l$ has 4% uncertainty is:",
+      "options": ["$2\\%$", "$4\\%$", "$8\\%$", "$16\\%$"],
+      "correctAnswers": [0],
+      "explanation": "$T \\propto l^{1/2}$, so $\\frac{\\Delta T}{T} = \\frac{1}{2} \\cdot \\frac{\\Delta l}{l} = \\frac{1}{2} \\times 4\\% = 2\\%$",
+      "points": 1
+    },
+    {
+      "id": "q6",
+      "type": "mcq",
+      "question": "A systematic error in an experiment causes measurements to be:",
+      "options": [
+        "Consistently shifted in one direction",
+        "Randomly scattered around the true value",
+        "Both accurate and precise",
+        "Impossible to reproduce"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Systematic errors cause all measurements to be shifted in one direction (too high or too low). Random errors cause scatter.",
+      "points": 1
+    },
+    {
+      "id": "q7",
+      "type": "mcq",
+      "question": "Express the unit of force (newton) in terms of SI base units:",
+      "options": [
+        "$\\text{kg}\\cdot\\text{m}\\cdot\\text{s}^{-2}$",
+        "$\\text{kg}\\cdot\\text{m}^2\\cdot\\text{s}^{-2}$",
+        "$\\text{kg}\\cdot\\text{m}\\cdot\\text{s}^{-1}$",
+        "$\\text{kg}^2\\cdot\\text{m}\\cdot\\text{s}^{-2}$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "$F = ma$, so $[F] = \\text{kg} \\cdot \\text{m}\\cdot\\text{s}^{-2}$",
+      "points": 1
+    },
+    {
+      "id": "q8",
+      "type": "mcq",
+      "question": "A set of measurements has high precision but low accuracy. This means:",
+      "options": [
+        "Values are close together but far from the true value",
+        "Values are spread out but centered on the true value",
+        "Values are both close together and near the true value",
+        "Values are spread out and far from the true value"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Precision = reproducibility (close together). Accuracy = closeness to true value. High precision + low accuracy = clustered but off-target.",
+      "points": 1
+    }
+  ]
+}

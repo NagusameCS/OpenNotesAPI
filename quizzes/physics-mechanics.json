@@ -1,0 +1,134 @@
+{
+  "id": "physics-mechanics",
+  "schemaVersion": "1.0",
+  "title": "IB Physics - Mechanics",
+  "subject": "physics",
+  "topic": "Mechanics",
+  "difficulty": "medium",
+  "description": "Comprehensive quiz covering kinematics, dynamics, work/energy, and momentum for IB Physics",
+  "tags": ["ib", "physics", "mechanics", "kinematics", "dynamics", "momentum", "energy"],
+  "author": "OpenNotes",
+  "createdAt": "2026-02-06T00:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "mcq",
+      "question": "A ball is thrown vertically upward with initial velocity $20 \\text{ m s}^{-1}$. Taking $g = 10 \\text{ m s}^{-2}$, the maximum height reached is:",
+      "options": ["$20$ m", "$40$ m", "$10$ m", "$200$ m"],
+      "correctAnswers": [0],
+      "explanation": "At max height, $v = 0$. Using $v^2 = u^2 - 2gs$: $0 = 400 - 20s$, $s = 20$ m",
+      "points": 1
+    },
+    {
+      "id": "q2",
+      "type": "mcq",
+      "question": "A 5 kg object accelerates at $3 \\text{ m s}^{-2}$ on a frictionless surface. The net force is:",
+      "options": ["$15$ N", "$1.67$ N", "$8$ N", "$0.6$ N"],
+      "correctAnswers": [0],
+      "explanation": "$F = ma = 5 \\times 3 = 15$ N",
+      "points": 1
+    },
+    {
+      "id": "q3",
+      "type": "frq",
+      "question": "A car starts from rest and reaches $30 \\text{ m s}^{-1}$ in $10$ s with uniform acceleration. Find the distance traveled (in metres).",
+      "correctAnswers": ["150"],
+      "explanation": "$a = \\frac{30}{10} = 3 \\text{ m s}^{-2}$. $s = ut + \\frac{1}{2}at^2 = 0 + \\frac{1}{2}(3)(100) = 150$ m",
+      "points": 1
+    },
+    {
+      "id": "q4",
+      "type": "mcq",
+      "question": "Two objects ($3$ kg and $2$ kg) collide and stick together. The 3 kg object was moving at $4 \\text{ m s}^{-1}$ and the 2 kg was stationary. The velocity after collision is:",
+      "options": [
+        "$2.4 \\text{ m s}^{-1}$",
+        "$4.0 \\text{ m s}^{-1}$",
+        "$1.2 \\text{ m s}^{-1}$",
+        "$6.0 \\text{ m s}^{-1}$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Conservation of momentum: $3(4) + 2(0) = (3+2)v$. $12 = 5v$, $v = 2.4 \\text{ m s}^{-1}$",
+      "points": 1
+    },
+    {
+      "id": "q5",
+      "type": "mcq",
+      "question": "A 2 kg block slides down a frictionless incline of height 5 m. Its speed at the bottom is ($g = 10 \\text{ m s}^{-2}$):",
+      "options": ["$10 \\text{ m s}^{-1}$", "$5 \\text{ m s}^{-1}$", "$\\sqrt{50} \\text{ m s}^{-1}$", "$20 \\text{ m s}^{-1}$"],
+      "correctAnswers": [0],
+      "explanation": "By conservation of energy: $mgh = \\frac{1}{2}mv^2$. $v = \\sqrt{2gh} = \\sqrt{2 \\times 10 \\times 5} = \\sqrt{100} = 10 \\text{ m s}^{-1}$",
+      "points": 1
+    },
+    {
+      "id": "q6",
+      "type": "mcq",
+      "question": "A projectile is launched at $30°$ above the horizontal with speed $40 \\text{ m s}^{-1}$. The time to reach maximum height is ($g = 10 \\text{ m s}^{-2}$):",
+      "options": ["$2$ s", "$4$ s", "$1$ s", "$3$ s"],
+      "correctAnswers": [0],
+      "explanation": "$v_y = u\\sin 30° = 40 \\times 0.5 = 20 \\text{ m s}^{-1}$. At max height $v_y = 0$: $t = \\frac{v_y}{g} = \\frac{20}{10} = 2$ s",
+      "points": 1
+    },
+    {
+      "id": "q7",
+      "type": "frq",
+      "question": "A force of $50$ N acts on a $10$ kg box at an angle of $60°$ above the horizontal on a frictionless surface. Find the horizontal acceleration in $\\text{m s}^{-2}$.",
+      "correctAnswers": ["2.5"],
+      "explanation": "$F_x = 50\\cos 60° = 25$ N. $a = \\frac{F_x}{m} = \\frac{25}{10} = 2.5 \\text{ m s}^{-2}$",
+      "points": 1
+    },
+    {
+      "id": "q8",
+      "type": "mcq",
+      "question": "Newton's third law states:",
+      "options": [
+        "Every action has an equal and opposite reaction on a different body",
+        "An object at rest stays at rest unless acted on by a force",
+        "Force equals mass times acceleration",
+        "Every action has an equal and opposite reaction on the same body"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Newton's third law: action-reaction pairs act on different bodies, are equal in magnitude, and opposite in direction. They are the same type of force.",
+      "points": 1
+    },
+    {
+      "id": "q9",
+      "type": "mcq",
+      "question": "The work done by gravity on a $2$ kg object falling $10$ m is ($g = 10 \\text{ m s}^{-2}$):",
+      "options": ["$200$ J", "$20$ J", "$100$ J", "$-200$ J"],
+      "correctAnswers": [0],
+      "explanation": "$W = mgh = 2 \\times 10 \\times 10 = 200$ J (positive because force and displacement are in the same direction)",
+      "points": 1
+    },
+    {
+      "id": "q10",
+      "type": "mcq",
+      "question": "A 1000 kg car brakes from $20 \\text{ m s}^{-1}$ to rest. The kinetic energy dissipated is:",
+      "options": ["$200$ kJ", "$20$ kJ", "$400$ kJ", "$100$ kJ"],
+      "correctAnswers": [0],
+      "explanation": "$KE = \\frac{1}{2}mv^2 = \\frac{1}{2}(1000)(20)^2 = \\frac{1}{2}(1000)(400) = 200{,}000$ J $= 200$ kJ",
+      "points": 1
+    },
+    {
+      "id": "q11",
+      "type": "mcq",
+      "question": "A constant force of $10$ N accelerates a body from rest to $v$ in time $t$. The power at time $t$ is:",
+      "options": [
+        "$\\frac{100t}{m}$",
+        "$10v$",
+        "$\\frac{10t}{m}$",
+        "Both A and B"
+      ],
+      "correctAnswers": [3],
+      "explanation": "$P = Fv = 10v$. Also, $v = \\frac{Ft}{m} = \\frac{10t}{m}$, so $P = 10 \\cdot \\frac{10t}{m} = \\frac{100t}{m}$. Both expressions are equivalent.",
+      "points": 1
+    },
+    {
+      "id": "q12",
+      "type": "frq",
+      "question": "An impulse of $30 \\text{ N s}$ acts on a $5$ kg object initially at rest. What is the final velocity in $\\text{m s}^{-1}$?",
+      "correctAnswers": ["6"],
+      "explanation": "Impulse $= \\Delta p = mv - 0$. $30 = 5v$, $v = 6 \\text{ m s}^{-1}$",
+      "points": 1
+    }
+  ]
+}

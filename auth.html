@@ -53,40 +53,46 @@
     .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 8px; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .desktop-note { margin-top: 24px; font-size: 0.875rem; color: #64748b; }
-    .token-box { 
-      margin-top: 24px; 
-      padding: 16px; 
+    .code-box { 
+      margin-top: 32px; 
+      padding: 24px; 
       background: rgba(0,0,0,0.3); 
-      border-radius: 8px; 
-      text-align: left;
+      border-radius: 12px; 
+      text-align: center;
       display: none;
     }
-    .token-box.visible { display: block; }
-    .token-label { font-size: 0.75rem; color: #94a3b8; margin-bottom: 8px; }
-    .token-value { 
-      font-family: monospace; 
-      font-size: 0.85rem; 
-      word-break: break-all; 
-      background: rgba(0,0,0,0.3); 
-      padding: 12px; 
-      border-radius: 4px; 
+    .code-box.visible { display: block; }
+    .code-label { font-size: 0.875rem; color: #94a3b8; margin-bottom: 16px; }
+    .code-value { 
+      font-family: 'Courier New', monospace; 
+      font-size: 3rem;
+      font-weight: bold;
+      letter-spacing: 0.5em;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border-radius: 8px;
+      display: inline-block;
       user-select: all;
       cursor: text;
+      margin-bottom: 16px;
+    }
+    .code-expiry {
+      font-size: 0.75rem;
+      color: #64748b;
     }
     .btn-copy {
-      margin-top: 12px;
-      padding: 10px 20px;
-      background: #3b82f6;
+      margin-top: 16px;
+      padding: 10px 24px;
+      background: #22c55e;
       border: none;
       border-radius: 6px;
       color: white;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
-      width: 100%;
       transition: background 0.2s;
     }
-    .btn-copy:hover { background: #2563eb; }
-    .btn-copy.copied { background: #22c55e; }
+    .btn-copy:hover { background: #16a34a; }
+    .btn-copy.copied { background: #3b82f6; }
   </style>
 </head>
 <body>
@@ -107,22 +113,28 @@
     
     <div id="status" class="status"></div>
     
-    <div id="token-box" class="token-box">
-      <div class="token-label">Your Auth Token (copy this to the desktop app):</div>
-      <div id="token-value" class="token-value"></div>
-      <button class="btn-copy" onclick="copyToken()">Copy Token</button>
+    <div id="code-box" class="code-box">
+      <div class="code-label">Enter this code in the OpenNotes Desktop app:</div>
+      <div id="code-value" class="code-value"></div>
+      <div id="code-expiry" class="code-expiry">Expires in 5:00</div>
+      <button class="btn-copy" onclick="copyCode()">Copy Code</button>
     </div>
     
-    <p class="desktop-note">
-      After signing in, copy the token above and paste it in the OpenNotes Desktop app.
+    <p class="desktop-note" id="desktop-note">
+      This page is for OpenNotes Desktop authentication only.
     </p>
   </div>
 
   <script>
     const API_BASE = 'https://open-notes.tebby2008-li.workers.dev';
+    // Use our gateway worker for code exchange (same subdomain as API)
+    const GATEWAY_URL = 'https://opennotes-api-gateway.tebby2008-li.workers.dev';
+    
+    let expiryTimer = null;
+    let expiryTime = 0;
     
     // Check if we're receiving a callback with auth data
-    function checkCallback() {
+    async function checkCallback() {
       const params = new URLSearchParams(window.location.search);
       const hash = new URLSearchParams(window.location.hash.slice(1));
       
@@ -137,23 +149,58 @@
       }
       
       if (token) {
-        // Store auth data
+        showStatus('loading', 'Generating your sign-in code...');
+        
         try {
-          localStorage.setItem('auth_token_fallback', token);
-          if (userStr) {
-            localStorage.setItem('opennotes_user', decodeURIComponent(userStr));
+          // Request a 6-digit code from the gateway
+          const response = await fetch(GATEWAY_URL + '/auth/code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              token: token,
+              user: userStr ? JSON.parse(decodeURIComponent(userStr)) : null,
+            }),
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to generate code');
           }
           
-          // Show the token for copying
-          document.getElementById('token-value').textContent = token;
-          document.getElementById('token-box').classList.add('visible');
-          document.getElementById('google-signin-btn').style.display = 'none';
-          
-          showStatus('success', 'Signed in successfully! Copy the token below.');
+          const data = await response.json();
+          showCode(data.code, data.expiresIn);
         } catch (e) {
-          showStatus('error', 'Failed to save auth data: ' + e.message);
+          // Fallback: Show the token directly if gateway is not available
+          console.error('Gateway error:', e);
+          showStatus('error', 'Could not generate code. Token: ' + token.substring(0, 20) + '...');
         }
       }
+    }
+    
+    function showCode(code, expiresIn) {
+      document.getElementById('google-signin-btn').style.display = 'none';
+      document.getElementById('status').style.display = 'none';
+      document.getElementById('code-box').classList.add('visible');
+      document.getElementById('code-value').textContent = code;
+      document.getElementById('desktop-note').textContent = 'Enter this code in your OpenNotes Desktop app to complete sign-in.';
+      
+      // Start expiry countdown
+      expiryTime = expiresIn;
+      updateExpiry();
+      expiryTimer = setInterval(() => {
+        expiryTime--;
+        updateExpiry();
+        if (expiryTime <= 0) {
+          clearInterval(expiryTimer);
+          document.getElementById('code-expiry').textContent = 'Code expired - refresh to try again';
+          document.getElementById('code-value').style.opacity = '0.5';
+        }
+      }, 1000);
+    }
+    
+    function updateExpiry() {
+      const mins = Math.floor(expiryTime / 60);
+      const secs = expiryTime % 60;
+      document.getElementById('code-expiry').textContent = `Expires in ${mins}:${secs.toString().padStart(2, '0')}`;
     }
     
     function showStatus(type, message) {
@@ -166,23 +213,36 @@
       showStatus('loading', 'Redirecting to Google Sign-In...');
       
       // Redirect to the worker auth endpoint
-      // The worker will handle OAuth and redirect back here with the token
       const callbackUrl = encodeURIComponent(window.location.origin + window.location.pathname);
       window.location.href = API_BASE + '/auth/login?callback=' + callbackUrl;
     }
     
-    function copyToken() {
-      const token = document.getElementById('token-value').textContent;
-      navigator.clipboard.writeText(token).then(() => {
+    function copyCode() {
+      const code = document.getElementById('code-value').textContent;
+      navigator.clipboard.writeText(code).then(() => {
         const btn = document.querySelector('.btn-copy');
         btn.textContent = 'Copied!';
         btn.classList.add('copied');
         setTimeout(() => {
-          btn.textContent = 'Copy Token';
+          btn.textContent = 'Copy Code';
           btn.classList.remove('copied');
         }, 2000);
       }).catch(err => {
-        showStatus('error', 'Failed to copy: ' + err.message);
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = code;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        const btn = document.querySelector('.btn-copy');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy Code';
+          btn.classList.remove('copied');
+        }, 2000);
       });
     }
     

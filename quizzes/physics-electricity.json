@@ -1,0 +1,126 @@
+{
+  "id": "physics-electricity",
+  "schemaVersion": "1.0",
+  "title": "IB Physics - Electricity & Magnetism",
+  "subject": "physics",
+  "topic": "Electricity and Magnetism",
+  "difficulty": "medium",
+  "description": "Comprehensive quiz covering electric fields, circuits, resistors, capacitors, and magnetic forces for IB Physics",
+  "tags": ["ib", "physics", "electricity", "magnetism", "circuits", "fields"],
+  "author": "OpenNotes",
+  "createdAt": "2026-02-06T00:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "mcq",
+      "question": "The electric field strength at distance $r$ from a point charge $Q$ is:",
+      "options": [
+        "$E = \\frac{kQ}{r^2}$",
+        "$E = \\frac{kQ}{r}$",
+        "$E = \\frac{kQ^2}{r^2}$",
+        "$E = \\frac{kQ}{2r^2}$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Coulomb's law gives $E = \\frac{kQ}{r^2} = \\frac{Q}{4\\pi\\epsilon_0 r^2}$",
+      "points": 1
+    },
+    {
+      "id": "q2",
+      "type": "frq",
+      "question": "Three resistors of $2 \\Omega$, $3 \\Omega$, and $6 \\Omega$ are connected in parallel. Find the total resistance in ohms.",
+      "correctAnswers": ["1"],
+      "explanation": "$\\frac{1}{R} = \\frac{1}{2} + \\frac{1}{3} + \\frac{1}{6} = \\frac{3+2+1}{6} = \\frac{6}{6} = 1$. So $R = 1 \\Omega$",
+      "points": 1
+    },
+    {
+      "id": "q3",
+      "type": "mcq",
+      "question": "A battery with EMF $12$ V and internal resistance $2 \\Omega$ drives current through an external resistance of $4 \\Omega$. The current in the circuit is:",
+      "options": ["$2$ A", "$3$ A", "$6$ A", "$1$ A"],
+      "correctAnswers": [0],
+      "explanation": "$I = \\frac{\\varepsilon}{R + r} = \\frac{12}{4+2} = 2$ A",
+      "points": 1
+    },
+    {
+      "id": "q4",
+      "type": "mcq",
+      "question": "The power dissipated in a $10 \\Omega$ resistor carrying $3$ A is:",
+      "options": ["$90$ W", "$30$ W", "$0.9$ W", "$270$ W"],
+      "correctAnswers": [0],
+      "explanation": "$P = I^2R = 9 \\times 10 = 90$ W",
+      "points": 1
+    },
+    {
+      "id": "q5",
+      "type": "mcq",
+      "question": "A charge of $2 \\mu C$ moves through a potential difference of $500$ V. The work done is:",
+      "options": ["$1 \\times 10^{-3}$ J", "$1000$ J", "$250$ J", "$1 \\times 10^{-6}$ J"],
+      "correctAnswers": [0],
+      "explanation": "$W = qV = 2 \\times 10^{-6} \\times 500 = 1 \\times 10^{-3}$ J $= 1$ mJ",
+      "points": 1
+    },
+    {
+      "id": "q6",
+      "type": "mcq",
+      "question": "The force on a wire of length $L$ carrying current $I$ in a magnetic field $B$ at angle $\\theta$ to the field is:",
+      "options": [
+        "$F = BIL\\sin\\theta$",
+        "$F = BIL\\cos\\theta$",
+        "$F = BIL$",
+        "$F = \\frac{BIL}{\\sin\\theta}$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "$F = BIL\\sin\\theta$. Maximum force when wire is perpendicular to field ($\\theta = 90°$), zero when parallel.",
+      "points": 1
+    },
+    {
+      "id": "q7",
+      "type": "frq",
+      "question": "A $5 \\mu F$ capacitor is charged to $12$ V. Calculate the energy stored in microjoules.",
+      "correctAnswers": ["360"],
+      "explanation": "$E = \\frac{1}{2}CV^2 = \\frac{1}{2} \\times 5 \\times 10^{-6} \\times 144 = 3.6 \\times 10^{-4}$ J $= 360 \\mu J$",
+      "points": 1
+    },
+    {
+      "id": "q8",
+      "type": "mcq",
+      "question": "Kirchhoff's first law (junction rule) is based on conservation of:",
+      "options": ["Charge", "Energy", "Momentum", "Mass"],
+      "correctAnswers": [0],
+      "explanation": "Kirchhoff's first law states the sum of currents into a junction equals the sum of currents out, based on conservation of charge.",
+      "points": 1
+    },
+    {
+      "id": "q9",
+      "type": "mcq",
+      "question": "A charged particle moves parallel to a magnetic field. The force on the particle is:",
+      "options": ["$0$", "$qvB$", "$qvB\\sin 90°$", "$\\frac{qv}{B}$"],
+      "correctAnswers": [0],
+      "explanation": "$F = qvB\\sin\\theta$. When the particle moves parallel to $B$, $\\theta = 0$, so $F = 0$.",
+      "points": 1
+    },
+    {
+      "id": "q10",
+      "type": "mcq",
+      "question": "In a potential divider with resistors $R_1 = 3 \\text{ k}\\Omega$ and $R_2 = 6 \\text{ k}\\Omega$ connected to a $9$ V supply, the voltage across $R_2$ is:",
+      "options": ["$6$ V", "$3$ V", "$4.5$ V", "$9$ V"],
+      "correctAnswers": [0],
+      "explanation": "$V_2 = \\frac{R_2}{R_1 + R_2} \\times V = \\frac{6}{3+6} \\times 9 = \\frac{6}{9} \\times 9 = 6$ V",
+      "points": 1
+    },
+    {
+      "id": "q11",
+      "type": "mcq",
+      "question": "The direction of the force on a positive charge moving in a magnetic field is determined by:",
+      "options": [
+        "The right-hand rule (or Fleming's left-hand rule)",
+        "Lenz's law",
+        "Coulomb's law",
+        "Faraday's law"
+      ],
+      "correctAnswers": [0],
+      "explanation": "The force on a moving charge in a magnetic field is perpendicular to both $\\mathbf{v}$ and $\\mathbf{B}$, found using the right-hand rule ($\\mathbf{F} = q\\mathbf{v} \\times \\mathbf{B}$).",
+      "points": 1
+    }
+  ]
+}

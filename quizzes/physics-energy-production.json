@@ -1,0 +1,128 @@
+{
+  "id": "physics-energy-production",
+  "schemaVersion": "1.0",
+  "title": "IB Physics - Energy Production",
+  "subject": "physics",
+  "topic": "Energy Production",
+  "difficulty": "medium",
+  "description": "Quiz covering energy sources, thermal energy transfer, power generation, and greenhouse effect for IB Physics",
+  "tags": ["ib", "physics", "energy", "power", "renewable", "greenhouse", "radiation"],
+  "author": "OpenNotes",
+  "createdAt": "2026-02-06T00:00:00Z",
+  "questions": [
+    {
+      "id": "q1",
+      "type": "mcq",
+      "question": "The efficiency of a thermal power station is typically:",
+      "options": ["$30\\% - 40\\%$", "$80\\% - 90\\%$", "$5\\% - 10\\%$", "$90\\% - 100\\%$"],
+      "correctAnswers": [0],
+      "explanation": "Typical coal/gas power stations have efficiencies of 30-40% due to heat losses (Carnot efficiency limits).",
+      "points": 1
+    },
+    {
+      "id": "q2",
+      "type": "mcq",
+      "question": "The Stefan-Boltzmann law states that the total power radiated by a black body is:",
+      "options": [
+        "$P = \\sigma A T^4$",
+        "$P = \\sigma A T^2$",
+        "$P = \\sigma A T$",
+        "$P = \\frac{\\sigma A}{T^4}$"
+      ],
+      "correctAnswers": [0],
+      "explanation": "$P = \\sigma A T^4$ where $\\sigma = 5.67 \\times 10^{-8}$ W m⁻² K⁻⁴ is the Stefan-Boltzmann constant.",
+      "points": 1
+    },
+    {
+      "id": "q3",
+      "type": "mcq",
+      "question": "Which of the following is the main greenhouse gas responsible for the enhanced greenhouse effect?",
+      "options": ["Carbon dioxide ($CO_2$)", "Nitrogen ($N_2$)", "Oxygen ($O_2$)", "Argon (Ar)"],
+      "correctAnswers": [0],
+      "explanation": "$CO_2$ is the primary anthropogenic greenhouse gas. Its increase from burning fossil fuels is the main driver of enhanced greenhouse effect.",
+      "points": 1
+    },
+    {
+      "id": "q4",
+      "type": "frq",
+      "question": "A solar panel of area $2 \\text{ m}^2$ receives solar radiation at $800 \\text{ W m}^{-2}$ and has 20% efficiency. Calculate the power output in watts.",
+      "correctAnswers": ["320"],
+      "explanation": "Power input $= 800 \\times 2 = 1600$ W. Power output $= 0.20 \\times 1600 = 320$ W",
+      "points": 1
+    },
+    {
+      "id": "q5",
+      "type": "mcq",
+      "question": "Wien's displacement law states that $\\lambda_{\\text{max}} T = b$ where $b = 2.9 \\times 10^{-3}$ m K. The Sun's surface temperature is $\\sim 5800$ K. The peak wavelength is:",
+      "options": [
+        "$\\approx 500$ nm (visible light)",
+        "$\\approx 5000$ nm (infrared)",
+        "$\\approx 50$ nm (ultraviolet)",
+        "$\\approx 5$ nm (X-ray)"
+      ],
+      "correctAnswers": [0],
+      "explanation": "$\\lambda_{\\text{max}} = \\frac{2.9 \\times 10^{-3}}{5800} = 5.0 \\times 10^{-7}$ m $= 500$ nm, which is in the visible spectrum (green).",
+      "points": 1
+    },
+    {
+      "id": "q6",
+      "type": "mcq",
+      "question": "Which energy source has the highest energy density (energy per unit mass)?",
+      "options": ["Nuclear (uranium)", "Coal", "Natural gas", "Wind"],
+      "correctAnswers": [0],
+      "explanation": "Nuclear fuel has energy density of ~$8 \\times 10^{13}$ J/kg, compared to coal ~$3 \\times 10^7$ J/kg. Nuclear is about a million times more energy-dense.",
+      "points": 1
+    },
+    {
+      "id": "q7",
+      "type": "mcq",
+      "question": "The albedo of a surface is defined as:",
+      "options": [
+        "The ratio of reflected to incident radiation",
+        "The total power absorbed",
+        "The emissivity of the surface",
+        "The temperature of the surface"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Albedo = $\\frac{\\text{power reflected}}{\\text{power incident}}$. Ice has high albedo (~0.8), oceans have low albedo (~0.06).",
+      "points": 1
+    },
+    {
+      "id": "q8",
+      "type": "mcq",
+      "question": "A hydroelectric dam of height $h = 50$ m has water flowing at a rate of $100 \\text{ kg s}^{-1}$. The maximum power output is ($g = 10 \\text{ m s}^{-2}$):",
+      "options": ["$50$ kW", "$500$ kW", "$5$ kW", "$5$ MW"],
+      "correctAnswers": [0],
+      "explanation": "$P = \\dot{m}gh = 100 \\times 10 \\times 50 = 50{,}000$ W $= 50$ kW",
+      "points": 1
+    },
+    {
+      "id": "q9",
+      "type": "mcq",
+      "question": "The greenhouse effect works because greenhouse gases:",
+      "options": [
+        "Absorb and re-emit infrared radiation from Earth's surface",
+        "Absorb incoming visible radiation from the Sun",
+        "Reflect sunlight back to space",
+        "Increase the ozone layer"
+      ],
+      "correctAnswers": [0],
+      "explanation": "Greenhouse gases are transparent to visible light but absorb infrared radiation emitted by Earth's surface, re-emitting it in all directions including back toward the surface.",
+      "points": 1
+    },
+    {
+      "id": "q10",
+      "type": "mcq",
+      "question": "A wind turbine with blade length $r = 20$ m operates in wind speed $v = 10 \\text{ m s}^{-1}$. Air density is $1.2 \\text{ kg m}^{-3}$. The maximum theoretical power is:",
+      "options": [
+        "$\\approx 754$ kW",
+        "$\\approx 75$ kW",
+        "$\\approx 7.5$ MW",
+        "$\\approx 150$ kW"
+      ],
+      "correctAnswers": [0],
+      "explanation": "$P = \\frac{1}{2}\\rho A v^3 = \\frac{1}{2}(1.2)(\\pi \\times 400)(1000) = 0.6 \\times 1257 \\times 1000 \\approx 754$ kW",
+      "points": 1
+    }
+  ]
+}
