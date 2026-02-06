@@ -1887,6 +1887,24 @@ async function init() {
   
   // Window controls (custom title bar)
   setupWindowControls();
+
+  async function setupWindowControls() {
+    // Setup window controls for Tauri custom title bar
+    if (window.__TAURI__) {
+      try {
+        const { getCurrentWindow } = await import('@tauri-apps/api/window');
+        const appWindow = getCurrentWindow();
+        
+        document.getElementById('minimize-btn')?.addEventListener('click', () => appWindow.minimize());
+        document.getElementById('maximize-btn')?.addEventListener('click', () => appWindow.toggleMaximize());
+        document.getElementById('close-btn')?.addEventListener('click', () => appWindow.close());
+        
+        console.log('[INIT] Window controls initialized');
+      } catch (e) {
+        console.log('[INIT] Window controls not available:', e.message);
+      }
+    }
+  }
   
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {

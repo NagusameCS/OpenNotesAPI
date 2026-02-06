@@ -1455,9 +1455,9 @@ input, select, textarea {
 }
 
 .auth-logo {
-  width: 120px;
-  height: 120px;
-  margin-bottom: 32px;
+  width: 160px;
+  height: 160px;
+  margin-bottom: 40px;
 }
 
 .auth-modal-body h2 {
