@@ -1,0 +1,1230 @@
+/**
+ * OpenNotes Desktop - Main Application
+ * Connects to OpenNotesAPI, provides editor, offline storage
+ */
+
+// ==================== CONFIGURATION ====================
+const CONFIG = {
+  API_BASE: 'https://open-notes.tebby2008-li.workers.dev',
+  GATEWAY_URL: '', // Set via secrets if using gateway
+  APP_TOKEN: '', // Set via secrets
+  STORAGE_KEY: 'opennotes_desktop',
+  MAX_STORAGE_MB: 500,
+  NOTES_PER_PAGE: 20, // Match API default
+};
+
+// Load secrets from Tauri store
+async function loadSecrets() {
+  try {
+    // Check if Tauri store is available
+    if (window.__TAURI__) {
+      const { Store } = await import('@tauri-apps/plugin-store');
+      const store = new Store('secrets.json');
+      
+      const gateway = await store.get('gateway_url');
+      const token = await store.get('app_token');
+      
+      if (gateway) CONFIG.GATEWAY_URL = gateway;
+      if (token) CONFIG.APP_TOKEN = token;
+      
+      console.log('Secrets loaded from store');
+    }
+  } catch (e) {
+    console.log('Running in browser mode, using defaults');
+  }
+}
+
+// ==================== STATE ====================
+const state = {
+  notes: [],
+  allNotes: [], // All loaded notes for infinite scroll
+  savedNotes: [],
+  currentPage: 1,
+  totalNotes: 0,
+  offset: 0,
+  hasMore: true,
+  isLoading: false,
+  activeView: 'browse',
+  currentFilter: 'all',
+  currentSort: 'views',
+  searchQuery: '',
+  currentNote: null,
+  isDarkMode: false,
+  storageUsed: 0,
+};
+
+// ==================== API CLIENT ====================
+const api = {
+  getBaseUrl() {
+    return CONFIG.GATEWAY_URL || CONFIG.API_BASE;
+  },
+  
+  getHeaders() {
+    const headers = { 'Content-Type': 'application/json' };
+    if (CONFIG.APP_TOKEN && CONFIG.GATEWAY_URL) {
+      headers['X-App-Token'] = CONFIG.APP_TOKEN;
+    }
+    return headers;
+  },
+  
+  async fetchNotes(params = {}) {
+    try {
+      const queryParams = new URLSearchParams({
+        type: 'list',
+        limit: params.limit || CONFIG.NOTES_PER_PAGE,
+        offset: params.offset || 0,
+        sort: params.sort || 'views',
+        ...(params.format && params.format !== 'all' && { format: params.format }),
+        ...(params.search && { q: params.search }),
+      });
+      
+      const response = await fetch(`${this.getBaseUrl()}?${queryParams}`, {
+        headers: this.getHeaders()
+      });
+      if (!response.ok) throw new Error('Failed to fetch notes');
+      const data = await response.json();
+      
+      // Normalize response - API returns { items: [], meta: { total } }
+      return {
+        notes: data.items || data.notes || data.data || [],
+        total: data.meta?.total || data.total || 0,
+        hasMore: data.meta?.hasMore !== false,
+      };
+    } catch (error) {
+      console.error('API Error:', error);
+      throw error;
+    }
+  },
+  
+  async fetchAllNotes(params = {}) {
+    // Fetch notes in batches until we have all of them
+    const allNotes = [];
+    let offset = 0;
+    const limit = 50; // Larger batches for efficiency
+    let hasMore = true;
+    
+    while (hasMore) {
+      const result = await this.fetchNotes({ ...params, offset, limit });
+      allNotes.push(...result.notes);
+      offset += limit;
+      hasMore = result.notes.length === limit && allNotes.length < (result.total || Infinity);
+      
+      // Safety limit
+      if (allNotes.length >= 1000) break;
+    }
+    
+    return { notes: allNotes, total: allNotes.length };
+  },
+  
+  async fetchNote(id) {
+    try {
+      const queryParams = new URLSearchParams({
+        type: 'note',
+        noteId: id,
+      });
+      const response = await fetch(`${this.getBaseUrl()}?${queryParams}`, {
+        headers: this.getHeaders()
+      });
+      if (!response.ok) throw new Error('Note not found');
+      return await response.json();
+    } catch (error) {
+      console.error('API Error:', error);
+      throw error;
+    }
+  },
+  
+  async fetchTrending() {
+    return this.fetchNotes({ sort: 'views', limit: 12 });
+  },
+  
+  async incrementViews(name) {
+    try {
+      const queryParams = new URLSearchParams({
+        type: 'note',
+        noteId: name,
+        counter: 'views',
+      });
+      await fetch(`${this.getBaseUrl()}?${queryParams}`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+      });
+    } catch (error) {
+      console.error('Failed to increment views:', error);
+    }
+  },
+  
+  async incrementDownloads(name) {
+    try {
+      const queryParams = new URLSearchParams({
+        type: 'note',
+        noteId: name,
+        counter: 'downloads',
+      });
+      await fetch(`${this.getBaseUrl()}?${queryParams}`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+      });
+    } catch (error) {
+      console.error('Failed to increment downloads:', error);
+    }
+  },
+};
+
+// ==================== STORAGE MANAGER ====================
+const storage = {
+  get(key) {
+    const data = localStorage.getItem(`${CONFIG.STORAGE_KEY}_${key}`);
+    return data ? JSON.parse(data) : null;
+  },
+  
+  set(key, value) {
+    localStorage.setItem(`${CONFIG.STORAGE_KEY}_${key}`, JSON.stringify(value));
+    this.updateStorageIndicator();
+  },
+  
+  remove(key) {
+    localStorage.removeItem(`${CONFIG.STORAGE_KEY}_${key}`);
+    this.updateStorageIndicator();
+  },
+  
+  getSavedNotes() {
+    return this.get('saved_notes') || [];
+  },
+  
+  async saveNoteOffline(note) {
+    const saved = this.getSavedNotes();
+    
+    // Check if already saved
+    if (saved.find(n => n.name === note.name)) {
+      showToast('Note already saved offline', 'info');
+      return false;
+    }
+    
+    // Download and cache the file
+    try {
+      const response = await fetch(note.dl);
+      const blob = await response.blob();
+      const base64 = await this.blobToBase64(blob);
+      
+      const noteData = {
+        ...note,
+        cachedFile: base64,
+        cachedAt: Date.now(),
+        fileSize: blob.size,
+      };
+      
+      saved.push(noteData);
+      this.set('saved_notes', saved);
+      state.savedNotes = saved;
+      
+      showToast('Note saved for offline access', 'success');
+      return true;
+    } catch (error) {
+      console.error('Failed to save note offline:', error);
+      showToast('Failed to save note offline', 'error');
+      return false;
+    }
+  },
+  
+  removeOfflineNote(name) {
+    let saved = this.getSavedNotes();
+    saved = saved.filter(n => n.name !== name);
+    this.set('saved_notes', saved);
+    state.savedNotes = saved;
+    showToast('Note removed from offline storage', 'info');
+  },
+  
+  isNoteSaved(name) {
+    return this.getSavedNotes().some(n => n.name === name);
+  },
+  
+  blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  },
+  
+  base64ToBlob(base64) {
+    const parts = base64.split(',');
+    const mime = parts[0].match(/:(.*?);/)[1];
+    const bstr = atob(parts[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
+  },
+  
+  getStorageUsed() {
+    let total = 0;
+    for (let key in localStorage) {
+      if (key.startsWith(CONFIG.STORAGE_KEY)) {
+        total += localStorage.getItem(key).length * 2; // UTF-16
+      }
+    }
+    return total;
+  },
+  
+  updateStorageIndicator() {
+    const used = this.getStorageUsed();
+    const usedMB = (used / 1024 / 1024).toFixed(2);
+    const maxMB = CONFIG.MAX_STORAGE_MB;
+    const percent = Math.min((used / (maxMB * 1024 * 1024)) * 100, 100);
+    
+    state.storageUsed = used;
+    
+    // Update sidebar indicator
+    const usedBar = document.getElementById('storage-used-bar');
+    const storageText = document.getElementById('storage-text');
+    
+    if (usedBar) usedBar.style.width = `${percent}%`;
+    if (storageText) storageText.textContent = `${usedMB} / ${maxMB} MB used`;
+    
+    // Update storage view if visible
+    this.updateStorageView(used, percent);
+  },
+  
+  updateStorageView(used, percent) {
+    const ring = document.getElementById('storage-ring');
+    const percentEl = document.getElementById('storage-percent');
+    const usedSpace = document.getElementById('used-space');
+    const availableSpace = document.getElementById('available-space');
+    const savedCount = document.getElementById('saved-count');
+    
+    if (ring) {
+      // Circle circumference = 2 * PI * r = 2 * 3.14 * 50 ≈ 314
+      const offset = 314 - (314 * percent / 100);
+      ring.style.strokeDashoffset = offset;
+    }
+    
+    if (percentEl) percentEl.textContent = `${Math.round(percent)}%`;
+    if (usedSpace) usedSpace.textContent = `${(used / 1024 / 1024).toFixed(2)} MB`;
+    if (availableSpace) availableSpace.textContent = `${(CONFIG.MAX_STORAGE_MB - used / 1024 / 1024).toFixed(2)} MB`;
+    if (savedCount) savedCount.textContent = state.savedNotes.length;
+  },
+  
+  clearCache() {
+    // Keep saved notes, clear everything else
+    const saved = this.getSavedNotes();
+    for (let key in localStorage) {
+      if (key.startsWith(CONFIG.STORAGE_KEY) && !key.includes('saved_notes')) {
+        localStorage.removeItem(key);
+      }
+    }
+    showToast('Cache cleared', 'success');
+    this.updateStorageIndicator();
+  },
+  
+  clearAll() {
+    for (let key in localStorage) {
+      if (key.startsWith(CONFIG.STORAGE_KEY)) {
+        localStorage.removeItem(key);
+      }
+    }
+    state.savedNotes = [];
+    showToast('All offline data cleared', 'success');
+    this.updateStorageIndicator();
+    renderSavedNotes();
+  },
+};
+
+// ==================== UI RENDERING ====================
+function renderNotesGrid(notes, containerId = 'notes-grid') {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  
+  if (!notes || notes.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <span class="material-symbols-rounded">search_off</span>
+        <h3>No notes found</h3>
+        <p>Try adjusting your filters or search terms</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = notes.map(note => createNoteCard(note)).join('');
+  
+  // Attach event listeners
+  container.querySelectorAll('.note-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      if (!e.target.closest('.note-action-btn')) {
+        openNoteModal(card.dataset.noteId);
+      }
+    });
+  });
+  
+  container.querySelectorAll('.btn-save-offline').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const noteId = btn.closest('.note-card').dataset.noteId;
+      const note = state.notes.find(n => n.name === noteId);
+      if (note) {
+        if (storage.isNoteSaved(note.name)) {
+          storage.removeOfflineNote(note.name);
+          btn.classList.remove('saved');
+        } else {
+          storage.saveNoteOffline(note);
+          btn.classList.add('saved');
+        }
+      }
+    });
+  });
+}
+
+function createNoteCard(note) {
+  const format = getFileFormat(note.name);
+  const isSaved = storage.isNoteSaved(note.name);
+  
+  return `
+    <article class="note-card" data-note-id="${escapeHtml(note.name)}">
+      <div class="note-thumbnail">
+        <img src="${note.img || 'https://via.placeholder.com/320x200?text=No+Preview'}" 
+             alt="${escapeHtml(note.name)}" 
+             loading="lazy"
+             onerror="this.src='https://via.placeholder.com/320x200?text=No+Preview'">
+        <span class="format-badge ${format}">${format.toUpperCase()}</span>
+      </div>
+      <div class="note-content">
+        <h3 class="note-title">${escapeHtml(note.name)}</h3>
+        <div class="note-meta">
+          <span class="note-author">
+            <span class="material-symbols-rounded">person</span>
+            ${escapeHtml(note.author || 'Unknown')}
+          </span>
+          <div class="note-stats">
+            <span class="note-stat">
+              <span class="material-symbols-rounded">visibility</span>
+              ${formatNumber(note.views || 0)}
+            </span>
+            <span class="note-stat">
+              <span class="material-symbols-rounded">download</span>
+              ${formatNumber(note.downloads || 0)}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="note-actions">
+        <button class="note-action-btn btn-save-offline ${isSaved ? 'saved' : ''}" title="${isSaved ? 'Remove from offline' : 'Save offline'}">
+          <span class="material-symbols-rounded">${isSaved ? 'bookmark' : 'bookmark_border'}</span>
+        </button>
+      </div>
+    </article>
+  `;
+}
+
+function renderPagination() {
+  const container = document.getElementById('pagination');
+  if (!container) return;
+  
+  // Show load more button if there are more notes
+  if (state.hasMore && state.allNotes.length > 0) {
+    container.innerHTML = `
+      <button class="btn btn-primary load-more-btn" id="load-more-btn">
+        <span class="material-symbols-rounded">expand_more</span>
+        Load More Notes
+      </button>
+      <span class="notes-count">${state.allNotes.length} of ${state.totalNotes} notes loaded</span>
+    `;
+    
+    document.getElementById('load-more-btn').addEventListener('click', loadMoreNotes);
+  } else if (state.allNotes.length > 0) {
+    container.innerHTML = `<span class="notes-count">All ${state.allNotes.length} notes loaded</span>`;
+  } else {
+    container.innerHTML = '';
+  }
+}
+
+function renderSavedNotes() {
+  const container = document.getElementById('saved-grid');
+  const emptyState = document.getElementById('saved-empty');
+  
+  if (!container) return;
+  
+  state.savedNotes = storage.getSavedNotes();
+  
+  if (state.savedNotes.length === 0) {
+    container.innerHTML = '';
+    if (emptyState) emptyState.style.display = 'flex';
+    return;
+  }
+  
+  if (emptyState) emptyState.style.display = 'none';
+  
+  container.innerHTML = state.savedNotes.map(note => `
+    <article class="note-card" data-note-id="${escapeHtml(note.name)}">
+      <div class="note-thumbnail">
+        <img src="${note.img || 'https://via.placeholder.com/320x200?text=No+Preview'}" 
+             alt="${escapeHtml(note.name)}" 
+             loading="lazy">
+        <span class="format-badge ${getFileFormat(note.name)}">${getFileFormat(note.name).toUpperCase()}</span>
+      </div>
+      <div class="note-content">
+        <h3 class="note-title">${escapeHtml(note.name)}</h3>
+        <div class="note-meta">
+          <span class="note-author">
+            <span class="material-symbols-rounded">person</span>
+            ${escapeHtml(note.author || 'Unknown')}
+          </span>
+          <span class="note-stat">
+            <span class="material-symbols-rounded">save</span>
+            ${formatBytes(note.fileSize || 0)}
+          </span>
+        </div>
+      </div>
+      <div class="note-actions">
+        <button class="note-action-btn" onclick="openOfflineNote('${escapeHtml(note.name)}')" title="Open">
+          <span class="material-symbols-rounded">open_in_new</span>
+        </button>
+        <button class="note-action-btn" onclick="storage.removeOfflineNote('${escapeHtml(note.name)}'); renderSavedNotes();" title="Remove">
+          <span class="material-symbols-rounded">delete</span>
+        </button>
+      </div>
+    </article>
+  `).join('');
+}
+
+function renderStorageBreakdown() {
+  const container = document.getElementById('storage-breakdown-list');
+  if (!container) return;
+  
+  const saved = storage.getSavedNotes();
+  const totalSize = saved.reduce((acc, n) => acc + (n.fileSize || 0), 0);
+  
+  if (saved.length === 0) {
+    container.innerHTML = '<p class="empty-state">No saved files</p>';
+    return;
+  }
+  
+  container.innerHTML = saved.map(note => {
+    const percent = totalSize > 0 ? (note.fileSize / totalSize) * 100 : 0;
+    const format = getFileFormat(note.name);
+    
+    return `
+      <div class="breakdown-item">
+        <div class="breakdown-icon ${format}">
+          <span class="material-symbols-rounded">description</span>
+        </div>
+        <div class="breakdown-info">
+          <div class="breakdown-name">${escapeHtml(note.name)}</div>
+          <div class="breakdown-size">${formatBytes(note.fileSize || 0)}</div>
+        </div>
+        <div class="breakdown-bar">
+          <div class="breakdown-bar-fill" style="width: ${percent}%"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ==================== DATA LOADING ====================
+async function loadNotes(reset = true) {
+  if (state.isLoading) return;
+  state.isLoading = true;
+  
+  const container = document.getElementById('notes-grid');
+  
+  if (reset) {
+    state.offset = 0;
+    state.allNotes = [];
+    state.hasMore = true;
+    if (container) {
+      container.innerHTML = `
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Loading notes...</p>
+        </div>
+      `;
+    }
+  }
+  
+  try {
+    const result = await api.fetchNotes({
+      offset: state.offset,
+      limit: CONFIG.NOTES_PER_PAGE,
+      sort: state.currentSort,
+      format: state.currentFilter,
+      search: state.searchQuery,
+    });
+    
+    const newNotes = result.notes || [];
+    state.allNotes = [...state.allNotes, ...newNotes];
+    state.notes = state.allNotes;
+    state.totalNotes = result.total || state.allNotes.length;
+    state.offset += newNotes.length;
+    state.hasMore = newNotes.length >= CONFIG.NOTES_PER_PAGE && state.allNotes.length < state.totalNotes;
+    
+    renderNotesGrid(state.allNotes);
+    renderPagination();
+  } catch (error) {
+    console.error('Load error:', error);
+    if (container && state.allNotes.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <span class="material-symbols-rounded">cloud_off</span>
+          <h3>Failed to load notes</h3>
+          <p>Please check your connection and try again</p>
+          <button class="btn btn-primary" onclick="loadNotes()">Retry</button>
+        </div>
+      `;
+    }
+  } finally {
+    state.isLoading = false;
+  }
+}
+
+async function loadMoreNotes() {
+  if (state.isLoading || !state.hasMore) return;
+  
+  const btn = document.getElementById('load-more-btn');
+  if (btn) {
+    btn.innerHTML = `<div class="spinner small"></div> Loading...`;
+    btn.disabled = true;
+  }
+  
+  await loadNotes(false);
+}
+
+async function loadAllNotes() {
+  // Load all notes at once (for search or full browse)
+  if (state.isLoading) return;
+  state.isLoading = true;
+  
+  const container = document.getElementById('notes-grid');
+  if (container) {
+    container.innerHTML = `
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading all notes...</p>
+      </div>
+    `;
+  }
+  
+  try {
+    const result = await api.fetchAllNotes({
+      sort: state.currentSort,
+      format: state.currentFilter,
+      search: state.searchQuery,
+    });
+    
+    state.allNotes = result.notes || [];
+    state.notes = state.allNotes;
+    state.totalNotes = state.allNotes.length;
+    state.hasMore = false;
+    
+    renderNotesGrid(state.allNotes);
+    renderPagination();
+  } catch (error) {
+    console.error('Load all error:', error);
+  } finally {
+    state.isLoading = false;
+  }
+}
+
+async function loadTrending() {
+  const container = document.getElementById('trending-content');
+  if (!container) return;
+  
+  try {
+    const result = await api.fetchTrending();
+    const notes = result.notes || result.data || [];
+    renderNotesGrid(notes, 'trending-content');
+  } catch (error) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <span class="material-symbols-rounded">trending_up</span>
+        <h3>Failed to load trending</h3>
+        <p>Please check your connection</p>
+      </div>
+    `;
+  }
+}
+
+// ==================== MODAL ====================
+async function openNoteModal(noteId) {
+  const modal = document.getElementById('note-modal');
+  const note = state.notes.find(n => n.name === noteId) || 
+               state.savedNotes.find(n => n.name === noteId);
+  
+  if (!note || !modal) return;
+  
+  state.currentNote = note;
+  
+  // Populate modal
+  document.getElementById('modal-title').textContent = note.name;
+  document.getElementById('modal-thumbnail').src = note.img || 'https://via.placeholder.com/600x400?text=No+Preview';
+  document.getElementById('modal-author').textContent = note.author || 'Unknown';
+  document.getElementById('modal-format').textContent = getFileFormat(note.name).toUpperCase();
+  document.getElementById('modal-views').textContent = formatNumber(note.views || 0);
+  document.getElementById('modal-downloads').textContent = formatNumber(note.downloads || 0);
+  document.getElementById('modal-size').textContent = note.size ? formatBytes(parseInt(note.size)) : '--';
+  
+  // Update save button
+  const saveBtn = document.getElementById('modal-save-offline');
+  const isSaved = storage.isNoteSaved(note.name);
+  saveBtn.innerHTML = `
+    <span class="material-symbols-rounded">${isSaved ? 'bookmark' : 'bookmark_border'}</span>
+    ${isSaved ? 'Saved Offline' : 'Save Offline'}
+  `;
+  
+  modal.classList.remove('hidden');
+  
+  // Track view
+  api.incrementViews(note.name);
+}
+
+function closeNoteModal() {
+  const modal = document.getElementById('note-modal');
+  if (modal) modal.classList.add('hidden');
+  state.currentNote = null;
+}
+
+function openOfflineNote(name) {
+  const note = state.savedNotes.find(n => n.name === name);
+  if (!note || !note.cachedFile) {
+    showToast('File not available offline', 'error');
+    return;
+  }
+  
+  const blob = storage.base64ToBlob(note.cachedFile);
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+}
+
+// ==================== VIEW SWITCHING ====================
+function switchView(viewId) {
+  // Update nav items
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.view === viewId);
+  });
+  
+  // Update views
+  document.querySelectorAll('.view').forEach(view => {
+    view.classList.toggle('active', view.id === `view-${viewId}`);
+  });
+  
+  // Update title
+  const titles = {
+    browse: 'All Notes',
+    trending: 'Trending',
+    saved: 'Saved Offline',
+    editor: 'New Document',
+    upload: 'Upload Notes',
+    'my-uploads': 'My Uploads',
+    storage: 'Storage',
+  };
+  
+  document.getElementById('view-title').textContent = titles[viewId] || 'OpenNotes';
+  state.activeView = viewId;
+  
+  // Load data for specific views
+  if (viewId === 'browse' && state.notes.length === 0) loadNotes();
+  if (viewId === 'trending') loadTrending();
+  if (viewId === 'saved') renderSavedNotes();
+  if (viewId === 'storage') {
+    storage.updateStorageIndicator();
+    renderStorageBreakdown();
+  }
+}
+
+// ==================== EDITOR ====================
+const editor = {
+  init() {
+    const editorEl = document.getElementById('editor');
+    const previewEl = document.getElementById('preview');
+    const togglePreview = document.getElementById('toggle-preview');
+    const toggleRaw = document.getElementById('toggle-raw');
+    
+    if (!editorEl) return;
+    
+    // Toolbar actions
+    document.querySelectorAll('.tool-btn[data-action]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.execAction(btn.dataset.action);
+      });
+    });
+    
+    // Word count
+    editorEl.addEventListener('input', () => {
+      const text = editorEl.innerText;
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      document.getElementById('word-count').textContent = `${words} words`;
+    });
+    
+    // Preview toggle
+    if (togglePreview) {
+      togglePreview.addEventListener('click', () => {
+        previewEl.classList.toggle('hidden');
+        togglePreview.classList.toggle('active');
+        
+        if (!previewEl.classList.contains('hidden')) {
+          this.updatePreview();
+        }
+      });
+    }
+    
+    // Save draft
+    document.getElementById('save-draft')?.addEventListener('click', () => {
+      const title = document.getElementById('doc-title').value || 'Untitled';
+      const content = editorEl.innerHTML;
+      
+      storage.set('draft', { title, content, savedAt: Date.now() });
+      showToast('Draft saved', 'success');
+    });
+    
+    // Export
+    document.getElementById('export-doc')?.addEventListener('click', () => {
+      this.exportDocument();
+    });
+    
+    // Load saved draft
+    const draft = storage.get('draft');
+    if (draft) {
+      document.getElementById('doc-title').value = draft.title;
+      editorEl.innerHTML = draft.content;
+    }
+  },
+  
+  execAction(action) {
+    const editorEl = document.getElementById('editor');
+    editorEl.focus();
+    
+    switch (action) {
+      case 'bold':
+        document.execCommand('bold');
+        break;
+      case 'italic':
+        document.execCommand('italic');
+        break;
+      case 'underline':
+        document.execCommand('underline');
+        break;
+      case 'strikethrough':
+        document.execCommand('strikethrough');
+        break;
+      case 'heading1':
+        document.execCommand('formatBlock', false, 'h1');
+        break;
+      case 'heading2':
+        document.execCommand('formatBlock', false, 'h2');
+        break;
+      case 'heading3':
+        document.execCommand('formatBlock', false, 'h3');
+        break;
+      case 'bullet-list':
+        document.execCommand('insertUnorderedList');
+        break;
+      case 'numbered-list':
+        document.execCommand('insertOrderedList');
+        break;
+      case 'task-list':
+        this.insertTaskList();
+        break;
+      case 'math':
+        this.insertMath();
+        break;
+      case 'code':
+        this.insertCodeBlock();
+        break;
+      case 'table':
+        this.insertTable();
+        break;
+      case 'link':
+        this.insertLink();
+        break;
+    }
+  },
+  
+  insertMath() {
+    const latex = prompt('Enter LaTeX expression:');
+    if (latex) {
+      document.execCommand('insertHTML', false, 
+        `<math-field read-only>${latex}</math-field>&nbsp;`);
+    }
+  },
+  
+  insertCodeBlock() {
+    document.execCommand('insertHTML', false, 
+      `<pre><code>// Your code here</code></pre><p></p>`);
+  },
+  
+  insertTable() {
+    const html = `
+      <table border="1" style="border-collapse: collapse; width: 100%;">
+        <tr><th>Header 1</th><th>Header 2</th><th>Header 3</th></tr>
+        <tr><td>Cell 1</td><td>Cell 2</td><td>Cell 3</td></tr>
+        <tr><td>Cell 4</td><td>Cell 5</td><td>Cell 6</td></tr>
+      </table><p></p>
+    `;
+    document.execCommand('insertHTML', false, html);
+  },
+  
+  insertLink() {
+    const url = prompt('Enter URL:');
+    if (url) {
+      document.execCommand('createLink', false, url);
+    }
+  },
+  
+  insertTaskList() {
+    document.execCommand('insertUnorderedList');
+    const selection = window.getSelection();
+    if (selection.anchorNode) {
+      let node = selection.anchorNode;
+      while (node && node.tagName !== 'UL') {
+        node = node.parentElement;
+      }
+      if (node) {
+        node.classList.add('task-list');
+      }
+    }
+  },
+  
+  updatePreview() {
+    const editorEl = document.getElementById('editor');
+    const previewEl = document.getElementById('preview');
+    
+    if (previewEl && typeof marked !== 'undefined') {
+      const html = editorEl.innerHTML;
+      previewEl.innerHTML = DOMPurify.sanitize(html);
+    }
+  },
+  
+  exportDocument() {
+    const title = document.getElementById('doc-title').value || 'Untitled';
+    const content = document.getElementById('editor').innerHTML;
+    
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>${escapeHtml(title)}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; line-height: 1.6; }
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.5rem; }
+    h3 { font-size: 1.25rem; }
+    pre { background: #f5f5f5; padding: 16px; border-radius: 8px; overflow-x: auto; }
+    code { font-family: monospace; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+  </style>
+</head>
+<body>
+  <h1>${escapeHtml(title)}</h1>
+  ${content}
+</body>
+</html>`;
+    
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${title}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showToast('Document exported', 'success');
+  },
+};
+
+// ==================== UPLOAD ====================
+const uploader = {
+  init() {
+    const zone = document.getElementById('upload-zone');
+    const fileInput = document.getElementById('file-input');
+    
+    if (!zone || !fileInput) return;
+    
+    zone.addEventListener('click', () => fileInput.click());
+    
+    zone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      zone.classList.add('dragover');
+    });
+    
+    zone.addEventListener('dragleave', () => {
+      zone.classList.remove('dragover');
+    });
+    
+    zone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      zone.classList.remove('dragover');
+      this.handleFiles(e.dataTransfer.files);
+    });
+    
+    fileInput.addEventListener('change', () => {
+      this.handleFiles(fileInput.files);
+    });
+  },
+  
+  handleFiles(files) {
+    const queue = document.getElementById('upload-queue');
+    const form = document.getElementById('upload-form');
+    
+    if (!files.length) return;
+    
+    Array.from(files).forEach(file => {
+      const item = document.createElement('div');
+      item.className = 'upload-item';
+      item.innerHTML = `
+        <span class="material-symbols-rounded">description</span>
+        <div class="upload-item-info">
+          <div class="upload-item-name">${escapeHtml(file.name)}</div>
+          <div class="upload-item-size">${formatBytes(file.size)}</div>
+          <div class="upload-progress">
+            <div class="upload-progress-bar" style="width: 0%"></div>
+          </div>
+        </div>
+        <button class="icon-btn" onclick="this.closest('.upload-item').remove()">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      `;
+      queue.appendChild(item);
+    });
+    
+    if (form) form.style.display = 'block';
+    
+    showToast(`${files.length} file(s) added`, 'info');
+  },
+};
+
+// ==================== UTILITIES ====================
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function formatNumber(num) {
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+  return num.toString();
+}
+
+function formatBytes(bytes) {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function getFileFormat(filename) {
+  const ext = filename.split('.').pop()?.toLowerCase() || '';
+  if (['pdf'].includes(ext)) return 'pdf';
+  if (['doc', 'docx'].includes(ext)) return 'docx';
+  if (['ppt', 'pptx'].includes(ext)) return 'pptx';
+  if (['xls', 'xlsx'].includes(ext)) return 'xlsx';
+  return 'pdf';
+}
+
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <span class="material-symbols-rounded">${
+      type === 'success' ? 'check_circle' :
+      type === 'error' ? 'error' :
+      'info'
+    }</span>
+    <span>${escapeHtml(message)}</span>
+  `;
+  
+  container.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.animation = 'slideIn 0.3s ease reverse';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// ==================== THEME ====================
+function toggleTheme() {
+  state.isDarkMode = !state.isDarkMode;
+  document.body.classList.toggle('dark-mode', state.isDarkMode);
+  storage.set('dark_mode', state.isDarkMode);
+  
+  const icon = document.querySelector('#theme-toggle .material-symbols-rounded');
+  if (icon) icon.textContent = state.isDarkMode ? 'light_mode' : 'dark_mode';
+}
+
+function initTheme() {
+  const savedTheme = storage.get('dark_mode');
+  if (savedTheme || (savedTheme === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    state.isDarkMode = true;
+    document.body.classList.add('dark-mode');
+    const icon = document.querySelector('#theme-toggle .material-symbols-rounded');
+    if (icon) icon.textContent = 'light_mode';
+  }
+}
+
+// ==================== SEARCH ====================
+let searchTimeout;
+function initSearch() {
+  const searchInput = document.getElementById('search-input');
+  if (!searchInput) return;
+  
+  searchInput.addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      state.searchQuery = e.target.value;
+      state.currentPage = 1;
+      loadNotes();
+    }, 300);
+  });
+}
+
+// ==================== INITIALIZATION ====================
+async function init() {
+  console.log('OpenNotes Desktop initializing...');
+  
+  // Load secrets from Tauri store first
+  await loadSecrets();
+  
+  // Initialize theme
+  initTheme();
+  
+  // Initialize search
+  initSearch();
+  
+  // Initialize storage indicator
+  state.savedNotes = storage.getSavedNotes();
+  storage.updateStorageIndicator();
+  
+  // Initialize editor
+  editor.init();
+  
+  // Initialize uploader
+  uploader.init();
+  
+  // Navigation
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      switchView(item.dataset.view);
+    });
+  });
+  
+  // Filter chips
+  document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      state.currentFilter = chip.dataset.format;
+      state.currentPage = 1;
+      loadNotes();
+    });
+  });
+  
+  // Sort select
+  document.getElementById('sort-select')?.addEventListener('change', (e) => {
+    state.currentSort = e.target.value;
+    state.currentPage = 1;
+    loadNotes();
+  });
+  
+  // Theme toggle
+  document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
+  
+  // Modal close
+  document.getElementById('modal-close')?.addEventListener('click', closeNoteModal);
+  document.querySelector('.modal-backdrop')?.addEventListener('click', closeNoteModal);
+  
+  // Modal save offline
+  document.getElementById('modal-save-offline')?.addEventListener('click', () => {
+    if (state.currentNote) {
+      storage.saveNoteOffline(state.currentNote);
+      closeNoteModal();
+    }
+  });
+  
+  // Modal download
+  document.getElementById('modal-download')?.addEventListener('click', () => {
+    if (state.currentNote && state.currentNote.dl) {
+      window.open(state.currentNote.dl, '_blank');
+      api.incrementDownloads(state.currentNote.name);
+    }
+  });
+  
+  // Storage actions
+  document.getElementById('clear-cache')?.addEventListener('click', () => {
+    if (confirm('Clear cache? Saved offline notes will be kept.')) {
+      storage.clearCache();
+    }
+  });
+  
+  document.getElementById('clear-all')?.addEventListener('click', () => {
+    if (confirm('Clear all offline data? This cannot be undone.')) {
+      storage.clearAll();
+    }
+  });
+  
+  // Sidebar toggle (mobile)
+  document.getElementById('sidebar-toggle')?.addEventListener('click', () => {
+    document.getElementById('sidebar')?.classList.toggle('open');
+  });
+  
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeNoteModal();
+      document.getElementById('sidebar')?.classList.remove('open');
+    }
+  });
+  
+  // Load initial data
+  loadNotes();
+  
+  console.log('OpenNotes Desktop ready!');
+}
+
+// Settings management
+async function saveSettings(gatewayUrl, appToken) {
+  try {
+    if (window.__TAURI__) {
+      const { Store } = await import('@tauri-apps/plugin-store');
+      const store = new Store('secrets.json');
+      
+      await store.set('gateway_url', gatewayUrl);
+      await store.set('app_token', appToken);
+      await store.save();
+      
+      CONFIG.GATEWAY_URL = gatewayUrl;
+      CONFIG.APP_TOKEN = appToken;
+      
+      showToast('Settings saved', 'success');
+      loadNotes(); // Reload with new settings
+    }
+  } catch (e) {
+    console.error('Failed to save settings:', e);
+    showToast('Failed to save settings', 'error');
+  }
+}
+
+// Make functions globally accessible
+window.openNoteModal = openNoteModal;
+window.closeNoteModal = closeNoteModal;
+window.openOfflineNote = openOfflineNote;
+window.storage = storage;
+window.showToast = showToast;
+window.loadNotes = loadNotes;
+window.loadMoreNotes = loadMoreNotes;
+window.loadAllNotes = loadAllNotes;
+window.saveSettings = saveSettings;
+
+// Start app when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}

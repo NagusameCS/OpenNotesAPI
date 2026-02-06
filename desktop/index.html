@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenNotes Desktop</title>
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <!-- MathLive for LaTeX -->
+  <script src="https://unpkg.com/mathlive"></script>
+  
+  <!-- Mermaid for diagrams -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  
+  <!-- Marked for Markdown -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
+  
+  <!-- DOMPurify for sanitization -->
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.6/dist/purify.min.js"></script>
+  
+  <link rel="stylesheet" href="/src/styles/main.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <img src="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png" alt="OpenNotes" class="logo">
+        <span class="logo-text">OpenNotes <span class="accent">Desktop</span></span>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <span class="nav-label">Browse</span>
+          <a href="#" class="nav-item active" data-view="browse">
+            <span class="material-symbols-rounded">folder_open</span>
+            All Notes
+          </a>
+          <a href="#" class="nav-item" data-view="trending">
+            <span class="material-symbols-rounded">trending_up</span>
+            Trending
+          </a>
+          <a href="#" class="nav-item" data-view="saved">
+            <span class="material-symbols-rounded">bookmark</span>
+            Saved Offline
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <span class="nav-label">Create</span>
+          <a href="#" class="nav-item" data-view="editor">
+            <span class="material-symbols-rounded">edit_note</span>
+            New Document
+          </a>
+          <a href="#" class="nav-item" data-view="upload">
+            <span class="material-symbols-rounded">upload_file</span>
+            Upload Notes
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <span class="nav-label">Manage</span>
+          <a href="#" class="nav-item" data-view="my-uploads">
+            <span class="material-symbols-rounded">folder_managed</span>
+            My Uploads
+          </a>
+          <a href="#" class="nav-item" data-view="storage">
+            <span class="material-symbols-rounded">hard_drive</span>
+            Storage
+          </a>
+        </div>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="storage-indicator">
+          <div class="storage-bar">
+            <div class="storage-used" id="storage-used-bar"></div>
+          </div>
+          <span class="storage-text" id="storage-text">-- / -- MB used</span>
+        </div>
+      </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main id="main-content" class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-left">
+          <button id="sidebar-toggle" class="icon-btn mobile-only">
+            <span class="material-symbols-rounded">menu</span>
+          </button>
+          <h1 id="view-title" class="view-title">All Notes</h1>
+        </div>
+        <div class="header-right">
+          <div class="search-container">
+            <span class="material-symbols-rounded">search</span>
+            <input type="text" id="search-input" placeholder="Search notes..." class="search-input">
+          </div>
+          <button id="theme-toggle" class="icon-btn" title="Toggle theme">
+            <span class="material-symbols-rounded">dark_mode</span>
+          </button>
+        </div>
+      </header>
+      
+      <!-- Views Container -->
+      <div id="views-container" class="views-container">
+        <!-- Browse View -->
+        <section id="view-browse" class="view active">
+          <div class="view-toolbar">
+            <div class="filter-chips">
+              <button class="filter-chip active" data-format="all">All</button>
+              <button class="filter-chip" data-format="pdf">PDF</button>
+              <button class="filter-chip" data-format="docx">DOCX</button>
+              <button class="filter-chip" data-format="pptx">PPTX</button>
+            </div>
+            <select id="sort-select" class="sort-select">
+              <option value="views">Most Viewed</option>
+              <option value="downloads">Most Downloaded</option>
+              <option value="recent">Recently Added</option>
+              <option value="name">Name A-Z</option>
+            </select>
+          </div>
+          <div id="notes-grid" class="notes-grid">
+            <div class="loading-state">
+              <div class="spinner"></div>
+              <p>Loading notes...</p>
+            </div>
+          </div>
+          <div id="pagination" class="pagination"></div>
+        </section>
+        
+        <!-- Trending View -->
+        <section id="view-trending" class="view">
+          <div id="trending-content" class="notes-grid"></div>
+        </section>
+        
+        <!-- Saved Offline View -->
+        <section id="view-saved" class="view">
+          <div class="empty-state" id="saved-empty">
+            <span class="material-symbols-rounded">bookmark_border</span>
+            <h3>No saved notes</h3>
+            <p>Save notes for offline access by clicking the bookmark icon</p>
+          </div>
+          <div id="saved-grid" class="notes-grid"></div>
+        </section>
+        
+        <!-- Editor View -->
+        <section id="view-editor" class="view">
+          <div class="editor-container">
+            <div class="editor-toolbar">
+              <div class="toolbar-group">
+                <button class="tool-btn" data-action="bold" title="Bold">
+                  <span class="material-symbols-rounded">format_bold</span>
+                </button>
+                <button class="tool-btn" data-action="italic" title="Italic">
+                  <span class="material-symbols-rounded">format_italic</span>
+                </button>
+                <button class="tool-btn" data-action="underline" title="Underline">
+                  <span class="material-symbols-rounded">format_underlined</span>
+                </button>
+                <button class="tool-btn" data-action="strikethrough" title="Strikethrough">
+                  <span class="material-symbols-rounded">strikethrough_s</span>
+                </button>
+              </div>
+              <div class="toolbar-divider"></div>
+              <div class="toolbar-group">
+                <button class="tool-btn" data-action="heading1" title="Heading 1">
+                  <span>H1</span>
+                </button>
+                <button class="tool-btn" data-action="heading2" title="Heading 2">
+                  <span>H2</span>
+                </button>
+                <button class="tool-btn" data-action="heading3" title="Heading 3">
+                  <span>H3</span>
+                </button>
+              </div>
+              <div class="toolbar-divider"></div>
+              <div class="toolbar-group">
+                <button class="tool-btn" data-action="bullet-list" title="Bullet List">
+                  <span class="material-symbols-rounded">format_list_bulleted</span>
+                </button>
+                <button class="tool-btn" data-action="numbered-list" title="Numbered List">
+                  <span class="material-symbols-rounded">format_list_numbered</span>
+                </button>
+                <button class="tool-btn" data-action="task-list" title="Task List">
+                  <span class="material-symbols-rounded">checklist</span>
+                </button>
+              </div>
+              <div class="toolbar-divider"></div>
+              <div class="toolbar-group">
+                <button class="tool-btn" data-action="math" title="Insert Math (LaTeX)">
+                  <span class="material-symbols-rounded">function</span>
+                </button>
+                <button class="tool-btn" data-action="code" title="Code Block">
+                  <span class="material-symbols-rounded">code</span>
+                </button>
+                <button class="tool-btn" data-action="table" title="Insert Table">
+                  <span class="material-symbols-rounded">table_chart</span>
+                </button>
+                <button class="tool-btn" data-action="link" title="Insert Link">
+                  <span class="material-symbols-rounded">link</span>
+                </button>
+              </div>
+              <div class="toolbar-spacer"></div>
+              <div class="toolbar-group">
+                <button class="tool-btn" id="toggle-preview" title="Toggle Preview">
+                  <span class="material-symbols-rounded">visibility</span>
+                </button>
+                <button class="tool-btn" id="toggle-raw" title="Toggle Raw Mode">
+                  <span class="material-symbols-rounded">code_blocks</span>
+                </button>
+              </div>
+            </div>
+            
+            <div class="editor-header">
+              <input type="text" id="doc-title" class="doc-title-input" placeholder="Untitled Document">
+            </div>
+            
+            <div class="editor-content">
+              <div id="editor" class="editor" contenteditable="true">
+                <p>Start typing your document...</p>
+              </div>
+              <div id="preview" class="preview hidden"></div>
+            </div>
+            
+            <div class="editor-footer">
+              <span id="word-count">0 words</span>
+              <div class="editor-actions">
+                <button class="btn btn-secondary" id="save-draft">Save Draft</button>
+                <button class="btn btn-primary" id="export-doc">Export</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- Upload View -->
+        <section id="view-upload" class="view">
+          <div class="upload-container">
+            <div class="upload-zone" id="upload-zone">
+              <span class="material-symbols-rounded upload-icon">cloud_upload</span>
+              <h3>Drop files here or click to upload</h3>
+              <p>Supported formats: PDF, DOCX, PPTX, XLSX</p>
+              <input type="file" id="file-input" multiple accept=".pdf,.docx,.doc,.pptx,.ppt,.xlsx,.xls" hidden>
+            </div>
+            
+            <div id="upload-queue" class="upload-queue"></div>
+            
+            <div class="upload-form" id="upload-form" style="display: none;">
+              <div class="form-group">
+                <label for="upload-author">Author Name</label>
+                <input type="text" id="upload-author" placeholder="Your name">
+              </div>
+              <div class="form-group">
+                <label for="upload-category">Category</label>
+                <select id="upload-category">
+                  <option value="">Select category...</option>
+                  <option value="science">Science</option>
+                  <option value="math">Mathematics</option>
+                  <option value="history">History</option>
+                  <option value="literature">Literature</option>
+                  <option value="technology">Technology</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" id="submit-upload">Submit for Review</button>
+            </div>
+          </div>
+        </section>
+        
+        <!-- My Uploads View -->
+        <section id="view-my-uploads" class="view">
+          <div class="empty-state" id="uploads-empty">
+            <span class="material-symbols-rounded">folder_off</span>
+            <h3>No uploads yet</h3>
+            <p>Upload notes to see them here</p>
+          </div>
+          <div id="my-uploads-grid" class="notes-grid"></div>
+        </section>
+        
+        <!-- Storage View -->
+        <section id="view-storage" class="view">
+          <div class="storage-dashboard">
+            <div class="storage-overview">
+              <div class="storage-chart">
+                <svg viewBox="0 0 120 120" class="storage-ring">
+                  <circle cx="60" cy="60" r="50" class="storage-ring-bg"></circle>
+                  <circle cx="60" cy="60" r="50" class="storage-ring-value" id="storage-ring"></circle>
+                </svg>
+                <div class="storage-center">
+                  <span class="storage-percent" id="storage-percent">0%</span>
+                  <span class="storage-label">Used</span>
+                </div>
+              </div>
+              <div class="storage-details">
+                <h3>Storage Usage</h3>
+                <div class="storage-stat">
+                  <span class="label">Total Space</span>
+                  <span class="value" id="total-space">500 MB</span>
+                </div>
+                <div class="storage-stat">
+                  <span class="label">Used Space</span>
+                  <span class="value" id="used-space">0 MB</span>
+                </div>
+                <div class="storage-stat">
+                  <span class="label">Available</span>
+                  <span class="value" id="available-space">500 MB</span>
+                </div>
+                <div class="storage-stat">
+                  <span class="label">Saved Notes</span>
+                  <span class="value" id="saved-count">0</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="storage-breakdown">
+              <h3>Storage Breakdown</h3>
+              <div id="storage-breakdown-list" class="breakdown-list"></div>
+            </div>
+            
+            <div class="storage-actions">
+              <button class="btn btn-secondary" id="clear-cache">
+                <span class="material-symbols-rounded">delete_sweep</span>
+                Clear Cache
+              </button>
+              <button class="btn btn-danger" id="clear-all">
+                <span class="material-symbols-rounded">delete_forever</span>
+                Clear All Offline Data
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Note Detail Modal -->
+  <div id="note-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-title">Note Title</h2>
+        <button class="icon-btn" id="modal-close">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <img id="modal-thumbnail" src="" alt="" class="modal-thumbnail">
+        <div class="modal-info">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Author</span>
+              <span class="info-value" id="modal-author">--</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Format</span>
+              <span class="info-value" id="modal-format">--</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Views</span>
+              <span class="info-value" id="modal-views">--</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Downloads</span>
+              <span class="info-value" id="modal-downloads">--</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Size</span>
+              <span class="info-value" id="modal-size">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="modal-save-offline">
+          <span class="material-symbols-rounded">bookmark</span>
+          Save Offline
+        </button>
+        <button class="btn btn-primary" id="modal-download">
+          <span class="material-symbols-rounded">download</span>
+          Download
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+  
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
