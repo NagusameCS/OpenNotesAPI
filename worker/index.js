@@ -380,9 +380,13 @@ async function deleteQuiz(id, env) {
 // Allowed origins for auth code creation (security)
 const ALLOWED_AUTH_ORIGINS = [
   'https://nagusamecs.github.io',
+  'https://opennotes.pages.dev',
   'http://localhost:5173', // Dev mode
   'tauri://localhost', // Tauri app
 ];
+
+// Upstream API URL
+const UPSTREAM_API = 'https://open-notes.tebby2008-li.workers.dev';
 
 // Desktop app identifier for validation
 const DESKTOP_APP_SECRET = 'opennotes-desktop-v1';
@@ -589,6 +593,50 @@ function handleHealth() {
       ...securityHeaders(),
     },
   });
+}
+
+/**
+ * Proxy the upstream /auth/login endpoint with the correct Referer header.
+ * The upstream API only accepts requests with Referer from opennotes.pages.dev.
+ * This proxy adds that Referer so the browser gets the Google OAuth redirect.
+ */
+async function handleAuthLoginProxy(request) {
+  try {
+    const resp = await fetch(`${UPSTREAM_API}/auth/login`, {
+      method: 'GET',
+      headers: {
+        'Referer': 'https://opennotes.pages.dev/',
+        'User-Agent': request.headers.get('User-Agent') || 'Mozilla/5.0',
+      },
+      redirect: 'manual', // Don't follow the redirect, return it to the browser
+    });
+
+    // The upstream returns a 302 redirect to Google OAuth
+    if (resp.status === 302 || resp.status === 301) {
+      const location = resp.headers.get('Location');
+      return new Response(null, {
+        status: 302,
+        headers: {
+          'Location': location,
+          ...corsHeaders,
+        },
+      });
+    }
+
+    // If the upstream returned something unexpected, pass it through
+    return new Response(resp.body, {
+      status: resp.status,
+      headers: {
+        'Content-Type': resp.headers.get('Content-Type') || 'text/plain',
+        ...corsHeaders,
+      },
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: 'Auth proxy failed', message: e.message }), {
+      status: 502,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
+    });
+  }
 }
 
 /**
@@ -1009,6 +1057,11 @@ export default {
     
     if (path === '/api/health' || path === '/health') {
       return handleHealth();
+    }
+    
+    // Auth login proxy - proxies upstream auth/login with correct Referer
+    if (path === '/auth/login' && request.method === 'GET') {
+      return handleAuthLoginProxy(request);
     }
     
     // Auth code endpoints (for desktop app authentication)
