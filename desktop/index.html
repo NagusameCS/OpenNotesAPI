@@ -64,7 +64,6 @@
     <!-- Sidebar -->
     <aside id="sidebar" class="sidebar">
       <div class="sidebar-header" data-tauri-drag-region>
-        <img src="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/logo.svg" alt="OpenNotes" class="logo">
         <span class="logo-text" data-tauri-drag-region>OpenNotes <span class="accent">Desktop</span></span>
       </div>
       
@@ -410,12 +409,18 @@
         <section id="view-quiz-browse" class="view">
           <div class="quiz-browser">
             <div class="view-toolbar quiz-toolbar">
-              <div class="filter-chips">
-                <button class="filter-chip active" data-subject="all">All Subjects</button>
-                <button class="filter-chip" data-subject="math-aa-hl">Math AA HL</button>
-                <button class="filter-chip" data-subject="physics">Physics</button>
-                <button class="filter-chip" data-subject="chemistry">Chemistry</button>
-                <button class="filter-chip" data-subject="biology">Biology</button>
+              <div class="quiz-filter-row">
+                <input type="text" id="quiz-subject-filter" list="quiz-browse-subject-suggestions" placeholder="Filter by subject..." class="quiz-filter-input">
+                <datalist id="quiz-browse-subject-suggestions">
+                  <option value="IB Math AA HL">
+                  <option value="IB Math AA SL">
+                  <option value="IB Math AI HL">
+                  <option value="IB Math AI SL">
+                  <option value="IB Physics">
+                  <option value="IB Chemistry">
+                  <option value="IB Biology">
+                </datalist>
+                <button id="quiz-filter-clear" class="btn btn-text" title="Clear filter">Clear</button>
               </div>
               <div class="toolbar-actions">
                 <button id="quiz-shuffle-btn" class="btn btn-secondary" title="Shuffle selected quizzes">
@@ -447,31 +452,30 @@
                 </div>
                 <div class="form-group">
                   <label for="quiz-subject">Subject</label>
-                  <select id="quiz-subject">
-                    <option value="">Select subject...</option>
-                    <option value="math-aa-hl">IB Math AA HL</option>
-                    <option value="math-aa-sl">IB Math AA SL</option>
-                    <option value="math-ai-hl">IB Math AI HL</option>
-                    <option value="math-ai-sl">IB Math AI SL</option>
-                    <option value="physics">IB Physics</option>
-                    <option value="chemistry">IB Chemistry</option>
-                    <option value="biology">IB Biology</option>
-                    <option value="other">Other</option>
-                  </select>
+                  <input type="text" id="quiz-subject" list="quiz-subject-suggestions" placeholder="e.g., IB Math AA HL" autocomplete="off">
+                  <datalist id="quiz-subject-suggestions">
+                    <option value="IB Math AA HL">
+                    <option value="IB Math AA SL">
+                    <option value="IB Math AI HL">
+                    <option value="IB Math AI SL">
+                    <option value="IB Physics">
+                    <option value="IB Chemistry">
+                    <option value="IB Biology">
+                    <option value="IB Computer Science">
+                    <option value="IB Economics">
+                    <option value="IB English">
+                    <option value="IB History">
+                    <option value="AP Calculus">
+                    <option value="AP Physics">
+                    <option value="AP Chemistry">
+                    <option value="AP Biology">
+                  </datalist>
                 </div>
               </div>
               <div class="form-row">
                 <div class="form-group">
                   <label for="quiz-topic">Topic</label>
                   <input type="text" id="quiz-topic" placeholder="e.g., Integration by Parts">
-                </div>
-                <div class="form-group">
-                  <label for="quiz-difficulty">Difficulty</label>
-                  <select id="quiz-difficulty">
-                    <option value="easy">Easy</option>
-                    <option value="medium" selected>Medium</option>
-                    <option value="hard">Hard</option>
-                  </select>
                 </div>
               </div>
               <div class="form-group">

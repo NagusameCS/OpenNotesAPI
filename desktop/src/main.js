@@ -2235,7 +2235,6 @@ async function loadQuizzes(filters = {}) {
         ${quiz.topic ? `<div class="quiz-card-topic">${escapeHtml(quiz.topic)}</div>` : ''}
         <div class="quiz-card-meta">
           <span><span class="material-symbols-rounded">help_outline</span> ${quiz.questionCount} questions</span>
-          <span class="quiz-card-difficulty ${quiz.difficulty || 'medium'}">${quiz.difficulty || 'medium'}</span>
         </div>
       </div>
     `).join('');
@@ -2261,12 +2260,6 @@ async function loadQuizzes(filters = {}) {
       </div>
     `;
   }
-}
-
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }
 
 function toggleQuizSelection(quizId) {
@@ -2672,9 +2665,8 @@ function removeQuestion(id) {
 
 async function saveQuiz() {
   const title = document.getElementById('quiz-title')?.value?.trim();
-  const subject = document.getElementById('quiz-subject')?.value;
+  const subject = document.getElementById('quiz-subject')?.value?.trim();
   const topic = document.getElementById('quiz-topic')?.value?.trim();
-  const difficulty = document.getElementById('quiz-difficulty')?.value;
   const tags = document.getElementById('quiz-tags')?.value?.split(',').map(t => t.trim()).filter(t => t);
   
   if (!title) {
@@ -2682,7 +2674,7 @@ async function saveQuiz() {
     return;
   }
   if (!subject) {
-    showToast('Please select a subject', 'error');
+    showToast('Please enter a subject', 'error');
     return;
   }
   if (quizState.creatorQuestions.length === 0) {
@@ -2719,7 +2711,6 @@ async function saveQuiz() {
       title,
       subject,
       topic,
-      difficulty,
       tags,
       questions: quizState.creatorQuestions,
     };
@@ -2748,14 +2739,22 @@ function initQuizListeners() {
   document.getElementById('quiz-refresh-btn')?.addEventListener('click', () => loadQuizzes());
   document.getElementById('quiz-shuffle-btn')?.addEventListener('click', shuffleAndStartQuizzes);
   
-  // Quiz subject filters
-  document.querySelectorAll('#view-quiz-browse .filter-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      document.querySelectorAll('#view-quiz-browse .filter-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      const subject = chip.dataset.subject;
-      loadQuizzes(subject === 'all' ? {} : { subject });
+  // Quiz subject filter (free-form text input)
+  const subjectFilter = document.getElementById('quiz-subject-filter');
+  if (subjectFilter) {
+    let filterTimeout;
+    subjectFilter.addEventListener('input', () => {
+      clearTimeout(filterTimeout);
+      filterTimeout = setTimeout(() => {
+        const val = subjectFilter.value.trim();
+        loadQuizzes(val ? { subject: val } : {});
+      }, 400);
     });
+  }
+  document.getElementById('quiz-filter-clear')?.addEventListener('click', () => {
+    const input = document.getElementById('quiz-subject-filter');
+    if (input) { input.value = ''; }
+    loadQuizzes();
   });
   
   // Quiz creator

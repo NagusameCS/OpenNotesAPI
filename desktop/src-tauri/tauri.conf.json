@@ -22,8 +22,8 @@
         "fullscreen": false,
         "center": true,
         "devtools": true,
-        "decorations": false,
-        "transparent": true
+        "decorations": true,
+        "transparent": false
       }
     ],
     "security": {

@@ -78,13 +78,11 @@ body {
   color: var(--text);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  border-radius: 12px;
   overflow: hidden;
 }
 
-/* Transparent background for Tauri window corners */
 html {
-  background: transparent;
+  background: var(--bg);
 }
 
 a {
@@ -109,9 +107,7 @@ input, select, textarea {
   display: flex;
   height: 100vh;
   overflow: hidden;
-  border-radius: 12px;
   background: var(--bg);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), var(--shadow-lg);
 }
 
 /* ==================== SIDEBAR ==================== */
@@ -124,7 +120,6 @@ input, select, textarea {
   flex-shrink: 0;
   transition: transform 0.3s ease;
   z-index: 100;
-  border-radius: 12px 0 0 12px;
 }
 
 .sidebar-header {
@@ -1611,6 +1606,35 @@ input, select, textarea {
   flex-wrap: wrap;
 }
 
+.quiz-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.quiz-filter-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.9rem;
+  outline: none;
+  transition: var(--transition);
+}
+
+.quiz-filter-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.quiz-filter-input::placeholder {
+  color: var(--text-muted);
+}
+
 .quiz-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1713,21 +1737,7 @@ input, select, textarea {
   font-size: 14px;
 }
 
-.quiz-card-difficulty {
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 0.7rem;
-  font-weight: 500;
-  text-transform: uppercase;
-}
 
-.quiz-card-difficulty.easy { background: #dcfce7; color: #166534; }
-.quiz-card-difficulty.medium { background: #fef3c7; color: #92400e; }
-.quiz-card-difficulty.hard { background: #fee2e2; color: #991b1b; }
-
-.dark-mode .quiz-card-difficulty.easy { background: rgba(34, 197, 94, 0.2); color: #86efac; }
-.dark-mode .quiz-card-difficulty.medium { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
-.dark-mode .quiz-card-difficulty.hard { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
 
 /* Quiz Creator */
 .quiz-creator {

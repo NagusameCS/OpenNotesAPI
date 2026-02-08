@@ -27,7 +27,7 @@ const QUIZ_SCHEMA_VERSION = '1.0';
 const SEED_QUIZZES = [
   // ----- IB Math AA HL -----
   {
-    id: "math-aa-hl-algebra", schemaVersion: "1.0", title: "IB Math AA HL - Algebra & Number", subject: "math-aa-hl", topic: "Algebra and Number", difficulty: "hard",
+    id: "math-aa-hl-algebra", schemaVersion: "1.0", title: "IB Math AA HL - Algebra & Number", subject: "IB Math AA HL", topic: "Algebra and Number", difficulty: "hard",
     description: "Sequences, series, binomial theorem, and complex numbers", tags: ["ib","math","algebra","sequences","series","complex numbers"], author: "OpenNotes", createdAt: "2026-02-06T00:00:00Z",
     questions: [
       { id:"q1", type:"mcq", question:"Find the sum of the arithmetic series $\\sum_{k=1}^{20}(3k+2)$", options:["$670$","$630$","$710$","$580$"], correctAnswers:[0], explanation:"$3\\cdot\\frac{20\\cdot21}{2}+40=670$", points:1 },
@@ -41,7 +41,7 @@ const SEED_QUIZZES = [
     ]
   },
   {
-    id: "math-aa-hl-functions", schemaVersion: "1.0", title: "IB Math AA HL - Functions", subject: "math-aa-hl", topic: "Functions", difficulty: "hard",
+    id: "math-aa-hl-functions", schemaVersion: "1.0", title: "IB Math AA HL - Functions", subject: "IB Math AA HL", topic: "Functions", difficulty: "hard",
     description: "Functions, transformations, inverse functions, and polynomial/rational functions", tags: ["ib","math","functions","transformations","polynomials"], author: "OpenNotes", createdAt: "2026-02-06T00:00:00Z",
     questions: [
       { id:"q1", type:"mcq", question:"If $f(x)=\\frac{2x+1}{x-3}$, find $f^{-1}(x)$", options:["$\\frac{3x+1}{x-2}$","$\\frac{x-3}{2x+1}$","$\\frac{3x-1}{x+2}$","$\\frac{x+3}{2-x}$"], correctAnswers:[0], explanation:"$f^{-1}(x)=\\frac{3x+1}{x-2}$", points:1 },
@@ -54,7 +54,7 @@ const SEED_QUIZZES = [
     ]
   },
   {
-    id: "math-aa-hl-trig", schemaVersion: "1.0", title: "IB Math AA HL - Trigonometry & Geometry", subject: "math-aa-hl", topic: "Trigonometry and Geometry", difficulty: "hard",
+    id: "math-aa-hl-trig", schemaVersion: "1.0", title: "IB Math AA HL - Trigonometry & Geometry", subject: "IB Math AA HL", topic: "Trigonometry and Geometry", difficulty: "hard",
     description: "Trig identities, equations, vectors, and coordinate geometry", tags: ["ib","math","trigonometry","vectors","geometry"], author: "OpenNotes", createdAt: "2026-02-06T00:00:00Z",
     questions: [
       { id:"q1", type:"mcq", question:"Simplify $\\frac{\\sin 2\\theta}{1+\\cos 2\\theta}$", options:["$\\tan\\theta$","$\\cot\\theta$","$2\\tan\\theta$","$\\frac{1}{2}\\tan\\theta$"], correctAnswers:[0], explanation:"$=\\frac{2\\sin\\theta\\cos\\theta}{2\\cos^2\\theta}=\\tan\\theta$", points:1 },
@@ -66,7 +66,7 @@ const SEED_QUIZZES = [
     ]
   },
   {
-    id: "math-aa-hl-stats", schemaVersion: "1.0", title: "IB Math AA HL - Statistics & Probability", subject: "math-aa-hl", topic: "Statistics and Probability", difficulty: "hard",
+    id: "math-aa-hl-stats", schemaVersion: "1.0", title: "IB Math AA HL - Statistics & Probability", subject: "IB Math AA HL", topic: "Statistics and Probability", difficulty: "hard",
     description: "Probability, distributions, Bayes' theorem, and hypothesis testing", tags: ["ib","math","statistics","probability","distributions"], author: "OpenNotes", createdAt: "2026-02-06T00:00:00Z",
     questions: [
       { id:"q1", type:"mcq", question:"If $X\\sim N(50,16)$, find $P(X>54)$", options:["$P(Z>1)\\approx 0.159$","$P(Z>0.25)\\approx 0.401$","$P(Z>2)\\approx 0.023$","$P(Z>4)\\approx 0$"], correctAnswers:[0], explanation:"$Z=\\frac{54-50}{4}=1$", points:1 },
@@ -80,7 +80,7 @@ const SEED_QUIZZES = [
     ]
   },
   {
-    id: "math-aa-hl-calculus", schemaVersion: "1.0", title: "IB Math AA HL - Calculus", subject: "math-aa-hl", topic: "Calculus", difficulty: "hard",
+    id: "math-aa-hl-calculus", schemaVersion: "1.0", title: "IB Math AA HL - Calculus", subject: "IB Math AA HL", topic: "Calculus", difficulty: "hard",
     description: "Differentiation, integration, differential equations, and Maclaurin series", tags: ["ib","math","calculus","differentiation","integration"], author: "OpenNotes", createdAt: "2026-02-06T00:00:00Z",
     questions: [
       { id:"q1", type:"mcq", question:"Find $\\frac{dy}{dx}$ if $y=x^2e^{3x}$", options:["$e^{3x}(2x+3x^2)$","$2xe^{3x}$","$3x^2e^{3x}$","$e^{3x}(2x+3x)$"], correctAnswers:[0], explanation:"Product rule", points:1 },
@@ -96,7 +96,7 @@ const SEED_QUIZZES = [
   },
   // ----- IB Physics -----
   {
-    id: "physics-measurements", schemaVersion: "1.0", title: "IB Physics - Measurements & Uncertainties", subject: "physics", topic: "Measurements and Uncertainties", difficulty: "medium",
+    id: "physics-measurements", schemaVersion: "1.0", title: "IB Physics - Measurements & Uncertainties", subject: "IB Physics", topic: "Measurements and Uncertainties", difficulty: "medium",
     description: "SI units, uncertainties, significant figures, and error propagation", tags: ["ib","physics","measurements","uncertainties"], author: "OpenNotes", createdAt: "2026-02-06T00:00:00Z",
     questions: [
       { id:"q1", type:"mcq", question:"Which is a fundamental SI base unit?", options:["Ampere (A)","Newton (N)","Joule (J)","Pascal (Pa)"], correctAnswers:[0], explanation:"Ampere is an SI base unit", points:1 },
@@ -109,7 +109,7 @@ const SEED_QUIZZES = [
     ]
   },
   {
-    id: "physics-mechanics", schemaVersion: "1.0", title: "IB Physics - Mechanics", subject: "physics", topic: "Mechanics", difficulty: "medium",
+    id: "physics-mechanics", schemaVersion: "1.0", title: "IB Physics - Mechanics", subject: "IB Physics", topic: "Mechanics", difficulty: "medium",
     description: "Kinematics, dynamics, work/energy, and momentum", tags: ["ib","physics","mechanics","kinematics","dynamics","energy","momentum"], author: "OpenNotes", createdAt: "2026-02-06T00:00:00Z",
     questions: [
       { id:"q1", type:"mcq", question:"Ball thrown up at $20$ m/s. Max height ($g=10$):", options:["$20$ m","$40$ m","$10$ m","$200$ m"], correctAnswers:[0], explanation:"$v^2=u^2-2gs$", points:1 },
@@ -124,7 +124,7 @@ const SEED_QUIZZES = [
     ]
   },
   {
-    id: "physics-thermal", schemaVersion: "1.0", title: "IB Physics - Thermal Physics", subject: "physics", topic: "Thermal Physics", difficulty: "medium",
+    id: "physics-thermal", schemaVersion: "1.0", title: "IB Physics - Thermal Physics", subject: "IB Physics", topic: "Thermal Physics", difficulty: "medium",
     description: "Temperature, internal energy, ideal gases, and thermodynamics", tags: ["ib","physics","thermal","heat","ideal gas"], author: "OpenNotes", createdAt: "2026-02-06T00:00:00Z",
     questions: [
       { id:"q1", type:"mcq", question:"Convert 100°C to kelvin:", options:["373 K","273 K","100 K","173 K"], correctAnswers:[0], explanation:"T(K)=T(°C)+273", points:1 },
@@ -138,7 +138,7 @@ const SEED_QUIZZES = [
     ]
   },
   {
-    id: "physics-waves", schemaVersion: "1.0", title: "IB Physics - Waves", subject: "physics", topic: "Waves", difficulty: "medium",
+    id: "physics-waves", schemaVersion: "1.0", title: "IB Physics - Waves", subject: "IB Physics", topic: "Waves", difficulty: "medium",
     description: "Wave properties, standing waves, interference, diffraction, and Doppler effect", tags: ["ib","physics","waves","interference","diffraction","doppler"], author: "OpenNotes", createdAt: "2026-02-06T00:00:00Z",
     questions: [
       { id:"q1", type:"mcq", question:"Wave: $f=50$ Hz, $\\lambda=0.4$ m. Speed:", options:["$20$ m/s","$125$ m/s","$0.008$ m/s","$50.4$ m/s"], correctAnswers:[0], explanation:"$v=f\\lambda=20$", points:1 },
@@ -152,7 +152,7 @@ const SEED_QUIZZES = [
     ]
   },
   {
-    id: "physics-electricity", schemaVersion: "1.0", title: "IB Physics - Electricity & Magnetism", subject: "physics", topic: "Electricity and Magnetism", difficulty: "medium",
+    id: "physics-electricity", schemaVersion: "1.0", title: "IB Physics - Electricity & Magnetism", subject: "IB Physics", topic: "Electricity and Magnetism", difficulty: "medium",
     description: "Electric fields, circuits, resistors, and magnetic forces", tags: ["ib","physics","electricity","magnetism","circuits"], author: "OpenNotes", createdAt: "2026-02-06T00:00:00Z",
     questions: [
       { id:"q1", type:"mcq", question:"Electric field at distance $r$ from charge $Q$:", options:["$E=kQ/r^2$","$E=kQ/r$","$E=kQ^2/r^2$","$E=kQ/2r^2$"], correctAnswers:[0], explanation:"Coulomb's law", points:1 },
@@ -166,7 +166,7 @@ const SEED_QUIZZES = [
     ]
   },
   {
-    id: "physics-circular-gravitation", schemaVersion: "1.0", title: "IB Physics - Circular Motion & Gravitation", subject: "physics", topic: "Circular Motion and Gravitation", difficulty: "hard",
+    id: "physics-circular-gravitation", schemaVersion: "1.0", title: "IB Physics - Circular Motion & Gravitation", subject: "IB Physics", topic: "Circular Motion and Gravitation", difficulty: "hard",
     description: "Uniform circular motion, gravitational fields, and orbital mechanics", tags: ["ib","physics","circular motion","gravitation","orbits"], author: "OpenNotes", createdAt: "2026-02-06T00:00:00Z",
     questions: [
       { id:"q1", type:"mcq", question:"2 kg, radius 3 m, speed 6 m/s. Centripetal force:", options:["24 N","12 N","36 N","4 N"], correctAnswers:[0], explanation:"$F=mv^2/r=24$", points:1 },
@@ -180,7 +180,7 @@ const SEED_QUIZZES = [
     ]
   },
   {
-    id: "physics-atomic-nuclear", schemaVersion: "1.0", title: "IB Physics - Atomic, Nuclear & Particle Physics", subject: "physics", topic: "Atomic, Nuclear, and Particle Physics", difficulty: "hard",
+    id: "physics-atomic-nuclear", schemaVersion: "1.0", title: "IB Physics - Atomic, Nuclear & Particle Physics", subject: "IB Physics", topic: "Atomic, Nuclear, and Particle Physics", difficulty: "hard",
     description: "Atomic structure, radioactivity, nuclear reactions, and particle physics", tags: ["ib","physics","atomic","nuclear","particle","radioactivity"], author: "OpenNotes", createdAt: "2026-02-06T00:00:00Z",
     questions: [
       { id:"q1", type:"mcq", question:"Alpha decay emits:", options:["Helium-4 nucleus","Electron","Photon","Neutron"], correctAnswers:[0], explanation:"$^4_2He$", points:1 },
@@ -196,7 +196,7 @@ const SEED_QUIZZES = [
     ]
   },
   {
-    id: "physics-energy-production", schemaVersion: "1.0", title: "IB Physics - Energy Production", subject: "physics", topic: "Energy Production", difficulty: "medium",
+    id: "physics-energy-production", schemaVersion: "1.0", title: "IB Physics - Energy Production", subject: "IB Physics", topic: "Energy Production", difficulty: "medium",
     description: "Energy sources, thermal energy transfer, and greenhouse effect", tags: ["ib","physics","energy","renewable","greenhouse"], author: "OpenNotes", createdAt: "2026-02-06T00:00:00Z",
     questions: [
       { id:"q1", type:"mcq", question:"Typical thermal power station efficiency:", options:["30-40%","80-90%","5-10%","90-100%"], correctAnswers:[0], explanation:"Carnot limits", points:1 },
@@ -345,7 +345,8 @@ async function listQuizzes(filters, env) {
   
   // Apply filters
   if (filters.subject) {
-    quizzes = quizzes.filter(q => q.subject.toLowerCase() === filters.subject.toLowerCase());
+    const subjectLower = filters.subject.toLowerCase();
+    quizzes = quizzes.filter(q => q.subject.toLowerCase().includes(subjectLower));
   }
   if (filters.topic) {
     quizzes = quizzes.filter(q => q.topic?.toLowerCase().includes(filters.topic.toLowerCase()));
@@ -512,8 +513,8 @@ async function proxyToOpenNotes(request, env, appId) {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': env.OPENNOTES_API_KEY,
-      'Origin': 'https://nagusamecs.github.io',
-      'Referer': 'https://nagusamecs.github.io/OpenNotesAPI/',
+      'Origin': 'https://opennotes.pages.dev',
+      'Referer': 'https://opennotes.pages.dev/',
     },
   });
   
@@ -1115,8 +1116,13 @@ export default {
     }
     
     // Public endpoints
-    if (path === '/' || path === '') {
+    if ((path === '/' || path === '') && !url.searchParams.has('type')) {
       return handleApiInfo();
+    }
+    
+    // Root path with ?type= query params — proxy directly to upstream (Tauri app sends requests this way)
+    if ((path === '/' || path === '') && url.searchParams.has('type')) {
+      return proxyToOpenNotes(request, env, 'desktop-app');
     }
     
     if (path === '/api/health' || path === '/health') {
