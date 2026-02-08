@@ -901,13 +901,15 @@ async function openNoteModal(noteId) {
   document.getElementById('modal-downloads').textContent = formatNumber(downloads);
   document.getElementById('modal-size').textContent = note.size ? formatBytes(parseInt(note.size)) : '--';
   
-  // Update save button state
-  const saveBtn = document.getElementById('modal-save-offline');
+  // Update download button state
+  const downloadBtn = document.getElementById('modal-download');
   const isSaved = storage.isNoteSaved(note.name);
-  saveBtn.innerHTML = `
-    <span class="material-symbols-rounded">${isSaved ? 'bookmark' : 'bookmark_border'}</span>
-    ${isSaved ? 'Saved' : 'Save Offline'}
-  `;
+  if (downloadBtn) {
+    downloadBtn.innerHTML = `
+      <span class="material-symbols-rounded">${isSaved ? 'download_done' : 'download'}</span>
+      ${isSaved ? 'Downloaded' : 'Download'}
+    `;
+  }
   
   // Load document preview
   const previewFrame = document.getElementById('modal-preview-frame');
@@ -918,30 +920,74 @@ async function openNoteModal(noteId) {
   // Show loading state
   if (viewerLoading) viewerLoading.classList.remove('hidden');
   
-  // Hide loading when iframe loads
-  previewFrame.onload = () => {
-    if (viewerLoading) viewerLoading.classList.add('hidden');
-  };
-  
   if (previewUrl) {
     const lowerName = note.name.toLowerCase();
-    let viewerUrl = '';
     
     if (lowerName.endsWith('.pdf')) {
-      // Use Google Docs viewer for PDFs
-      viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(previewUrl)}&embedded=true`;
+      // Fetch PDF as blob via Tauri HTTP plugin and render via blob URL
+      // This bypasses WebKit's third-party cookie blocking that breaks Google Docs viewer
+      try {
+        let blob;
+        // Check if we have an offline copy first
+        const offlineCopy = state.savedNotes.find(n => n.name === note.name);
+        if (offlineCopy && offlineCopy.cachedFile) {
+          blob = storage.base64ToBlob(offlineCopy.cachedFile);
+        } else if (window.__TAURI__) {
+          const { fetch: tauriFetch } = await import('@tauri-apps/plugin-http');
+          const response = await tauriFetch(previewUrl, { method: 'GET' });
+          blob = await response.blob();
+        } else {
+          const response = await fetch(previewUrl);
+          blob = await response.blob();
+        }
+        const blobUrl = URL.createObjectURL(blob);
+        previewFrame.onload = () => {
+          if (viewerLoading) viewerLoading.classList.add('hidden');
+        };
+        previewFrame.src = blobUrl;
+        previewFrame.classList.remove('hidden');
+        fallback.classList.add('hidden');
+        // Clean up blob URL when modal closes
+        state._previewBlobUrl = blobUrl;
+      } catch (err) {
+        console.error('[PREVIEW] Failed to load PDF:', err);
+        if (viewerLoading) viewerLoading.classList.add('hidden');
+        previewFrame.classList.add('hidden');
+        fallback.classList.remove('hidden');
+        fallback.innerHTML = `
+          <span class="material-symbols-rounded">error_outline</span>
+          <p>Failed to load preview</p>
+          <button class="btn btn-secondary" onclick="openNoteExternal(state.currentNote)">
+            <span class="material-symbols-rounded">open_in_new</span>
+            Open in Browser
+          </button>
+        `;
+      }
     } else if (lowerName.endsWith('.docx') || lowerName.endsWith('.doc')) {
-      // Use Office Online viewer for Word docs
-      viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewUrl)}`;
+      // DOCX can't be rendered natively — show a friendly fallback
+      if (viewerLoading) viewerLoading.classList.add('hidden');
+      previewFrame.classList.add('hidden');
+      fallback.classList.remove('hidden');
+      fallback.innerHTML = `
+        <span class="material-symbols-rounded">description</span>
+        <p>Word documents can't be previewed in-app</p>
+        <button class="btn btn-secondary" onclick="openNoteExternal(state.currentNote)">
+          <span class="material-symbols-rounded">open_in_new</span>
+          Open in Browser
+        </button>
+      `;
     } else {
-      // Try Google Docs viewer as fallback
-      viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(previewUrl)}&embedded=true`;
+      // Unknown format — show fallback
+      if (viewerLoading) viewerLoading.classList.add('hidden');
+      previewFrame.classList.add('hidden');
+      fallback.classList.remove('hidden');
+      fallback.innerHTML = `
+        <span class="material-symbols-rounded">description</span>
+        <p>Preview not available for this format</p>
+      `;
     }
-    
-    previewFrame.src = viewerUrl;
-    previewFrame.classList.remove('hidden');
-    fallback.classList.add('hidden');
   } else {
+    if (viewerLoading) viewerLoading.classList.add('hidden');
     previewFrame.classList.add('hidden');
     fallback.classList.remove('hidden');
     fallback.innerHTML = `
@@ -962,6 +1008,11 @@ function closeNoteModal() {
     overlay.classList.add('hidden');
     const frame = document.getElementById('modal-preview-frame');
     if (frame) frame.src = 'about:blank';
+    // Clean up blob URL to free memory
+    if (state._previewBlobUrl) {
+      URL.revokeObjectURL(state._previewBlobUrl);
+      state._previewBlobUrl = null;
+    }
   }
   state.currentNote = null;
 }
@@ -1584,17 +1635,20 @@ async function init() {
   // Modal close
   document.getElementById('modal-close')?.addEventListener('click', closeNoteModal);
   
-  // Modal save offline
-  document.getElementById('modal-save-offline')?.addEventListener('click', () => {
-    if (state.currentNote) {
-      storage.saveNoteOffline(state.currentNote);
-    }
-  });
-  
-  // Modal download
+  // Modal download (saves for offline access)
   document.getElementById('modal-download')?.addEventListener('click', async () => {
-    if (state.currentNote && state.currentNote.dl) {
-      await downloadNoteFile(state.currentNote);
+    if (state.currentNote) {
+      const success = await storage.saveNoteOffline(state.currentNote);
+      if (success) {
+        // Update button state
+        const btn = document.getElementById('modal-download');
+        if (btn) {
+          btn.innerHTML = `
+            <span class="material-symbols-rounded">download_done</span>
+            Downloaded
+          `;
+        }
+      }
     }
   });
   
