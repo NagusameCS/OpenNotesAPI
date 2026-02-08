@@ -266,8 +266,8 @@
             <span class="material-symbols-rounded">cloud_upload</span>
             <h3>Upload via Web Client</h3>
             <p>Note uploads are handled through the OpenNotes web client</p>
-            <button class="btn btn-primary" id="open-web-upload" style="margin-top: 16px;">
-              <span class="material-symbols-rounded">open_in_new</span>
+            <button class="btn btn-web-client" id="open-web-upload">
+              <span class="material-symbols-rounded">language</span>
               Open Web Client
             </button>
           </div>
@@ -279,8 +279,8 @@
             <span class="material-symbols-rounded">cloud_upload</span>
             <h3>Manage Uploads on the Web</h3>
             <p>View and manage your uploads through the OpenNotes web client</p>
-            <button class="btn btn-primary" id="open-web-uploads" style="margin-top: 16px;">
-              <span class="material-symbols-rounded">open_in_new</span>
+            <button class="btn btn-web-client" id="open-web-uploads">
+              <span class="material-symbols-rounded">language</span>
               Open Web Client
             </button>
           </div>
@@ -537,61 +537,39 @@
     <div id="dev-console-output" class="dev-console-output"></div>
   </div>
   
-  <!-- Note Detail Modal -->
-  <div id="note-modal" class="modal hidden">
-    <div class="modal-backdrop"></div>
-    <div class="modal-content modal-large">
-      <div class="modal-header">
-        <h2 id="modal-title">Note Title</h2>
-        <button class="icon-btn" id="modal-close">
-          <span class="material-symbols-rounded">close</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <!-- Preview Frame -->
-        <div id="modal-preview-container" class="modal-preview-container hidden">
-          <iframe id="modal-preview-frame" class="modal-preview-frame"></iframe>
-          <div id="modal-preview-fallback" class="modal-preview-fallback hidden">
-            <span class="material-symbols-rounded">preview</span>
-            <p>Preview not available for this file type</p>
-            <button class="btn btn-secondary" id="preview-download-instead">
-              <span class="material-symbols-rounded">download</span>
-              Download Instead
-            </button>
-          </div>
-        </div>
-        <!-- Thumbnail (shown when preview hidden) -->
-        <img id="modal-thumbnail" src="" alt="" class="modal-thumbnail">
-        <div class="modal-info">
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="info-label">Author</span>
-              <span class="info-value" id="modal-author">--</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Format</span>
-              <span class="info-value" id="modal-format">--</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Views</span>
-              <span class="info-value" id="modal-views">--</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Downloads</span>
-              <span class="info-value" id="modal-downloads">--</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Size</span>
-              <span class="info-value" id="modal-size">--</span>
-            </div>
-          </div>
+  <!-- Note Viewer Overlay -->
+  <div id="note-modal" class="viewer-overlay hidden">
+    <button class="viewer-back-btn" id="modal-close">
+      <span class="material-symbols-rounded">arrow_back</span>
+      <span>Close</span>
+    </button>
+    <div class="viewer-panel">
+      <div class="viewer-left">
+        <iframe id="modal-preview-frame" class="viewer-docframe"></iframe>
+        <div id="modal-preview-fallback" class="viewer-fallback hidden">
+          <span class="material-symbols-rounded">description</span>
+          <p>Loading document preview...</p>
         </div>
       </div>
-      <div class="modal-footer">
-        <div class="modal-actions-left">
-          <button class="btn btn-secondary" id="modal-preview">
-            <span class="material-symbols-rounded">visibility</span>
-            Preview
+      <div class="viewer-right">
+        <div class="viewer-header">
+          <span class="viewer-pill" id="modal-format">PDF</span>
+          <h2 class="viewer-title" id="modal-title">Note Title</h2>
+        </div>
+        <div class="viewer-meta">
+          <div class="viewer-kv"><span>Author</span> <strong id="modal-author">--</strong></div>
+          <div class="viewer-kv"><span>Views</span> <strong id="modal-views">0</strong></div>
+          <div class="viewer-kv"><span>Downloads</span> <strong id="modal-downloads">0</strong></div>
+          <div class="viewer-kv"><span>Size</span> <strong id="modal-size">--</strong></div>
+        </div>
+        <div class="viewer-actions">
+          <button class="btn btn-primary" id="modal-download">
+            <span class="material-symbols-rounded">download</span>
+            Download
+          </button>
+          <button class="btn btn-secondary" id="modal-save-offline">
+            <span class="material-symbols-rounded">bookmark_border</span>
+            Save Offline
           </button>
           <button class="btn btn-secondary" id="modal-open-external">
             <span class="material-symbols-rounded">open_in_new</span>
@@ -600,16 +578,6 @@
           <button class="btn btn-secondary" id="modal-share">
             <span class="material-symbols-rounded">share</span>
             Share
-          </button>
-        </div>
-        <div class="modal-actions-right">
-          <button class="btn btn-secondary" id="modal-save-offline">
-            <span class="material-symbols-rounded">bookmark</span>
-            Save Offline
-          </button>
-          <button class="btn btn-primary" id="modal-download">
-            <span class="material-symbols-rounded">download</span>
-            Download
           </button>
         </div>
       </div>

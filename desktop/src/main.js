@@ -153,7 +153,8 @@ async function httpFetch(url, options = {}) {
       console.log('[FETCH] Calling Rust api_fetch command...');
       const result = await tauriInvoke('api_fetch', { 
         url: url,
-        method: options.method || 'GET'
+        method: options.method || 'GET',
+        body: options.body || null,
       });
       
       console.log('[FETCH] Rust response status:', result.status, 'ok:', result.ok);
@@ -398,8 +399,16 @@ const storage = {
     
     // Download and cache the file
     try {
-      const response = await httpFetch(note.dl);
-      const blob = await response.blob();
+      let blob;
+      if (window.__TAURI__) {
+        // Use Tauri HTTP plugin for binary-safe downloads
+        const { fetch: tauriFetch } = await import('@tauri-apps/plugin-http');
+        const response = await tauriFetch(note.dl, { method: 'GET' });
+        blob = await response.blob();
+      } else {
+        const response = await fetch(note.dl);
+        blob = await response.blob();
+      }
       const base64 = await this.blobToBase64(blob);
       
       // Calculate expiry date (10 days from now)
@@ -563,27 +572,8 @@ function renderNotesGrid(notes, containerId = 'notes-grid') {
   
   // Attach event listeners
   container.querySelectorAll('.note-card').forEach(card => {
-    card.addEventListener('click', (e) => {
-      if (!e.target.closest('.note-action-btn')) {
-        openNoteModal(card.dataset.noteId);
-      }
-    });
-  });
-  
-  container.querySelectorAll('.btn-save-offline').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const noteId = btn.closest('.note-card').dataset.noteId;
-      const note = state.notes.find(n => n.name === noteId);
-      if (note) {
-        if (storage.isNoteSaved(note.name)) {
-          storage.removeOfflineNote(note.name);
-          btn.classList.remove('saved');
-        } else {
-          storage.saveNoteOffline(note);
-          btn.classList.add('saved');
-        }
-      }
+    card.addEventListener('click', () => {
+      openNoteModal(card.dataset.noteId);
     });
   });
 }
@@ -627,11 +617,6 @@ function createNoteCard(note) {
             </span>
           </div>
         </div>
-      </div>
-      <div class="note-actions">
-        <button class="note-action-btn btn-save-offline ${isSaved ? 'saved' : ''}" title="${isSaved ? 'Downloaded' : 'Download for offline'}">
-          <span class="material-symbols-rounded">${isSaved ? 'download_done' : 'download'}</span>
-        </button>
       </div>
     </article>
   `;
@@ -891,127 +876,83 @@ async function loadRecent() {
 
 // ==================== MODAL ====================
 async function openNoteModal(noteId) {
-  const modal = document.getElementById('note-modal');
+  const overlay = document.getElementById('note-modal');
   const note = state.notes.find(n => n.name === noteId) || 
                state.savedNotes.find(n => n.name === noteId);
   
-  if (!note || !modal) return;
+  if (!note || !overlay) return;
   
   state.currentNote = note;
   
-  // Populate modal (use API field names with fallbacks)
-  const thumbnail = note.thumb || note.img || 'https://via.placeholder.com/600x400?text=No+Preview';
+  // Populate metadata
   const author = note.auth || note.author || 'Unknown';
   const views = note.v || note.views || 0;
   const downloads = note.d || note.downloads || 0;
+  const format = getFileFormat(note.name);
   
-  document.getElementById('modal-title').textContent = note.name;
-  document.getElementById('modal-thumbnail').src = thumbnail;
+  document.getElementById('modal-title').textContent = note.title || note.name;
   document.getElementById('modal-author').textContent = author;
-  document.getElementById('modal-format').textContent = getFileFormat(note.name).toUpperCase();
+  const formatEl = document.getElementById('modal-format');
+  formatEl.textContent = format.toUpperCase();
+  formatEl.className = `viewer-pill ${format}`;
   document.getElementById('modal-views').textContent = formatNumber(views);
   document.getElementById('modal-downloads').textContent = formatNumber(downloads);
   document.getElementById('modal-size').textContent = note.size ? formatBytes(parseInt(note.size)) : '--';
   
-  // Update save button
+  // Update save button state
   const saveBtn = document.getElementById('modal-save-offline');
   const isSaved = storage.isNoteSaved(note.name);
   saveBtn.innerHTML = `
     <span class="material-symbols-rounded">${isSaved ? 'bookmark' : 'bookmark_border'}</span>
-    ${isSaved ? 'Saved Offline' : 'Save Offline'}
+    ${isSaved ? 'Saved' : 'Save Offline'}
   `;
   
-  modal.classList.remove('hidden');
+  // Load document preview
+  const previewFrame = document.getElementById('modal-preview-frame');
+  const fallback = document.getElementById('modal-preview-fallback');
+  const previewUrl = note.dl;
+  
+  if (previewUrl) {
+    const lowerName = note.name.toLowerCase();
+    let viewerUrl = '';
+    
+    if (lowerName.endsWith('.pdf')) {
+      // Use Google Docs viewer for PDFs
+      viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(previewUrl)}&embedded=true`;
+    } else if (lowerName.endsWith('.docx') || lowerName.endsWith('.doc')) {
+      // Use Office Online viewer for Word docs
+      viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewUrl)}`;
+    } else {
+      // Try Google Docs viewer as fallback
+      viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(previewUrl)}&embedded=true`;
+    }
+    
+    previewFrame.src = viewerUrl;
+    previewFrame.classList.remove('hidden');
+    fallback.classList.add('hidden');
+  } else {
+    previewFrame.classList.add('hidden');
+    fallback.classList.remove('hidden');
+    fallback.innerHTML = `
+      <span class="material-symbols-rounded">description</span>
+      <p>Preview not available</p>
+    `;
+  }
+  
+  overlay.classList.remove('hidden');
   
   // Track view
   api.incrementViews(note.name);
 }
 
 function closeNoteModal() {
-  const modal = document.getElementById('note-modal');
-  if (modal) modal.classList.add('hidden');
-  
-  // Hide preview when closing
-  const previewContainer = document.getElementById('modal-preview-container');
-  const thumbnail = document.getElementById('modal-thumbnail');
-  if (previewContainer) previewContainer.classList.add('hidden');
-  if (thumbnail) thumbnail.classList.remove('hidden');
-  
-  state.currentNote = null;
-}
-
-// Toggle document preview in modal
-function toggleNotePreview() {
-  const note = state.currentNote;
-  if (!note) return;
-  
-  const previewContainer = document.getElementById('modal-preview-container');
-  const previewFrame = document.getElementById('modal-preview-frame');
-  const previewFallback = document.getElementById('modal-preview-fallback');
-  const thumbnail = document.getElementById('modal-thumbnail');
-  const previewBtn = document.getElementById('modal-preview');
-  
-  if (!previewContainer) return;
-  
-  const isHidden = previewContainer.classList.contains('hidden');
-  
-  if (isHidden) {
-    // Show preview
-    const format = getFileFormat(note.name).toLowerCase();
-    const previewUrl = note.dl || note.thumb || note.img;
-    
-    // Images can be shown inline
-    const imageFormats = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'];
-    // Formats that can be shown in iframe
-    const iframeFormats = ['pdf', 'txt', 'html'];
-    
-    if (imageFormats.includes(format) && previewUrl) {
-      // Show image directly instead of iframe
-      previewFrame.classList.add('hidden');
-      previewFallback.classList.add('hidden');
-      
-      // Create or reuse an image preview element
-      let imgPreview = previewContainer.querySelector('.preview-image');
-      if (!imgPreview) {
-        imgPreview = document.createElement('img');
-        imgPreview.className = 'preview-image';
-        imgPreview.style.cssText = 'width:100%;max-height:500px;object-fit:contain;background:var(--bg);';
-        previewContainer.appendChild(imgPreview);
-      }
-      imgPreview.src = previewUrl;
-      imgPreview.classList.remove('hidden');
-    } else if (iframeFormats.includes(format) && previewUrl) {
-      // Use iframe for PDF/TXT/HTML
-      let imgPreview = previewContainer.querySelector('.preview-image');
-      if (imgPreview) imgPreview.classList.add('hidden');
-      previewFrame.src = previewUrl;
-      previewFrame.classList.remove('hidden');
-      previewFallback.classList.add('hidden');
-    } else {
-      previewFrame.classList.add('hidden');
-      let imgPreview = previewContainer.querySelector('.preview-image');
-      if (imgPreview) imgPreview.classList.add('hidden');
-      previewFallback.classList.remove('hidden');
-    }
-    
-    previewContainer.classList.remove('hidden');
-    thumbnail.classList.add('hidden');
-    previewBtn.innerHTML = `
-      <span class="material-symbols-rounded">visibility_off</span>
-      Hide Preview
-    `;
-  } else {
-    // Hide preview
-    previewContainer.classList.add('hidden');
-    previewFrame.src = '';
-    let imgPreview = previewContainer.querySelector('.preview-image');
-    if (imgPreview) imgPreview.classList.add('hidden');
-    thumbnail.classList.remove('hidden');
-    previewBtn.innerHTML = `
-      <span class="material-symbols-rounded">visibility</span>
-      Preview
-    `;
+  const overlay = document.getElementById('note-modal');
+  if (overlay) {
+    overlay.classList.add('hidden');
+    const frame = document.getElementById('modal-preview-frame');
+    if (frame) frame.src = 'about:blank';
   }
+  state.currentNote = null;
 }
 
 // Download note file to user's system
@@ -1627,13 +1568,11 @@ async function init() {
   
   // Modal close
   document.getElementById('modal-close')?.addEventListener('click', closeNoteModal);
-  document.querySelector('.modal-backdrop')?.addEventListener('click', closeNoteModal);
   
   // Modal save offline
   document.getElementById('modal-save-offline')?.addEventListener('click', () => {
     if (state.currentNote) {
       storage.saveNoteOffline(state.currentNote);
-      closeNoteModal();
     }
   });
   
@@ -1641,13 +1580,6 @@ async function init() {
   document.getElementById('modal-download')?.addEventListener('click', async () => {
     if (state.currentNote && state.currentNote.dl) {
       await downloadNoteFile(state.currentNote);
-    }
-  });
-  
-  // Modal preview
-  document.getElementById('modal-preview')?.addEventListener('click', () => {
-    if (state.currentNote) {
-      toggleNotePreview();
     }
   });
   
@@ -1662,13 +1594,6 @@ async function init() {
   document.getElementById('modal-share')?.addEventListener('click', () => {
     if (state.currentNote) {
       shareNote(state.currentNote);
-    }
-  });
-  
-  // Preview download fallback button
-  document.getElementById('preview-download-instead')?.addEventListener('click', async () => {
-    if (state.currentNote && state.currentNote.dl) {
-      await downloadNoteFile(state.currentNote);
     }
   });
   
@@ -1807,7 +1732,7 @@ const quizApi = {
       if (filters.topic) params.set('topic', filters.topic);
       if (filters.search) params.set('q', filters.search);
       
-      const response = await fetch(`${CONFIG.GATEWAY_URL}/api/quizzes?${params}`);
+      const response = await httpFetch(`${CONFIG.GATEWAY_URL}/api/quizzes?${params}`);
       if (!response.ok) throw new Error('Failed to fetch quizzes');
       return await response.json();
     } catch (e) {
@@ -1818,7 +1743,7 @@ const quizApi = {
   
   async getQuiz(id) {
     try {
-      const response = await fetch(`${CONFIG.GATEWAY_URL}/api/quizzes/${id}`);
+      const response = await httpFetch(`${CONFIG.GATEWAY_URL}/api/quizzes/${id}`);
       if (!response.ok) throw new Error('Quiz not found');
       return await response.json();
     } catch (e) {
@@ -1830,7 +1755,7 @@ const quizApi = {
   async createQuiz(quiz) {
     try {
       const authToken = localStorage.getItem('auth_token_fallback');
-      const response = await fetch(`${CONFIG.GATEWAY_URL}/api/quizzes`, {
+      const response = await httpFetch(`${CONFIG.GATEWAY_URL}/api/quizzes`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1851,7 +1776,7 @@ const quizApi = {
   
   async shuffleQuizzes(quizIds, options = {}) {
     try {
-      const response = await fetch(`${CONFIG.GATEWAY_URL}/api/quizzes/shuffle`, {
+      const response = await httpFetch(`${CONFIG.GATEWAY_URL}/api/quizzes/shuffle`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

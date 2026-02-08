@@ -9,7 +9,7 @@ pub struct HttpResponse {
 }
 
 #[tauri::command]
-async fn api_fetch(url: String, method: Option<String>) -> Result<HttpResponse, String> {
+async fn api_fetch(url: String, method: Option<String>, body: Option<String>) -> Result<HttpResponse, String> {
     let client = reqwest::Client::new();
     
     let mut headers = HeaderMap::new();
@@ -19,12 +19,16 @@ async fn api_fetch(url: String, method: Option<String>) -> Result<HttpResponse, 
     
     let method_str = method.unwrap_or_else(|| "GET".to_string());
     
-    let request_builder = match method_str.to_uppercase().as_str() {
+    let mut request_builder = match method_str.to_uppercase().as_str() {
         "POST" => client.post(&url),
         "PUT" => client.put(&url),
         "DELETE" => client.delete(&url),
         _ => client.get(&url),
     };
+    
+    if let Some(body_str) = body {
+        request_builder = request_builder.body(body_str);
+    }
     
     let response = request_builder
         .headers(headers)
