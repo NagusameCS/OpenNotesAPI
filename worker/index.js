@@ -1127,7 +1127,7 @@ export default {
     }
     
     // GET/DELETE /api/quizzes/:id - Get or delete specific quiz
-    const quizMatch = path.match(/^\/api\/quizzes\/([a-z0-9]+)$/);
+    const quizMatch = path.match(/^\/api\/quizzes\/([a-z0-9-]+)$/);
     if (quizMatch) {
       const quizId = quizMatch[1];
       if (request.method === 'GET') {
