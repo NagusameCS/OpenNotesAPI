@@ -81,6 +81,22 @@ const devConsole = {
 // Initialize console interceptor immediately
 devConsole.init();
 
+// ==================== CARD GLOW EFFECT ====================
+// Tracks mouse position over cards for radial gradient glow
+function initCardGlow(container) {
+  if (!container) return;
+  const cards = container.querySelectorAll('.note-card, .quiz-card');
+  cards.forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      card.style.setProperty('--glow-x', x + 'px');
+      card.style.setProperty('--glow-y', y + 'px');
+    });
+  });
+}
+
 // Expose to window for inline HTML handlers
 window.toggleDevConsole = function() {
   const panel = document.getElementById('dev-console');
@@ -542,6 +558,9 @@ function renderNotesGrid(notes, containerId = 'notes-grid') {
   
   container.innerHTML = notes.map(note => createNoteCard(note)).join('');
   
+  // Add card glow effect (mouse tracking)
+  initCardGlow(container);
+  
   // Attach event listeners
   container.querySelectorAll('.note-card').forEach(card => {
     card.addEventListener('click', (e) => {
@@ -941,16 +960,37 @@ function toggleNotePreview() {
     const format = getFileFormat(note.name).toLowerCase();
     const previewUrl = note.dl || note.thumb || note.img;
     
-    // Check if format supports preview
-    const previewableFormats = ['pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'txt', 'html'];
-    const canPreview = previewableFormats.includes(format) && previewUrl;
+    // Images can be shown inline
+    const imageFormats = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'];
+    // Formats that can be shown in iframe
+    const iframeFormats = ['pdf', 'txt', 'html'];
     
-    if (canPreview) {
+    if (imageFormats.includes(format) && previewUrl) {
+      // Show image directly instead of iframe
+      previewFrame.classList.add('hidden');
+      previewFallback.classList.add('hidden');
+      
+      // Create or reuse an image preview element
+      let imgPreview = previewContainer.querySelector('.preview-image');
+      if (!imgPreview) {
+        imgPreview = document.createElement('img');
+        imgPreview.className = 'preview-image';
+        imgPreview.style.cssText = 'width:100%;max-height:500px;object-fit:contain;background:var(--bg);';
+        previewContainer.appendChild(imgPreview);
+      }
+      imgPreview.src = previewUrl;
+      imgPreview.classList.remove('hidden');
+    } else if (iframeFormats.includes(format) && previewUrl) {
+      // Use iframe for PDF/TXT/HTML
+      let imgPreview = previewContainer.querySelector('.preview-image');
+      if (imgPreview) imgPreview.classList.add('hidden');
       previewFrame.src = previewUrl;
       previewFrame.classList.remove('hidden');
       previewFallback.classList.add('hidden');
     } else {
       previewFrame.classList.add('hidden');
+      let imgPreview = previewContainer.querySelector('.preview-image');
+      if (imgPreview) imgPreview.classList.add('hidden');
       previewFallback.classList.remove('hidden');
     }
     
@@ -964,11 +1004,44 @@ function toggleNotePreview() {
     // Hide preview
     previewContainer.classList.add('hidden');
     previewFrame.src = '';
+    let imgPreview = previewContainer.querySelector('.preview-image');
+    if (imgPreview) imgPreview.classList.add('hidden');
     thumbnail.classList.remove('hidden');
     previewBtn.innerHTML = `
       <span class="material-symbols-rounded">visibility</span>
       Preview
     `;
+  }
+}
+
+// Download note file to user's system
+async function downloadNoteFile(note) {
+  if (!note || !note.dl) {
+    showToast('Download URL not available', 'error');
+    return;
+  }
+  
+  try {
+    if (window.__TAURI__) {
+      // Use Tauri shell to open the download URL in the default browser
+      // This lets the browser handle the actual download
+      const { open } = await import('@tauri-apps/plugin-shell');
+      await open(note.dl);
+    } else {
+      // Web fallback - trigger download via anchor tag
+      const a = document.createElement('a');
+      a.href = note.dl;
+      a.download = note.name || 'download';
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+    api.incrementDownloads(note.name);
+    showToast('Download started', 'success');
+  } catch (err) {
+    console.error('[DOWNLOAD] Error:', err);
+    showToast('Failed to start download', 'error');
   }
 }
 
@@ -980,16 +1053,11 @@ async function openNoteExternal(note) {
   }
   
   try {
-    // Check if we have it saved offline first
-    const savedNote = state.savedNotes.find(n => n.name === note.name);
-    
-    if (savedNote && savedNote.cachedFile) {
-      // Open from cached file
-      const blob = storage.base64ToBlob(savedNote.cachedFile);
-      const url = URL.createObjectURL(blob);
-      window.open(url, '_blank');
+    // Open URL in system default browser/app
+    if (window.__TAURI__) {
+      const { open } = await import('@tauri-apps/plugin-shell');
+      await open(note.dl);
     } else {
-      // Open directly from URL
       window.open(note.dl, '_blank');
     }
     
@@ -1039,16 +1107,29 @@ function copyToClipboard(text) {
   });
 }
 
-function openOfflineNote(name) {
+async function openOfflineNote(name) {
   const note = state.savedNotes.find(n => n.name === name);
   if (!note || !note.cachedFile) {
     showToast('File not available offline', 'error');
     return;
   }
   
+  // For offline notes, create a blob URL and open in new webview tab
   const blob = storage.base64ToBlob(note.cachedFile);
   const url = URL.createObjectURL(blob);
-  window.open(url, '_blank');
+  
+  // Try opening in a new window (works in webview for blob URLs)
+  const win = window.open(url, '_blank');
+  if (!win) {
+    // Fallback: trigger download
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast('File downloaded', 'success');
+  }
 }
 
 // ==================== VIEW SWITCHING ====================
@@ -1557,10 +1638,9 @@ async function init() {
   });
   
   // Modal download
-  document.getElementById('modal-download')?.addEventListener('click', () => {
+  document.getElementById('modal-download')?.addEventListener('click', async () => {
     if (state.currentNote && state.currentNote.dl) {
-      window.open(state.currentNote.dl, '_blank');
-      api.incrementDownloads(state.currentNote.name);
+      await downloadNoteFile(state.currentNote);
     }
   });
   
@@ -1586,10 +1666,9 @@ async function init() {
   });
   
   // Preview download fallback button
-  document.getElementById('preview-download-instead')?.addEventListener('click', () => {
+  document.getElementById('preview-download-instead')?.addEventListener('click', async () => {
     if (state.currentNote && state.currentNote.dl) {
-      window.open(state.currentNote.dl, '_blank');
-      api.incrementDownloads(state.currentNote.name);
+      await downloadNoteFile(state.currentNote);
     }
   });
   
@@ -1850,6 +1929,9 @@ async function loadQuizzes(filters = {}) {
         }
       });
     });
+    
+    // Add card glow effect
+    initCardGlow(grid);
   } catch (e) {
     grid.innerHTML = `
       <div class="empty-state" style="grid-column: 1 / -1;">

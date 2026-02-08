@@ -1,6 +1,6 @@
 /**
  * OpenNotes Desktop - Main Styles
- * Clean, modern design for the desktop app
+ * Modern, sleek design inspired by OpenNotes web client
  */
 
 /* ==================== CSS VARIABLES ==================== */
@@ -8,10 +8,11 @@
   --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   
   /* Colors */
-  --bg: #f5f7fa;
+  --bg: #f0f2f5;
   --bg-panel: #ffffff;
   --bg-sidebar: #0d1117;
   --bg-sidebar-hover: #161b22;
+  --bg-glass: rgba(255, 255, 255, 0.8);
   
   --text: #1a1a2e;
   --text-muted: #6b7280;
@@ -21,43 +22,51 @@
   --accent: #3b82f6;
   --accent-hover: #2563eb;
   --accent-light: #eff6ff;
-  --accent-glow: rgba(59, 130, 246, 0.2);
+  --accent-glow: rgba(59, 130, 246, 0.25);
   
   --success: #22c55e;
   --warning: #f59e0b;
   --danger: #ef4444;
   
-  --border: #e5e7eb;
-  --border-soft: rgba(0, 0, 0, 0.05);
+  --border: #e2e5ea;
+  --border-soft: rgba(0, 0, 0, 0.04);
   --sidebar-border: #30363d;
   
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 0 30px rgba(59, 130, 246, 0.15);
   
-  --radius: 12px;
-  --radius-sm: 8px;
-  --radius-xs: 4px;
+  --radius: 4px;
+  --radius-sm: 2px;
+  --radius-xs: 1px;
   
   --header-height: 64px;
   --sidebar-width: 260px;
   --titlebar-height: 38px;
   
+  /* Animation */
+  --ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.25, 1.3, 0.5, 1);
+  --speed: 0.25s;
   --transition: all 0.2s ease;
+  --transition-bounce: all var(--speed) var(--ease);
 }
 
 /* Dark Mode */
 .dark-mode {
-  --bg: #0f172a;
-  --bg-panel: #1e293b;
+  --bg: #0a0e1a;
+  --bg-panel: #141828;
+  --bg-glass: rgba(20, 24, 40, 0.85);
   --text: #f1f5f9;
   --text-muted: #94a3b8;
-  --border: #334155;
-  --border-soft: rgba(255, 255, 255, 0.05);
+  --border: #1e2a42;
+  --border-soft: rgba(255, 255, 255, 0.04);
   
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 30px rgba(59, 130, 246, 0.2);
 }
 
 /* ==================== BASE RESET ==================== */
@@ -83,6 +92,44 @@ body {
 
 html {
   background: var(--bg);
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+  50% { box-shadow: 0 0 20px 2px rgba(59, 130, 246, 0.15); }
 }
 
 a {
@@ -188,9 +235,10 @@ input, select, textarea {
 }
 
 .nav-item.active {
-  background: var(--bg-sidebar-hover);
-  color: var(--text-sidebar);
+  background: rgba(59, 130, 246, 0.12);
+  color: #60a5fa;
   border-left: 3px solid var(--accent);
+  font-weight: 500;
 }
 
 .nav-item .material-symbols-rounded {
@@ -246,6 +294,7 @@ input, select, textarea {
   background: var(--bg-panel);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+  backdrop-filter: blur(20px) saturate(180%);
 }
 
 .header-left {
@@ -262,7 +311,8 @@ input, select, textarea {
 
 .view-title {
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .search-container {
@@ -274,6 +324,7 @@ input, select, textarea {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   width: 300px;
+  transition: var(--transition);
 }
 
 .search-container:focus-within {
@@ -307,7 +358,9 @@ input, select, textarea {
   border-radius: var(--radius-sm);
   font-size: 0.9rem;
   font-weight: 500;
-  transition: var(--transition);
+  transition: var(--transition-bounce);
+  position: relative;
+  overflow: hidden;
 }
 
 .btn-primary {
@@ -317,6 +370,8 @@ input, select, textarea {
 
 .btn-primary:hover {
   background: var(--accent-hover);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-1px);
 }
 
 .btn-secondary {
@@ -327,6 +382,7 @@ input, select, textarea {
 
 .btn-secondary:hover {
   background: var(--border);
+  transform: translateY(-1px);
 }
 
 .btn-danger {
@@ -336,6 +392,7 @@ input, select, textarea {
 
 .btn-danger:hover {
   background: #dc2626;
+  transform: translateY(-1px);
 }
 
 .icon-btn {
@@ -346,7 +403,7 @@ input, select, textarea {
   justify-content: center;
   border-radius: var(--radius-sm);
   color: var(--text-muted);
-  transition: var(--transition);
+  transition: var(--transition-bounce);
 }
 
 .icon-btn:hover {
@@ -366,6 +423,7 @@ input, select, textarea {
   height: 100%;
   overflow-y: auto;
   padding: 24px;
+  animation: fadeIn 0.3s ease;
 }
 
 .view.active {
@@ -392,18 +450,20 @@ input, select, textarea {
   background: var(--bg-panel);
   border: 1px solid var(--border);
   color: var(--text-muted);
-  transition: var(--transition);
+  transition: var(--transition-bounce);
 }
 
 .filter-chip:hover {
   border-color: var(--accent);
   color: var(--text);
+  transform: translateY(-1px);
 }
 
 .filter-chip.active {
   background: var(--accent);
   border-color: var(--accent);
   color: white;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
 .sort-select {
@@ -455,22 +515,57 @@ input, select, textarea {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
+  perspective: 2500px;
 }
 
 .note-card {
+  --glow-x: 50%;
+  --glow-y: 50%;
+  --glow-op: 0;
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
   cursor: pointer;
-  transition: var(--transition);
+  transition: transform var(--speed) var(--ease-smooth), box-shadow var(--speed) ease, border-color var(--speed) ease;
+  position: relative;
+  animation: popIn 0.4s var(--ease) backwards;
+}
+
+.note-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    600px circle at var(--glow-x) var(--glow-y),
+    rgba(59, 130, 246, 0.12),
+    transparent 40%
+  );
+  opacity: var(--glow-op);
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .note-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-6px) scale(1.01);
   box-shadow: var(--shadow-lg);
-  border-color: transparent;
+  border-color: rgba(59, 130, 246, 0.3);
+  --glow-op: 1;
 }
+
+.note-card:nth-child(1) { animation-delay: 0.03s; }
+.note-card:nth-child(2) { animation-delay: 0.06s; }
+.note-card:nth-child(3) { animation-delay: 0.09s; }
+.note-card:nth-child(4) { animation-delay: 0.12s; }
+.note-card:nth-child(5) { animation-delay: 0.15s; }
+.note-card:nth-child(6) { animation-delay: 0.18s; }
+.note-card:nth-child(7) { animation-delay: 0.21s; }
+.note-card:nth-child(8) { animation-delay: 0.24s; }
+.note-card:nth-child(9) { animation-delay: 0.27s; }
+.note-card:nth-child(10) { animation-delay: 0.3s; }
+.note-card:nth-child(n+11) { animation-delay: 0.33s; }
 
 .note-thumbnail {
   aspect-ratio: 16 / 10;
@@ -483,6 +578,11 @@ input, select, textarea {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.note-card:hover .note-thumbnail img {
+  transform: scale(1.05);
 }
 
 .format-badge {
@@ -590,12 +690,13 @@ input, select, textarea {
   justify-content: center;
   border-radius: var(--radius-xs);
   color: var(--text-muted);
-  transition: var(--transition);
+  transition: var(--transition-bounce);
 }
 
 .note-action-btn:hover {
-  background: var(--bg);
+  background: var(--accent-light);
   color: var(--accent);
+  transform: scale(1.1);
 }
 
 .note-action-btn.saved {
@@ -612,6 +713,7 @@ input, select, textarea {
   padding: 60px 24px;
   text-align: center;
   color: var(--text-muted);
+  animation: fadeIn 0.4s ease;
 }
 
 .loading-state .spinner {
@@ -631,12 +733,49 @@ input, select, textarea {
 .empty-state .material-symbols-rounded {
   font-size: 4rem;
   margin-bottom: 16px;
-  opacity: 0.5;
+  opacity: 0.4;
 }
 
 .empty-state h3 {
   color: var(--text);
   margin-bottom: 8px;
+  font-weight: 600;
+}
+
+/* Shimmer skeleton loading */
+.skeleton {
+  background: linear-gradient(90deg, var(--border) 25%, var(--bg) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  animation: popIn 0.4s var(--ease) backwards;
+}
+
+.skeleton-card .skeleton-thumb {
+  aspect-ratio: 16 / 10;
+  background: linear-gradient(90deg, var(--border) 25%, var(--bg) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-card .skeleton-line {
+  height: 14px;
+  margin: 12px 16px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--border) 25%, var(--bg) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-card .skeleton-line.short {
+  width: 60%;
 }
 
 /* ==================== PAGINATION / LOAD MORE ==================== */
@@ -1114,6 +1253,7 @@ input, select, textarea {
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: fadeIn 0.2s ease;
 }
 
 .modal.hidden {
@@ -1123,19 +1263,21 @@ input, select, textarea {
 .modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
 }
 
 .modal-content {
   position: relative;
   background: var(--bg-panel);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   max-width: 600px;
   width: 90%;
   max-height: 90vh;
   overflow: hidden;
   box-shadow: var(--shadow-lg);
+  animation: popIn 0.35s var(--ease);
 }
 
 .modal-content.modal-large {
@@ -1220,7 +1362,7 @@ input, select, textarea {
 
 .modal-preview-frame {
   width: 100%;
-  height: 400px;
+  height: 500px;
   border: none;
   background: white;
 }
@@ -1265,7 +1407,8 @@ input, select, textarea {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-lg);
-  animation: slideIn 0.3s ease;
+  animation: slideIn 0.3s var(--ease);
+  backdrop-filter: blur(20px) saturate(180%);
 }
 
 @keyframes slideIn {
@@ -1340,8 +1483,8 @@ input, select, textarea {
 
 /* ==================== SCROLLBAR ==================== */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -1350,7 +1493,7 @@ input, select, textarea {
 
 ::-webkit-scrollbar-thumb {
   background: var(--border);
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -1645,21 +1788,49 @@ input, select, textarea {
 }
 
 .quiz-card {
+  --glow-x: 50%;
+  --glow-y: 50%;
+  --glow-op: 0;
   background: var(--bg-panel);
   border-radius: var(--radius);
   padding: 20px;
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: var(--transition);
+  transition: transform var(--speed) var(--ease-smooth), box-shadow var(--speed) ease, border-color var(--speed) ease;
   position: relative;
+  animation: popIn 0.4s var(--ease) backwards;
+}
+
+.quiz-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    600px circle at var(--glow-x) var(--glow-y),
+    rgba(59, 130, 246, 0.12),
+    transparent 40%
+  );
+  opacity: var(--glow-op);
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .quiz-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
-  border-color: var(--accent);
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(59, 130, 246, 0.3);
+  --glow-op: 1;
 }
+
+.quiz-card:nth-child(1) { animation-delay: 0.03s; }
+.quiz-card:nth-child(2) { animation-delay: 0.06s; }
+.quiz-card:nth-child(3) { animation-delay: 0.09s; }
+.quiz-card:nth-child(4) { animation-delay: 0.12s; }
+.quiz-card:nth-child(5) { animation-delay: 0.15s; }
+.quiz-card:nth-child(6) { animation-delay: 0.18s; }
 
 .quiz-card.selected {
   border-color: var(--accent);
@@ -2007,7 +2178,7 @@ input, select, textarea {
   border: 2px solid var(--border);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: var(--transition);
+  transition: var(--transition-bounce);
 }
 
 .quiz-option:hover {
@@ -2096,6 +2267,7 @@ input, select, textarea {
   border-radius: var(--radius);
   border: 1px solid var(--border);
   margin-bottom: 24px;
+  animation: popIn 0.4s var(--ease);
 }
 
 .results-icon {
