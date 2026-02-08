@@ -598,14 +598,11 @@ function handleHealth() {
 
 /**
  * Proxy the upstream /auth/login endpoint.
- * Gets the Google OAuth URL from the upstream, but rewrites the redirect_uri
- * to point to our own /auth/callback so we can intercept the token.
+ * Gets the Google OAuth URL from the upstream and redirects the user there
+ * WITHOUT modifying the redirect_uri (since only the upstream's callback is
+ * registered in Google's OAuth console).
  */
 async function handleAuthLoginProxy(request) {
-  const reqUrl = new URL(request.url);
-  const returnUrl = reqUrl.searchParams.get('return') || 'https://nagusamecs.github.io/OpenNotesAPI/auth.html';
-  const gatewayOrigin = reqUrl.origin; // e.g. https://opennotes-gateway.wkohara.workers.dev
-  
   try {
     const resp = await fetch(`${UPSTREAM_API}/auth/login`, {
       method: 'GET',
@@ -618,17 +615,10 @@ async function handleAuthLoginProxy(request) {
 
     if (resp.status === 302 || resp.status === 301) {
       const location = resp.headers.get('Location');
-      const googleUrl = new URL(location);
-      
-      // Rewrite redirect_uri to point to OUR gateway callback
-      googleUrl.searchParams.set('redirect_uri', gatewayOrigin + '/auth/callback');
-      
-      // Pack the return URL into state so we get it back from Google
-      googleUrl.searchParams.set('state', returnUrl);
-      
+      // Pass the Google OAuth URL through unchanged
       return new Response(null, {
         status: 302,
-        headers: { 'Location': googleUrl.toString(), ...corsHeaders },
+        headers: { 'Location': location, ...corsHeaders },
       });
     }
 
@@ -645,63 +635,17 @@ async function handleAuthLoginProxy(request) {
 }
 
 /**
- * Handle the OAuth callback from Google.
- * Gets the auth code from Google, forwards it to the upstream /auth/callback
- * (server-side) to exchange for a token, then redirects the browser to auth.html
- * with the token in the URL.
+ * Handle the OAuth callback — no longer used since we don't rewrite redirect_uri.
+ * Kept as a fallback that just returns helpful info.
  */
 async function handleAuthCallback(request) {
-  const url = new URL(request.url);
-  const code = url.searchParams.get('code') || '';
-  const returnUrl = url.searchParams.get('state') || 'https://nagusamecs.github.io/OpenNotesAPI/auth.html';
-  const error = url.searchParams.get('error');
-  
-  if (error) {
-    return new Response(null, {
-      status: 302,
-      headers: { 'Location': returnUrl + '?error=' + encodeURIComponent(error), ...corsHeaders },
-    });
-  }
-  
-  try {
-    // Forward the code to the upstream's callback (server-side fetch)
-    const upstreamUrl = `${UPSTREAM_API}/auth/callback?code=${encodeURIComponent(code)}`;
-    const resp = await fetch(upstreamUrl, {
-      method: 'GET',
-      headers: {
-        'Referer': 'https://opennotes.pages.dev/',
-        'User-Agent': request.headers.get('User-Agent') || 'Mozilla/5.0',
-      },
-      redirect: 'manual',
-    });
-    
-    // Upstream responds with a 302 to opennotes.pages.dev/?login_success=true&t=TOKEN
-    const location = resp.headers.get('Location') || '';
-    let token = '';
-    
-    if (location) {
-      try {
-        const locUrl = new URL(location);
-        token = locUrl.searchParams.get('t') || '';
-      } catch (e) { /* ignore */ }
-    }
-    
-    if (token) {
-      const redirectTarget = returnUrl + (returnUrl.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(token);
-      return new Response(null, { status: 302, headers: { 'Location': redirectTarget, ...corsHeaders } });
-    }
-    
-    // Fallback
-    return new Response(null, {
-      status: 302,
-      headers: { 'Location': returnUrl + '?error=no_token', ...corsHeaders },
-    });
-  } catch (e) {
-    return new Response(null, {
-      status: 302,
-      headers: { 'Location': returnUrl + '?error=' + encodeURIComponent(e.message), ...corsHeaders },
-    });
-  }
+  return new Response(JSON.stringify({
+    error: 'This endpoint is not used directly.',
+    message: 'OAuth callback is handled by the upstream at open-notes.tebby2008-li.workers.dev/auth/callback',
+  }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json', ...corsHeaders },
+  });
 }
 
 /**

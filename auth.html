@@ -97,19 +97,36 @@
 </head>
 <body>
   <div class="auth-container">
-    <img src="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/logo.svg" alt="OpenNotes" class="logo">
     <h1>Welcome to OpenNotes</h1>
     <p class="subtitle">Sign in to access your notes and sync across devices</p>
     
-    <button class="btn-google" id="google-signin-btn" onclick="startAuth()">
-      <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
-        <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
-        <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
-      </svg>
-      Sign in with Google
-    </button>
+    <div id="step-signin">
+      <button class="btn-google" id="google-signin-btn" onclick="startAuth()">
+        <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+          <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+          <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+        </svg>
+        Sign in with Google
+      </button>
+    </div>
+    
+    <div id="step-paste" style="display:none;">
+      <p style="color:#94a3b8;margin-bottom:16px;font-size:0.9rem;">
+        After signing in on the page that opened, <strong style="color:#e2e8f0;">copy the full URL</strong> from the address bar and paste it below.
+      </p>
+      <p style="color:#64748b;margin-bottom:16px;font-size:0.8rem;">
+        The URL will look like: opennotes.pages.dev/?login_success=true&t=...
+      </p>
+      <input type="text" id="token-input" placeholder="Paste URL or token here..." style="width:100%;padding:14px;border:1px solid rgba(255,255,255,0.15);border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;font-size:0.95rem;outline:none;margin-bottom:12px;">
+      <button onclick="submitToken()" style="width:100%;padding:14px;background:#3b82f6;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:1rem;transition:background 0.2s;">
+        Submit
+      </button>
+      <button onclick="startAuth()" style="margin-top:8px;width:100%;padding:10px;background:none;color:#64748b;border:1px solid rgba(255,255,255,0.1);border-radius:8px;cursor:pointer;font-size:0.85rem;">
+        Try again
+      </button>
+    </div>
     
     <div id="status" class="status"></div>
     
@@ -130,23 +147,70 @@
     
     let expiryTimer = null;
     let expiryTime = 0;
+    let authPopup = null;
+    let popupPollTimer = null;
     
-    // On page load, check if we're returning from OAuth with a token
-    async function checkCallback() {
-      const params = new URLSearchParams(window.location.search);
-      const token = params.get('token');
-      const error = params.get('error');
-      
-      if (error) {
-        showStatus('error', 'Sign in failed: ' + decodeURIComponent(error));
-        return;
+    // Listen for postMessage from opennotes.pages.dev (in case it sends token to opener)
+    window.addEventListener('message', function(event) {
+      // Accept messages from opennotes.pages.dev
+      if (event.origin && event.origin.includes('opennotes.pages.dev')) {
+        const data = event.data;
+        let token = null;
+        
+        if (typeof data === 'string' && data.includes('t=')) {
+          token = new URLSearchParams(data.split('?').pop()).get('t');
+        } else if (data && data.token) {
+          token = data.token;
+        } else if (data && data.t) {
+          token = data.t;
+        }
+        
+        if (token) {
+          if (authPopup && !authPopup.closed) authPopup.close();
+          clearInterval(popupPollTimer);
+          handleToken(token);
+        }
       }
-      
-      if (token) {
-        // Clean the URL
-        history.replaceState(null, '', window.location.pathname);
-        await generateCode(token);
-      }
+    });
+    
+    // Also try polling popup URL (works only if same-origin, which it won't be, but safely fails)
+    function startPopupPoll() {
+      if (popupPollTimer) clearInterval(popupPollTimer);
+      popupPollTimer = setInterval(() => {
+        if (!authPopup || authPopup.closed) {
+          clearInterval(popupPollTimer);
+          // Popup closed — show paste step if we haven't received token
+          if (!document.getElementById('code-box').classList.contains('visible')) {
+            showPasteStep();
+          }
+          return;
+        }
+        try {
+          const popupUrl = authPopup.location.href;
+          if (popupUrl && popupUrl.includes('login_success') && popupUrl.includes('t=')) {
+            const token = new URL(popupUrl).searchParams.get('t');
+            if (token) {
+              authPopup.close();
+              clearInterval(popupPollTimer);
+              handleToken(token);
+            }
+          }
+        } catch(e) {
+          // Cross-origin — expected, ignore
+        }
+      }, 500);
+    }
+    
+    function showPasteStep() {
+      document.getElementById('step-signin').style.display = 'none';
+      document.getElementById('step-paste').style.display = 'block';
+      document.getElementById('status').style.display = 'none';
+    }
+    
+    async function handleToken(token) {
+      document.getElementById('step-signin').style.display = 'none';
+      document.getElementById('step-paste').style.display = 'none';
+      await generateCode(token);
     }
     
     async function generateCode(token) {
@@ -173,7 +237,8 @@
     }
     
     function showCode(code, expiresIn) {
-      document.getElementById('google-signin-btn').style.display = 'none';
+      document.getElementById('step-signin').style.display = 'none';
+      document.getElementById('step-paste').style.display = 'none';
       document.getElementById('status').style.display = 'none';
       document.getElementById('code-box').classList.add('visible');
       document.getElementById('code-value').textContent = code;
@@ -206,11 +271,54 @@
     }
     
     function startAuth() {
-      showStatus('loading', 'Redirecting to Google Sign-In...');
-      // Redirect to gateway /auth/login which handles Google OAuth
-      // After sign-in, gateway redirects back here with ?token=...
-      const returnUrl = encodeURIComponent(window.location.origin + window.location.pathname);
-      window.location.href = GATEWAY_URL + '/auth/login?return=' + returnUrl;
+      showStatus('loading', 'Opening Google Sign-In...');
+      
+      // Open sign-in in a popup (goes through gateway → Google → upstream callback → opennotes.pages.dev)
+      const w = 500, h = 600;
+      const left = (screen.width - w) / 2;
+      const top = (screen.height - h) / 2;
+      authPopup = window.open(
+        GATEWAY_URL + '/auth/login',
+        'opennotes-auth',
+        `width=${w},height=${h},left=${left},top=${top},toolbar=no,menubar=no`
+      );
+      
+      startPopupPoll();
+      
+      // Show paste step after a delay (in case postMessage doesn't fire)
+      setTimeout(() => {
+        if (!document.getElementById('code-box').classList.contains('visible')) {
+          showPasteStep();
+        }
+      }, 5000);
+    }
+    
+    function submitToken() {
+      const input = document.getElementById('token-input').value.trim();
+      if (!input) {
+        showStatus('error', 'Please paste the URL or token');
+        return;
+      }
+      
+      let token = input;
+      
+      // Extract token from pasted URL
+      if (input.includes('t=')) {
+        try {
+          const url = new URL(input.startsWith('http') ? input : 'https://' + input);
+          token = url.searchParams.get('t') || input;
+        } catch(e) {
+          // Try extracting from query string directly
+          const match = input.match(/[?&]t=([^&]+)/);
+          if (match) token = decodeURIComponent(match[1]);
+        }
+      }
+      
+      if (token) {
+        handleToken(token);
+      } else {
+        showStatus('error', 'Could not find a token in the pasted URL');
+      }
     }
     
     function copyCode() {
@@ -241,7 +349,15 @@
       });
     }
     
-    checkCallback();
+    // Check for token in URL (legacy support)
+    (function checkCallback() {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('token') || params.get('t');
+      if (token) {
+        history.replaceState(null, '', window.location.pathname);
+        handleToken(token);
+      }
+    })();
   </script>
 </body>
 </html>
