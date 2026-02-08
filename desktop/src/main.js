@@ -749,12 +749,14 @@ async function loadNotes(reset = true) {
     state.allNotes = [];
     state.hasMore = true;
     if (container) {
-      container.innerHTML = `
-        <div class="loading-state">
-          <div class="spinner"></div>
-          <p>Loading notes...</p>
+      // Show skeleton cards while loading
+      container.innerHTML = Array.from({ length: 8 }, (_, i) => `
+        <div class="skeleton-card" style="animation-delay: ${i * 0.05}s">
+          <div class="skeleton-thumb"></div>
+          <div class="skeleton-line" style="width: 80%"></div>
+          <div class="skeleton-line short" style="width: 50%"></div>
         </div>
-      `;
+      `).join('');
     }
   }
   
@@ -910,7 +912,16 @@ async function openNoteModal(noteId) {
   // Load document preview
   const previewFrame = document.getElementById('modal-preview-frame');
   const fallback = document.getElementById('modal-preview-fallback');
+  const viewerLoading = document.getElementById('viewer-loading');
   const previewUrl = note.dl;
+  
+  // Show loading state
+  if (viewerLoading) viewerLoading.classList.remove('hidden');
+  
+  // Hide loading when iframe loads
+  previewFrame.onload = () => {
+    if (viewerLoading) viewerLoading.classList.add('hidden');
+  };
   
   if (previewUrl) {
     const lowerName = note.name.toLowerCase();
@@ -1373,20 +1384,24 @@ function showToast(message, type = 'info') {
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
   toast.innerHTML = `
-    <span class="material-symbols-rounded">${
+    <span class="material-symbols-rounded toast-icon">${
       type === 'success' ? 'check_circle' :
       type === 'error' ? 'error' :
       'info'
     }</span>
-    <span>${escapeHtml(message)}</span>
+    <span class="toast-message">${escapeHtml(message)}</span>
+    <button class="toast-close"><span class="material-symbols-rounded" style="font-size:16px;">close</span></button>
   `;
   
-  container.appendChild(toast);
-  
-  setTimeout(() => {
+  const dismiss = () => {
     toast.style.animation = 'slideIn 0.3s ease reverse';
     setTimeout(() => toast.remove(), 300);
-  }, 3000);
+  };
+  
+  toast.querySelector('.toast-close').addEventListener('click', dismiss);
+  container.appendChild(toast);
+  
+  setTimeout(dismiss, 3000);
 }
 
 // ==================== THEME ====================
@@ -1648,6 +1663,33 @@ async function init() {
       e.preventDefault();
       toggleDevConsole();
     }
+    // Cmd/Ctrl + K to focus search
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      const searchInput = document.getElementById('search-input');
+      if (searchInput) {
+        searchInput.focus();
+        searchInput.select();
+      }
+    }
+    // Quiz keyboard shortcuts (only when taking a quiz)
+    if (state.activeView === 'quiz-take' && quizState.currentQuiz) {
+      const question = quizState.currentQuiz.questions[quizState.currentQuestionIndex];
+      // Arrow keys for navigation
+      if (e.key === 'ArrowLeft' && !e.metaKey && !e.ctrlKey) {
+        navigateQuiz(-1);
+      }
+      if (e.key === 'ArrowRight' && !e.metaKey && !e.ctrlKey) {
+        navigateQuiz(1);
+      }
+      // Number keys 1-9 to select MCQ options
+      if (question?.type === 'mcq' && /^[1-9]$/.test(e.key)) {
+        const idx = parseInt(e.key) - 1;
+        if (question.options && idx < question.options.length) {
+          selectMCQOption(question.id, idx, question.correctAnswers.length > 1);
+        }
+      }
+    }
   });
   
   // Load initial data
@@ -1721,6 +1763,9 @@ const quizState = {
   currentQuestionIndex: 0,
   answers: {},
   creatorQuestions: [],
+  timerInterval: null,
+  timerSeconds: 0,
+  reviewMode: false,
 };
 
 // Quiz API Client
@@ -1900,6 +1945,19 @@ async function startQuiz(quizId) {
     quizState.currentQuestionIndex = 0;
     quizState.answers = {};
     
+    // Start timer
+    quizState.timerSeconds = 0;
+    clearInterval(quizState.timerInterval);
+    quizState.timerInterval = setInterval(() => {
+      quizState.timerSeconds++;
+      const timerEl = document.getElementById('quiz-timer');
+      if (timerEl) {
+        const mins = Math.floor(quizState.timerSeconds / 60);
+        const secs = quizState.timerSeconds % 60;
+        timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+      }
+    }, 1000);
+    
     showView('quiz-take');
     renderQuizQuestion();
   } catch (e) {
@@ -1922,6 +1980,19 @@ async function shuffleAndStartQuizzes() {
     quizState.answers = {};
     quizState.selectedQuizIds.clear();
     
+    // Start timer
+    quizState.timerSeconds = 0;
+    clearInterval(quizState.timerInterval);
+    quizState.timerInterval = setInterval(() => {
+      quizState.timerSeconds++;
+      const timerEl = document.getElementById('quiz-timer');
+      if (timerEl) {
+        const mins = Math.floor(quizState.timerSeconds / 60);
+        const secs = quizState.timerSeconds % 60;
+        timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+      }
+    }, 1000);
+    
     showView('quiz-take');
     renderQuizQuestion();
   } catch (e) {
@@ -1936,6 +2007,8 @@ function renderQuizQuestion() {
   const prevBtn = document.getElementById('quiz-prev-btn');
   const nextBtn = document.getElementById('quiz-next-btn');
   const submitBtn = document.getElementById('quiz-submit-btn');
+  const progressFill = document.getElementById('quiz-progress-fill');
+  const dotsContainer = document.getElementById('quiz-dots');
   
   if (!container || !quizState.currentQuiz) return;
   
@@ -1947,49 +2020,106 @@ function renderQuizQuestion() {
   titleEl.textContent = quiz.title;
   progressEl.textContent = `Question ${currentNum} of ${totalQuestions}`;
   
+  // Update progress bar
+  if (progressFill) {
+    progressFill.style.width = `${(currentNum / totalQuestions) * 100}%`;
+  }
+  
+  // Update question dots
+  if (dotsContainer) {
+    dotsContainer.innerHTML = quiz.questions.map((q, i) => {
+      const isCurrent = i === quizState.currentQuestionIndex;
+      const isAnswered = quizState.answers[q.id] !== undefined && 
+        (Array.isArray(quizState.answers[q.id]) ? quizState.answers[q.id].length > 0 : quizState.answers[q.id] !== '');
+      return `<button class="quiz-dot ${isCurrent ? 'current' : ''} ${isAnswered ? 'answered' : ''}" 
+        data-index="${i}" title="Question ${i + 1}"></button>`;
+    }).join('');
+    
+    dotsContainer.querySelectorAll('.quiz-dot').forEach(dot => {
+      dot.addEventListener('click', () => {
+        quizState.currentQuestionIndex = parseInt(dot.dataset.index);
+        renderQuizQuestion();
+      });
+    });
+  }
+  
   // Update navigation buttons
   prevBtn.disabled = quizState.currentQuestionIndex === 0;
   nextBtn.classList.toggle('hidden', quizState.currentQuestionIndex === totalQuestions - 1);
-  submitBtn.classList.toggle('hidden', quizState.currentQuestionIndex !== totalQuestions - 1);
+  submitBtn.classList.toggle('hidden', quizState.currentQuestionIndex !== totalQuestions - 1 || quizState.reviewMode);
+  
+  // Hide submit in review mode, show "Back to Results" instead
+  if (quizState.reviewMode) {
+    nextBtn.classList.toggle('hidden', quizState.currentQuestionIndex === totalQuestions - 1);
+    if (quizState.currentQuestionIndex === totalQuestions - 1) {
+      submitBtn.classList.remove('hidden');
+      submitBtn.innerHTML = '<span class="material-symbols-rounded">arrow_back</span> Back to Results';
+      submitBtn.onclick = () => { quizState.reviewMode = false; showView('quiz-results'); };
+    }
+  }
   
   // Get current answer
   const currentAnswer = quizState.answers[question.id];
+  const isReview = quizState.reviewMode;
   
   if (question.type === 'mcq') {
     container.innerHTML = `
       <div class="quiz-question-text">${renderLatex(question.question)}</div>
       <div class="quiz-options">
-        ${question.options.map((opt, i) => `
-          <div class="quiz-option ${currentAnswer?.includes(i) ? 'selected' : ''}" data-index="${i}">
+        ${question.options.map((opt, i) => {
+          const isSelected = currentAnswer?.includes(i);
+          const isCorrect = question.correctAnswers.includes(i);
+          let classes = 'quiz-option';
+          if (isReview) {
+            if (isCorrect) classes += ' correct';
+            else if (isSelected && !isCorrect) classes += ' incorrect';
+          } else {
+            if (isSelected) classes += ' selected';
+          }
+          return `
+          <div class="${classes}" data-index="${i}">
             <div class="quiz-option-marker">
-              <span class="material-symbols-rounded" style="font-size:14px;">check</span>
+              <span class="material-symbols-rounded" style="font-size:14px;">${isReview ? (isCorrect ? 'check' : (isSelected ? 'close' : '')) : 'check'}</span>
             </div>
             <div class="quiz-option-text">${renderLatex(opt)}</div>
-          </div>
-        `).join('')}
+          </div>`;
+        }).join('')}
       </div>
-      ${question.correctAnswers.length > 1 ? '<p style="margin-top:12px;font-size:0.85rem;color:var(--text-muted);">Select all that apply</p>' : ''}
+      ${!isReview && question.correctAnswers.length > 1 ? '<p style="margin-top:12px;font-size:0.85rem;color:var(--text-muted);">Select all that apply</p>' : ''}
+      ${isReview && question.explanation ? `<div class="quiz-explanation"><span class="material-symbols-rounded">lightbulb</span> ${renderLatex(question.explanation)}</div>` : ''}
     `;
     
-    // Add click handlers
-    container.querySelectorAll('.quiz-option').forEach(opt => {
-      opt.addEventListener('click', () => {
-        const idx = parseInt(opt.dataset.index);
-        selectMCQOption(question.id, idx, question.correctAnswers.length > 1);
+    // Add click handlers (only if not in review mode)
+    if (!isReview) {
+      container.querySelectorAll('.quiz-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+          const idx = parseInt(opt.dataset.index);
+          selectMCQOption(question.id, idx, question.correctAnswers.length > 1);
+        });
       });
-    });
+    }
   } else if (question.type === 'frq') {
+    const userAnswer = currentAnswer || '';
+    const isCorrectFRQ = isReview && question.correctAnswers.some(a => 
+      a.toLowerCase().trim() === userAnswer.toLowerCase().trim()
+    );
+    
     container.innerHTML = `
       <div class="quiz-question-text">${renderLatex(question.question)}</div>
-      <input type="text" class="quiz-frq-input" placeholder="Enter your answer..." value="${currentAnswer || ''}">
-      <p style="margin-top:8px;font-size:0.85rem;color:var(--text-muted);">Type your answer and press Next</p>
+      <input type="text" class="quiz-frq-input ${isReview ? (isCorrectFRQ ? 'correct' : 'incorrect') : ''}" 
+        placeholder="Enter your answer..." value="${userAnswer}" ${isReview ? 'disabled' : ''}>
+      ${!isReview ? '<p style="margin-top:8px;font-size:0.85rem;color:var(--text-muted);">Type your answer and press Next</p>' : ''}
+      ${isReview ? `<p style="margin-top:8px;font-size:0.85rem;color:var(--text-muted);">Accepted: ${question.correctAnswers.join(', ')}</p>` : ''}
+      ${isReview && question.explanation ? `<div class="quiz-explanation"><span class="material-symbols-rounded">lightbulb</span> ${renderLatex(question.explanation)}</div>` : ''}
     `;
     
-    const input = container.querySelector('.quiz-frq-input');
-    input.addEventListener('input', (e) => {
-      quizState.answers[question.id] = e.target.value;
-    });
-    input.focus();
+    if (!isReview) {
+      const input = container.querySelector('.quiz-frq-input');
+      input.addEventListener('input', (e) => {
+        quizState.answers[question.id] = e.target.value;
+      });
+      input.focus();
+    }
   }
 }
 
@@ -2027,6 +2157,12 @@ function submitQuiz() {
   let correct = 0;
   const breakdown = [];
   
+  // Stop timer
+  clearInterval(quizState.timerInterval);
+  const totalTime = quizState.timerSeconds;
+  const mins = Math.floor(totalTime / 60);
+  const secs = totalTime % 60;
+  
   quiz.questions.forEach(question => {
     const userAnswer = quizState.answers[question.id];
     let isCorrect = false;
@@ -2059,6 +2195,12 @@ function submitQuiz() {
   document.getElementById('results-correct').textContent = correct;
   document.getElementById('results-total').textContent = quiz.questions.length;
   document.getElementById('results-percent').textContent = Math.round((correct / quiz.questions.length) * 100) + '%';
+  
+  // Show time taken
+  const timeEl = document.getElementById('results-time');
+  if (timeEl) {
+    timeEl.textContent = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+  }
   
   const breakdownEl = document.getElementById('results-breakdown');
   breakdownEl.innerHTML = breakdown.map((item, i) => `
@@ -2372,12 +2514,37 @@ function initQuizListeners() {
   document.getElementById('quiz-prev-btn')?.addEventListener('click', () => navigateQuiz(-1));
   document.getElementById('quiz-next-btn')?.addEventListener('click', () => navigateQuiz(1));
   document.getElementById('quiz-submit-btn')?.addEventListener('click', submitQuiz);
-  document.getElementById('quit-quiz-btn')?.addEventListener('click', () => showView('quiz-browse'));
+  document.getElementById('quit-quiz-btn')?.addEventListener('click', () => {
+    clearInterval(quizState.timerInterval);
+    quizState.reviewMode = false;
+    showView('quiz-browse');
+  });
   
   // Quiz results
   document.getElementById('retake-quiz-btn')?.addEventListener('click', () => {
     quizState.currentQuestionIndex = 0;
     quizState.answers = {};
+    quizState.reviewMode = false;
+    
+    // Restart timer
+    quizState.timerSeconds = 0;
+    clearInterval(quizState.timerInterval);
+    quizState.timerInterval = setInterval(() => {
+      quizState.timerSeconds++;
+      const timerEl = document.getElementById('quiz-timer');
+      if (timerEl) {
+        const mins = Math.floor(quizState.timerSeconds / 60);
+        const secs = quizState.timerSeconds % 60;
+        timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+      }
+    }, 1000);
+    
+    showView('quiz-take');
+    renderQuizQuestion();
+  });
+  document.getElementById('review-quiz-btn')?.addEventListener('click', () => {
+    quizState.reviewMode = true;
+    quizState.currentQuestionIndex = 0;
     showView('quiz-take');
     renderQuizQuestion();
   });

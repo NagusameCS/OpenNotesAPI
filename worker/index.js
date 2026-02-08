@@ -499,6 +499,7 @@ function handleOptions() {
  * Proxy request to OpenNotes API
  */
 async function proxyToOpenNotes(request, env, appId) {
+  const startTime = Date.now();
   const url = new URL(request.url);
   const targetUrl = new URL(OPENNOTES_API);
   
@@ -521,24 +522,36 @@ async function proxyToOpenNotes(request, env, appId) {
   try {
     const response = await fetch(proxyRequest);
     const data = await response.text();
+    const duration = Date.now() - startTime;
+    
+    // Determine cache strategy based on request type
+    const isListRequest = url.searchParams.get('type') === 'list';
+    const cacheControl = request.method === 'GET' 
+      ? (isListRequest ? 'public, max-age=60, stale-while-revalidate=120' : 'public, max-age=300, stale-while-revalidate=600')
+      : 'no-store';
     
     return new Response(data, {
       status: response.status,
       headers: {
         'Content-Type': 'application/json',
+        'Cache-Control': cacheControl,
         ...corsHeaders,
         ...securityHeaders(),
         'X-App-Id': appId,
+        'X-Response-Time': `${duration}ms`,
         'X-Powered-By': 'OpenNotesAPI Gateway',
       },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Upstream API error' }), {
+    const duration = Date.now() - startTime;
+    return new Response(JSON.stringify({ error: 'Upstream API error', message: 'The upstream service is temporarily unavailable' }), {
       status: 502,
       headers: {
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-store',
         ...corsHeaders,
         ...securityHeaders(),
+        'X-Response-Time': `${duration}ms`,
       },
     });
   }
@@ -550,7 +563,7 @@ async function proxyToOpenNotes(request, env, appId) {
 function handleApiInfo() {
   return new Response(JSON.stringify({
     name: 'OpenNotes API Gateway',
-    version: '1.1.0',
+    version: '1.2.0',
     status: 'operational',
     endpoints: {
       '/': 'API info',
@@ -586,10 +599,13 @@ function handleHealth() {
   return new Response(JSON.stringify({
     status: 'healthy',
     timestamp: new Date().toISOString(),
+    uptime: 'ok',
+    quizCount: quizStore.size,
   }), {
     status: 200,
     headers: {
       'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache',
       ...corsHeaders,
       ...securityHeaders(),
     },
@@ -821,7 +837,7 @@ async function handleListQuizzes(request, env) {
     filters: Object.fromEntries(Object.entries(filters).filter(([k, v]) => v)),
   }), {
     status: 200,
-    headers: { 'Content-Type': 'application/json', ...corsHeaders, ...securityHeaders() },
+    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=30, stale-while-revalidate=60', ...corsHeaders, ...securityHeaders() },
   });
 }
 

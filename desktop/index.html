@@ -460,13 +460,24 @@
             <div class="quiz-header">
               <div class="quiz-info">
                 <h2 id="quiz-player-title">Quiz Title</h2>
-                <span id="quiz-player-progress" class="quiz-progress">Question 1 of 10</span>
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <span id="quiz-player-progress" class="quiz-progress">Question 1 of 10</span>
+                  <span id="quiz-timer" class="quiz-timer"></span>
+                </div>
               </div>
               <button class="btn btn-text" id="quit-quiz-btn">
                 <span class="material-symbols-rounded">close</span>
                 Quit
               </button>
             </div>
+            
+            <!-- Progress bar -->
+            <div class="quiz-progress-bar">
+              <div id="quiz-progress-fill" class="quiz-progress-fill" style="width:0%"></div>
+            </div>
+            
+            <!-- Question dots navigation -->
+            <div id="quiz-dots" class="quiz-dots"></div>
             
             <div class="quiz-question-container" id="quiz-question-container">
               <!-- Question content rendered here -->
@@ -501,6 +512,7 @@
                 <span id="results-total">0</span>
               </div>
               <span id="results-percent" class="results-percent">0%</span>
+              <div id="results-time" class="results-time"></div>
             </div>
             
             <div id="results-breakdown" class="results-breakdown">
@@ -545,6 +557,10 @@
     </button>
     <div class="viewer-panel">
       <div class="viewer-left">
+        <div id="viewer-loading" class="viewer-loading">
+          <div class="spinner"></div>
+          <p>Loading document preview...</p>
+        </div>
         <iframe id="modal-preview-frame" class="viewer-docframe"></iframe>
         <div id="modal-preview-fallback" class="viewer-fallback hidden">
           <span class="material-symbols-rounded">description</span>
