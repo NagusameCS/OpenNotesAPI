@@ -27,39 +27,6 @@
   <link rel="stylesheet" href="/src/styles/main.css">
 </head>
 <body>
-  <!-- Google Sign-in Modal -->
-  <div id="auth-modal" class="modal">
-    <div class="modal-backdrop"></div>
-    <div class="modal-content auth-modal-content">
-      <div class="auth-modal-body">
-        <img src="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/logo.svg" alt="OpenNotes" class="auth-logo">
-        <h2>Welcome to OpenNotes</h2>
-        <p class="auth-subtitle">Sign in to access your notes and sync across devices</p>
-        <button class="btn btn-google" id="google-signin-btn">
-          <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-            <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
-            <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
-            <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-            <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
-          </svg>
-          Sign in with Google
-        </button>
-        <p class="auth-hint" style="margin-top: 16px; font-size: 0.8rem; color: var(--text-muted);">
-          After signing in, copy the token and paste below
-        </p>
-        <div class="token-entry" style="margin-top: 16px;">
-          <input type="text" id="auth-token-input" placeholder="Paste your auth token here..." style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: var(--bg); color: var(--text);">
-          <button class="btn btn-primary" id="submit-token-btn" style="margin-top: 8px; width: 100%; padding: 12px; background: var(--accent); color: white; border-radius: 8px; font-weight: 500;">
-            Submit Token
-          </button>
-        </div>
-        <button class="btn btn-text" id="skip-auth-btn" style="margin-top: 24px; color: var(--text-muted); font-size: 0.9rem;">
-          Skip for now
-        </button>
-      </div>
-    </div>
-  </div>
-
   <div id="app">
     <!-- Sidebar -->
     <aside id="sidebar" class="sidebar">
@@ -90,7 +57,7 @@
             <span class="material-symbols-rounded">edit_note</span>
             New Document
           </a>
-          <a href="#" class="nav-item" data-view="upload">
+          <a href="#" class="nav-item" data-view="upload" id="nav-upload">
             <span class="material-symbols-rounded">upload_file</span>
             Upload Notes
           </a>
@@ -122,17 +89,6 @@
       </nav>
       
       <div class="sidebar-footer">
-        <!-- User Profile (shown after sign-in) -->
-        <div id="user-profile" class="user-profile hidden">
-          <img id="user-avatar" src="" alt="" class="user-avatar">
-          <div class="user-info">
-            <span id="user-name" class="user-name">User</span>
-            <button id="logout-btn" class="logout-btn">
-              <span class="material-symbols-rounded">logout</span>
-              Sign out
-            </button>
-          </div>
-        </div>
         <div class="storage-indicator">
           <div class="storage-bar">
             <div class="storage-used" id="storage-used-bar"></div>
@@ -298,58 +254,36 @@
               <span id="word-count">0 words</span>
               <div class="editor-actions">
                 <button class="btn btn-secondary" id="save-draft">Save Draft</button>
-                <button class="btn btn-primary" id="submit-for-review">
-                  <span class="material-symbols-rounded">send</span>
-                  Submit for Review
-                </button>
                 <button class="btn btn-secondary" id="export-doc">Export</button>
               </div>
             </div>
           </div>
         </section>
         
-        <!-- Upload View -->
+        <!-- Upload View (redirects to web client) -->
         <section id="view-upload" class="view">
-          <div class="upload-container">
-            <div class="upload-zone" id="upload-zone">
-              <span class="material-symbols-rounded upload-icon">cloud_upload</span>
-              <h3>Drop files here or click to upload</h3>
-              <p>Supported formats: PDF, DOCX, PPTX, XLSX</p>
-              <input type="file" id="file-input" multiple accept=".pdf,.docx,.doc,.pptx,.ppt,.xlsx,.xls" hidden>
-            </div>
-            
-            <div id="upload-queue" class="upload-queue"></div>
-            
-            <div class="upload-form" id="upload-form" style="display: none;">
-              <div class="form-group">
-                <label for="upload-author">Author Name</label>
-                <input type="text" id="upload-author" placeholder="Your name">
-              </div>
-              <div class="form-group">
-                <label for="upload-category">Category</label>
-                <select id="upload-category">
-                  <option value="">Select category...</option>
-                  <option value="science">Science</option>
-                  <option value="math">Mathematics</option>
-                  <option value="history">History</option>
-                  <option value="literature">Literature</option>
-                  <option value="technology">Technology</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <button class="btn btn-primary" id="submit-upload">Submit for Review</button>
-            </div>
+          <div class="empty-state">
+            <span class="material-symbols-rounded">cloud_upload</span>
+            <h3>Upload via Web Client</h3>
+            <p>Note uploads are handled through the OpenNotes web client</p>
+            <button class="btn btn-primary" id="open-web-upload" style="margin-top: 16px;">
+              <span class="material-symbols-rounded">open_in_new</span>
+              Open Web Client
+            </button>
           </div>
         </section>
         
-        <!-- My Uploads View -->
+        <!-- My Uploads View (redirects to web client) -->
         <section id="view-my-uploads" class="view">
-          <div class="empty-state" id="uploads-empty">
-            <span class="material-symbols-rounded">folder_off</span>
-            <h3>No uploads yet</h3>
-            <p>Upload notes to see them here</p>
+          <div class="empty-state">
+            <span class="material-symbols-rounded">cloud_upload</span>
+            <h3>Manage Uploads on the Web</h3>
+            <p>View and manage your uploads through the OpenNotes web client</p>
+            <button class="btn btn-primary" id="open-web-uploads" style="margin-top: 16px;">
+              <span class="material-symbols-rounded">open_in_new</span>
+              Open Web Client
+            </button>
           </div>
-          <div id="my-uploads-grid" class="notes-grid"></div>
         </section>
         
         <!-- Storage View -->

@@ -95,12 +95,9 @@ window.toggleDevConsole = function() {
 // ==================== CONFIGURATION ====================
 const CONFIG = {
   API_BASE: 'https://open-notes.tebby2008-li.workers.dev',
-  AUTH_URL: 'https://nagusamecs.github.io/OpenNotesAPI/auth.html',
-  SUBMIT_URL: 'https://open-notes.tebby2008-li.workers.dev/upload/submit',
   NOTES_RAW_BASE: 'https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes',
   FALLBACK_THUMBNAIL: 'https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/fallback.svg',
   GATEWAY_URL: 'https://opennotes-gateway.wkohara.workers.dev',
-  DESKTOP_APP_SECRET: 'opennotes-desktop-v1',
   APP_TOKEN: '', // Set via secrets
   STORAGE_KEY: 'opennotes_desktop',
   MAX_STORAGE_MB: 500,
@@ -211,8 +208,6 @@ const state = {
   currentNote: null,
   isDarkMode: false,
   storageUsed: 0,
-  isAuthenticated: false,
-  user: null,
 };
 
 // ==================== API CLIENT ====================
@@ -1058,6 +1053,8 @@ function openOfflineNote(name) {
 
 // ==================== VIEW SWITCHING ====================
 function switchView(viewId) {
+  // Upload and My Uploads just show their placeholder views (with "Open Web Client" button)
+  
   // Update nav items
   document.querySelectorAll('.nav-item').forEach(item => {
     item.classList.toggle('active', item.dataset.view === viewId);
@@ -1153,9 +1150,9 @@ const editor = {
       this.exportDocument();
     });
     
-    // Upload to OpenNotes
+    // Upload to OpenNotes (opens web client)
     document.getElementById('upload-doc')?.addEventListener('click', () => {
-      this.uploadDocument();
+      openWebClient();
     });
     
     // Load saved draft
@@ -1310,111 +1307,7 @@ const editor = {
   },
   
   uploadDocument() {
-    const title = document.getElementById('doc-title').value || 'Untitled';
-    const content = document.getElementById('editor').innerHTML;
-    
-    // Create HTML file from editor content
-    const html = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>${escapeHtml(title)}</title>
-  <style>
-    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; line-height: 1.6; }
-    h1 { font-size: 2rem; }
-    h2 { font-size: 1.5rem; }
-    h3 { font-size: 1.25rem; }
-    pre { background: #f5f5f5; padding: 16px; border-radius: 8px; overflow-x: auto; }
-    code { font-family: monospace; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-  </style>
-</head>
-<body>
-  <h1>${escapeHtml(title)}</h1>
-  ${content}
-</body>
-</html>`;
-    
-    // Create a File object
-    const blob = new Blob([html], { type: 'text/html' });
-    const file = new File([blob], `${title}.html`, { type: 'text/html' });
-    
-    // Switch to upload view and add the file to queue
-    switchView('upload');
-    
-    // Use the uploader to handle the file
-    setTimeout(() => {
-      uploader.handleFiles([file]);
-      
-      // Pre-fill the form with document info
-      const titleInput = document.querySelector('#upload-form input[name="title"]');
-      if (titleInput) titleInput.value = title;
-      
-      showToast('Document added to upload queue', 'success');
-    }, 100);
-  },
-};
-
-// ==================== UPLOAD ====================
-const uploader = {
-  init() {
-    const zone = document.getElementById('upload-zone');
-    const fileInput = document.getElementById('file-input');
-    
-    if (!zone || !fileInput) return;
-    
-    zone.addEventListener('click', () => fileInput.click());
-    
-    zone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      zone.classList.add('dragover');
-    });
-    
-    zone.addEventListener('dragleave', () => {
-      zone.classList.remove('dragover');
-    });
-    
-    zone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      zone.classList.remove('dragover');
-      this.handleFiles(e.dataTransfer.files);
-    });
-    
-    fileInput.addEventListener('change', () => {
-      this.handleFiles(fileInput.files);
-    });
-  },
-  
-  handleFiles(files) {
-    const queue = document.getElementById('upload-queue');
-    const form = document.getElementById('upload-form');
-    
-    if (!files.length) return;
-    
-    Array.from(files).forEach(file => {
-      const item = document.createElement('div');
-      item.className = 'upload-item';
-      item.innerHTML = `
-        <span class="material-symbols-rounded">description</span>
-        <div class="upload-item-info">
-          <div class="upload-item-name">${escapeHtml(file.name)}</div>
-          <div class="upload-item-size">${formatBytes(file.size)}</div>
-          <div class="upload-progress">
-            <div class="upload-progress-bar" style="width: 0%"></div>
-          </div>
-        </div>
-        <button class="icon-btn" onclick="this.closest('.upload-item').remove()">
-          <span class="material-symbols-rounded">close</span>
-        </button>
-      `;
-      queue.appendChild(item);
-    });
-    
-    if (form) form.style.display = 'block';
-    
-    showToast(`${files.length} file(s) added`, 'info');
+    openWebClient();
   },
 };
 
@@ -1510,159 +1403,6 @@ function initSearch() {
   });
 }
 
-// ==================== AUTHENTICATION ====================
-function checkAuth() {
-  const token = localStorage.getItem('auth_token_fallback');
-  const userStr = localStorage.getItem('opennotes_user');
-  
-  if (token && userStr) {
-    try {
-      state.user = JSON.parse(userStr);
-      state.isAuthenticated = true;
-      updateUserProfile();
-      return true;
-    } catch (e) {
-      console.error('[AUTH] Failed to parse user data:', e);
-    }
-  }
-  return false;
-}
-
-function showAuthModal() {
-  const modal = document.getElementById('auth-modal');
-  if (modal) modal.classList.remove('hidden');
-}
-
-function hideAuthModal() {
-  const modal = document.getElementById('auth-modal');
-  if (modal) modal.classList.add('hidden');
-}
-
-async function handleGoogleSignIn() {
-  try {
-    console.log('[AUTH] Starting Google Sign In...');
-    
-    // For Tauri, use shell plugin to open in system browser
-    if (window.__TAURI__) {
-      try {
-        const { open } = await import('@tauri-apps/plugin-shell');
-        console.log('[AUTH] Opening auth URL in system browser via Tauri shell');
-        await open(CONFIG.AUTH_URL);
-        
-        // Show a message that auth will complete in browser
-        showToast('Complete sign-in in your browser', 'info');
-        
-        // Poll for auth completion (browser will set localStorage via callback page)
-        const pollAuth = setInterval(() => {
-          if (checkAuth()) {
-            clearInterval(pollAuth);
-            hideAuthModal();
-            showToast('Successfully signed in!', 'success');
-          }
-        }, 1000);
-        
-        // Stop polling after 5 minutes
-        setTimeout(() => {
-          clearInterval(pollAuth);
-        }, 300000);
-        
-        return;
-      } catch (shellErr) {
-        console.warn('[AUTH] Tauri shell not available, falling back to window.open:', shellErr);
-      }
-    }
-    
-    // Fallback for browser environment
-    const authWindow = window.open(CONFIG.AUTH_URL, 'Google Sign In', 'width=500,height=600');
-    
-    // Listen for the auth callback via postMessage
-    const handleMessage = (event) => {
-      console.log('[AUTH] Received message:', event.origin);
-      
-      // Validate origin
-      if (!event.origin.includes('tebby2008-li.workers.dev') && !event.origin.includes('localhost')) {
-        return;
-      }
-      
-      const { token, user } = event.data;
-      if (token) {
-        localStorage.setItem('auth_token_fallback', token);
-        if (user) {
-          localStorage.setItem('opennotes_user', JSON.stringify(user));
-          state.user = user;
-        }
-        state.isAuthenticated = true;
-        updateUserProfile();
-        hideAuthModal();
-        showToast('Successfully signed in!', 'success');
-        window.removeEventListener('message', handleMessage);
-      }
-    };
-    
-    window.addEventListener('message', handleMessage);
-    
-    // Fallback: Check for token via polling
-    const checkForToken = setInterval(() => {
-      try {
-        if (authWindow && authWindow.closed) {
-          clearInterval(checkForToken);
-          // Check localStorage in case callback already set it
-          if (checkAuth()) {
-            hideAuthModal();
-          }
-        }
-      } catch (e) {
-        // Cross-origin access error - window is on different domain
-      }
-    }, 500);
-    
-    // Timeout after 5 minutes
-    setTimeout(() => {
-      clearInterval(checkForToken);
-      window.removeEventListener('message', handleMessage);
-    }, 300000);
-    
-  } catch (error) {
-    console.error('[AUTH] Sign in error:', error);
-    showToast('Sign in failed. Please try again.', 'error');
-  }
-}
-
-function handleLogout() {
-  localStorage.removeItem('auth_token_fallback');
-  localStorage.removeItem('opennotes_user');
-  state.isAuthenticated = false;
-  state.user = null;
-  updateUserProfile();
-  showToast('Signed out successfully', 'info');
-  showAuthModal();
-}
-
-function updateUserProfile() {
-  const profileEl = document.getElementById('user-profile');
-  const avatarEl = document.getElementById('user-avatar');
-  const nameEl = document.getElementById('user-name');
-  
-  if (!profileEl) return;
-  
-  if (state.isAuthenticated && state.user) {
-    profileEl.classList.remove('hidden');
-    if (avatarEl) avatarEl.src = state.user.picture || state.user.avatar || '';
-    if (nameEl) nameEl.textContent = state.user.name || state.user.email || 'User';
-  } else {
-    profileEl.classList.add('hidden');
-  }
-}
-
-function requireAuth(action) {
-  if (!state.isAuthenticated) {
-    showToast('Please sign in to ' + action, 'info');
-    showAuthModal();
-    return false;
-  }
-  return true;
-}
-
 // ==================== CONTENT PREVIEW ====================
 async function fetchNoteContent(filename) {
   const contentUrl = `${CONFIG.NOTES_RAW_BASE}/${encodeURIComponent(filename)}`;
@@ -1720,49 +1460,18 @@ async function refreshNotes() {
   showToast('Notes refreshed', 'success');
 }
 
-// ==================== SUBMIT FOR REVIEW ====================
-async function submitForReview() {
-  if (!requireAuth('submit documents for review')) return;
-  
-  const title = document.getElementById('doc-title').value || 'Untitled';
-  const content = document.getElementById('editor').innerHTML;
-  
-  if (!content || content.trim() === '' || content === '<p>Start typing your document...</p>') {
-    showToast('Please write some content before submitting', 'error');
-    return;
-  }
-  
+// ==================== OPEN WEB CLIENT ====================
+async function openWebClient(path = '') {
+  const url = 'https://opennotes.pages.dev' + path;
   try {
-    const token = localStorage.getItem('auth_token_fallback');
-    const response = await fetch(CONFIG.SUBMIT_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        title,
-        content,
-        format: 'html',
-        author: state.user?.name || 'Anonymous',
-      }),
-    });
-    
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(error || 'Submission failed');
+    if (window.__TAURI__) {
+      const { open } = await import('@tauri-apps/plugin-shell');
+      await open(url);
+    } else {
+      window.open(url, '_blank');
     }
-    
-    showToast('Document submitted for review!', 'success');
-    
-    // Clear the editor
-    document.getElementById('doc-title').value = '';
-    document.getElementById('editor').innerHTML = '<p>Start typing your document...</p>';
-    storage.remove('draft');
-    
-  } catch (error) {
-    console.error('[SUBMIT] Error:', error);
-    showToast('Failed to submit: ' + error.message, 'error');
+  } catch (e) {
+    window.open(url, '_blank');
   }
 }
 
@@ -1771,115 +1480,6 @@ async function init() {
   console.log('[INIT] OpenNotes Desktop initializing...');
   console.log('[INIT] User Agent:', navigator.userAgent);
   console.log('[INIT] window.__TAURI__:', typeof window.__TAURI__, window.__TAURI__);
-  
-  // CRITICAL: Set up auth handlers FIRST, before anything else can fail
-  // This ensures the sign-in button always works even if other init fails
-  console.log('[INIT] Setting up auth handlers...');
-  const signinBtn = document.getElementById('google-signin-btn');
-  const logoutBtn = document.getElementById('logout-btn');
-  const skipAuthBtn = document.getElementById('skip-auth-btn');
-  const submitTokenBtn = document.getElementById('submit-token-btn');
-  const tokenInput = document.getElementById('auth-token-input');
-  
-  if (signinBtn) {
-    signinBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      console.log('[AUTH] Sign-in button clicked');
-      handleGoogleSignIn();
-    });
-    console.log('[INIT] Sign-in button handler attached');
-  } else {
-    console.error('[INIT] Sign-in button not found!');
-  }
-  
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', handleLogout);
-  }
-  
-  // Skip button - allows using app without auth
-  if (skipAuthBtn) {
-    skipAuthBtn.addEventListener('click', () => {
-      console.log('[AUTH] Skipping authentication');
-      hideAuthModal();
-      showToast('You can sign in later from the sidebar', 'info');
-    });
-  }
-  
-  // Token/Code submit - exchange 6-digit code for desktop app
-  if (submitTokenBtn && tokenInput) {
-    submitTokenBtn.addEventListener('click', async () => {
-      const input = tokenInput.value.trim();
-      if (!input) {
-        showToast('Please enter a code', 'error');
-        return;
-      }
-      
-      // Check if it's a 6-digit code or a full token
-      if (/^\d{6}$/.test(input)) {
-        // Exchange 6-digit code for token
-        console.log('[AUTH] Exchanging 6-digit code...');
-        submitTokenBtn.disabled = true;
-        submitTokenBtn.textContent = 'Verifying...';
-        
-        try {
-          const response = await fetch(`${CONFIG.GATEWAY_URL}/auth/exchange?code=${input}`, {
-            method: 'GET',
-            headers: {
-              'X-Desktop-App': CONFIG.DESKTOP_APP_SECRET,
-            },
-          });
-          
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Invalid code');
-          }
-          
-          const data = await response.json();
-          localStorage.setItem('auth_token_fallback', data.token);
-          
-          if (data.user) {
-            state.user = data.user;
-            localStorage.setItem('opennotes_user', JSON.stringify(data.user));
-          } else {
-            state.user = { name: 'Desktop User', email: '' };
-            localStorage.setItem('opennotes_user', JSON.stringify(state.user));
-          }
-          
-          state.isAuthenticated = true;
-          updateUserProfile();
-          hideAuthModal();
-          showToast('Successfully signed in!', 'success');
-          tokenInput.value = '';
-        } catch (e) {
-          console.error('[AUTH] Code exchange failed:', e);
-          showToast(e.message || 'Invalid or expired code', 'error');
-        } finally {
-          submitTokenBtn.disabled = false;
-          submitTokenBtn.textContent = 'Submit';
-        }
-      } else {
-        // Direct token entry (fallback)
-        console.log('[AUTH] Using direct token');
-        localStorage.setItem('auth_token_fallback', input);
-        state.user = { name: 'Desktop User', email: '' };
-        localStorage.setItem('opennotes_user', JSON.stringify(state.user));
-        state.isAuthenticated = true;
-        updateUserProfile();
-        hideAuthModal();
-        showToast('Successfully authenticated!', 'success');
-        tokenInput.value = '';
-      }
-    });
-  }
-  
-  // Check authentication state immediately
-  if (!checkAuth()) {
-    showAuthModal();
-    console.log('[INIT] User not authenticated, showing sign-in modal');
-  } else {
-    hideAuthModal();
-    console.log('[INIT] User authenticated:', state.user?.name || state.user?.email);
-  }
   
   try {
     // Load secrets from Tauri store first
@@ -1907,8 +1507,9 @@ async function init() {
   // Initialize editor
   editor.init();
   
-  // Initialize uploader
-  uploader.init();
+  // Set up web client buttons for upload/my-uploads views
+  document.getElementById('open-web-upload')?.addEventListener('click', () => openWebClient());
+  document.getElementById('open-web-uploads')?.addEventListener('click', () => openWebClient());
   
   // Initialize quiz system
   initQuizListeners();
@@ -2047,8 +1648,6 @@ async function init() {
   
   // Load initial data
   console.log('[INIT] Loading initial notes...');
-  console.log('[INIT] API Base URL:', api.getBaseUrl());
-  
   loadNotes();
   
   // Purge expired downloads
