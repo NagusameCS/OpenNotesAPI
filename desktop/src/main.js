@@ -404,7 +404,9 @@ const storage = {
         // Use Tauri HTTP plugin for binary-safe downloads
         const { fetch: tauriFetch } = await import('@tauri-apps/plugin-http');
         const response = await tauriFetch(note.dl, { method: 'GET' });
-        blob = await response.blob();
+        const ab = await response.arrayBuffer();
+        const ct = response.headers?.get?.('content-type') || 'application/octet-stream';
+        blob = new Blob([ab], { type: ct });
       } else {
         const response = await fetch(note.dl);
         blob = await response.blob();
@@ -423,7 +425,28 @@ const storage = {
       };
       
       saved.push(noteData);
-      this.set('saved_notes', saved);
+      try {
+        this.set('saved_notes', saved);
+      } catch (quotaErr) {
+        // localStorage quota exceeded — save to filesystem instead
+        if (window.__TAURI__) {
+          console.warn('[STORAGE] localStorage quota exceeded, saving to filesystem');
+          const { writeFile, mkdir } = await import('@tauri-apps/plugin-fs');
+          const { appDataDir, join } = await import('@tauri-apps/api/path');
+          const dir = await appDataDir();
+          const dlDir = await join(dir, 'downloads');
+          await mkdir(dlDir, { recursive: true });
+          const filePath = await join(dlDir, note.name);
+          await writeFile(filePath, new Uint8Array(await blob.arrayBuffer()));
+          // Save only metadata (no binary) to localStorage
+          const metaData = { ...note, savedToFile: filePath, cachedAt: Date.now(), expiresAt: Date.now() + (CONFIG.DOWNLOAD_EXPIRY_DAYS * 24 * 60 * 60 * 1000), fileSize: blob.size };
+          saved[saved.length - 1] = metaData;
+          localStorage.setItem(`${CONFIG.STORAGE_KEY}_saved_notes`, JSON.stringify(saved));
+          this.updateStorageIndicator();
+        } else {
+          throw quotaErr;
+        }
+      }
       state.savedNotes = saved;
       
       showToast('Note downloaded for offline access', 'success');
@@ -935,18 +958,18 @@ async function openNoteModal(noteId) {
         } else if (window.__TAURI__) {
           const { fetch: tauriFetch } = await import('@tauri-apps/plugin-http');
           const response = await tauriFetch(previewUrl, { method: 'GET' });
-          blob = await response.blob();
+          const ab = await response.arrayBuffer();
+          blob = new Blob([ab], { type: 'application/pdf' });
         } else {
           const response = await fetch(previewUrl);
           blob = await response.blob();
         }
         const blobUrl = URL.createObjectURL(blob);
-        previewFrame.onload = () => {
-          if (viewerLoading) viewerLoading.classList.add('hidden');
-        };
         previewFrame.src = blobUrl;
         previewFrame.classList.remove('hidden');
         fallback.classList.add('hidden');
+        // Hide loading immediately — blob is already in memory, WebKit won't fire onload for blob: iframes
+        if (viewerLoading) viewerLoading.classList.add('hidden');
         // Clean up blob URL when modal closes
         state._previewBlobUrl = blobUrl;
       } catch (err) {
@@ -1056,21 +1079,43 @@ async function downloadNoteFile(note) {
 
 // Open note in external application
 async function openNoteExternal(note) {
-  if (!note.dl) {
-    showToast('Download URL not available', 'error');
-    return;
-  }
+  if (!note) return;
   
   try {
-    // Open URL in system default browser/app
     if (window.__TAURI__) {
       const { open } = await import('@tauri-apps/plugin-shell');
-      await open(note.dl);
+      const { writeFile, mkdir } = await import('@tauri-apps/plugin-fs');
+      const { tempDir, join } = await import('@tauri-apps/api/path');
+
+      showToast('Preparing file...', 'info');
+
+      // Get binary data — prefer offline cache, otherwise fetch
+      let data;
+      const offlineCopy = state.savedNotes.find(n => n.name === note.name);
+      if (offlineCopy && offlineCopy.cachedFile) {
+        const blob = storage.base64ToBlob(offlineCopy.cachedFile);
+        data = new Uint8Array(await blob.arrayBuffer());
+      } else if (note.dl) {
+        const { fetch: tauriFetch } = await import('@tauri-apps/plugin-http');
+        const response = await tauriFetch(note.dl, { method: 'GET' });
+        const ab = await response.arrayBuffer();
+        data = new Uint8Array(ab);
+      } else {
+        showToast('Download URL not available', 'error');
+        return;
+      }
+
+      // Write to temp directory and open with default app
+      const tmp = await tempDir();
+      const openDir = await join(tmp, 'opennotes');
+      await mkdir(openDir, { recursive: true });
+      const filePath = await join(openDir, note.name);
+      await writeFile(filePath, data);
+      await open(filePath);
+      showToast('Opened in default app', 'success');
     } else {
       window.open(note.dl, '_blank');
     }
-    
-    showToast('Opening in external app...', 'success');
   } catch (err) {
     console.error('[OPEN] Error:', err);
     showToast('Failed to open file', 'error');
@@ -1102,18 +1147,32 @@ function shareNote(note) {
 
 // Copy to clipboard helper
 function copyToClipboard(text) {
-  navigator.clipboard.writeText(text).then(() => {
-    showToast('Link copied to clipboard!', 'success');
-  }).catch(() => {
-    // Fallback for older browsers
+  const fallback = () => {
     const textarea = document.createElement('textarea');
     textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.left = '0';
+    textarea.style.top = '0';
+    textarea.style.opacity = '0';
     document.body.appendChild(textarea);
+    textarea.focus();
     textarea.select();
-    document.execCommand('copy');
+    try {
+      const ok = document.execCommand('copy');
+      showToast(ok ? 'Link copied to clipboard!' : 'Failed to copy link', ok ? 'success' : 'error');
+    } catch {
+      showToast('Failed to copy link', 'error');
+    }
     document.body.removeChild(textarea);
-    showToast('Link copied to clipboard!', 'success');
-  });
+  };
+
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('Link copied to clipboard!', 'success');
+    }).catch(() => fallback());
+  } else {
+    fallback();
+  }
 }
 
 async function openOfflineNote(name) {
@@ -1158,12 +1217,11 @@ async function openOfflineNote(name) {
   if (note.cachedFile) {
     const blob = storage.base64ToBlob(note.cachedFile);
     const blobUrl = URL.createObjectURL(blob);
-    previewFrame.onload = () => {
-      if (viewerLoading) viewerLoading.classList.add('hidden');
-    };
     previewFrame.src = blobUrl;
     previewFrame.classList.remove('hidden');
     fallback.classList.add('hidden');
+    // Hide loading immediately — blob is already in memory
+    if (viewerLoading) viewerLoading.classList.add('hidden');
     state._previewBlobUrl = blobUrl;
   } else {
     if (viewerLoading) viewerLoading.classList.add('hidden');
@@ -1678,18 +1736,22 @@ async function init() {
   
   // Modal download (saves for offline access)
   document.getElementById('modal-download')?.addEventListener('click', async () => {
-    if (state.currentNote) {
+    if (!state.currentNote) return;
+    const btn = document.getElementById('modal-download');
+    const origHTML = btn?.innerHTML;
+    try {
+      // Show downloading state
+      if (btn) btn.innerHTML = `<span class="material-symbols-rounded">hourglass_top</span> Downloading...`;
       const success = await storage.saveNoteOffline(state.currentNote);
-      if (success) {
-        // Update button state
-        const btn = document.getElementById('modal-download');
-        if (btn) {
-          btn.innerHTML = `
-            <span class="material-symbols-rounded">download_done</span>
-            Downloaded
-          `;
-        }
+      if (success && btn) {
+        btn.innerHTML = `<span class="material-symbols-rounded">download_done</span> Downloaded`;
+      } else if (btn) {
+        btn.innerHTML = origHTML; // restore on "already downloaded" or failure
       }
+    } catch (err) {
+      console.error('[DOWNLOAD] Handler error:', err);
+      showToast('Download failed', 'error');
+      if (btn) btn.innerHTML = origHTML;
     }
   });
   

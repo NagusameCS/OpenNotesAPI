@@ -18,6 +18,24 @@
         { "url": "https://*" },
         { "url": "http://*" }
       ]
+    },
+    {
+      "identifier": "fs:allow-write-file",
+      "allow": [
+        { "path": "$TEMP/opennotes/**" },
+        { "path": "$APPDATA/downloads/**" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-mkdir",
+      "allow": [
+        { "path": "$TEMP/opennotes" },
+        { "path": "$APPDATA/downloads" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-app-data-dir",
+      "allow": [{}]
     }
   ]
 }
