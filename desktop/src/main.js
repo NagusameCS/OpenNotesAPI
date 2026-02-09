@@ -998,14 +998,20 @@ async function openNoteModal(noteId) {
   
   overlay.classList.remove('hidden');
   
-  // Track view
+  // Track view and update count instantly
   api.incrementViews(note.name);
+  const newViews = (views || 0) + 1;
+  document.getElementById('modal-views').textContent = formatNumber(newViews);
+  // Also update the note object so it's reflected if the card is re-rendered
+  if (note.v !== undefined) note.v = newViews;
+  else if (note.views !== undefined) note.views = newViews;
 }
 
 function closeNoteModal() {
   const overlay = document.getElementById('note-modal');
   if (overlay) {
     overlay.classList.add('hidden');
+    overlay.classList.remove('fullview');
     const frame = document.getElementById('modal-preview-frame');
     if (frame) frame.src = 'about:blank';
     // Clean up blob URL to free memory
@@ -1112,27 +1118,61 @@ function copyToClipboard(text) {
 
 async function openOfflineNote(name) {
   const note = state.savedNotes.find(n => n.name === name);
-  if (!note || !note.cachedFile) {
+  if (!note) {
     showToast('File not available offline', 'error');
     return;
   }
   
-  // For offline notes, create a blob URL and open in new webview tab
-  const blob = storage.base64ToBlob(note.cachedFile);
-  const url = URL.createObjectURL(blob);
+  // Open in the in-app viewer (same as openNoteModal but uses cached data)
+  state.currentNote = note;
+  const overlay = document.getElementById('note-modal');
+  if (!overlay) return;
   
-  // Try opening in a new window (works in webview for blob URLs)
-  const win = window.open(url, '_blank');
-  if (!win) {
-    // Fallback: trigger download
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = name;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    showToast('File downloaded', 'success');
+  // Populate metadata
+  const author = note.auth || note.author || 'Unknown';
+  const views = note.v || note.views || 0;
+  const downloads = note.d || note.downloads || 0;
+  const format = getFileFormat(note.name);
+  
+  document.getElementById('modal-title').textContent = note.title || note.name;
+  document.getElementById('modal-author').textContent = author;
+  const formatEl = document.getElementById('modal-format');
+  formatEl.textContent = format.toUpperCase();
+  formatEl.className = `viewer-pill ${format}`;
+  document.getElementById('modal-views').textContent = formatNumber(views);
+  document.getElementById('modal-downloads').textContent = formatNumber(downloads);
+  document.getElementById('modal-size').textContent = note.fileSize ? formatBytes(note.fileSize) : '--';
+  
+  // Always show as downloaded
+  const downloadBtn = document.getElementById('modal-download');
+  if (downloadBtn) {
+    downloadBtn.innerHTML = '<span class="material-symbols-rounded">download_done</span> Downloaded';
   }
+  
+  const previewFrame = document.getElementById('modal-preview-frame');
+  const fallback = document.getElementById('modal-preview-fallback');
+  const viewerLoading = document.getElementById('viewer-loading');
+  
+  if (viewerLoading) viewerLoading.classList.remove('hidden');
+  
+  if (note.cachedFile) {
+    const blob = storage.base64ToBlob(note.cachedFile);
+    const blobUrl = URL.createObjectURL(blob);
+    previewFrame.onload = () => {
+      if (viewerLoading) viewerLoading.classList.add('hidden');
+    };
+    previewFrame.src = blobUrl;
+    previewFrame.classList.remove('hidden');
+    fallback.classList.add('hidden');
+    state._previewBlobUrl = blobUrl;
+  } else {
+    if (viewerLoading) viewerLoading.classList.add('hidden');
+    previewFrame.classList.add('hidden');
+    fallback.classList.remove('hidden');
+    fallback.innerHTML = '<span class="material-symbols-rounded">error_outline</span><p>Cached file not found</p>';
+  }
+  
+  overlay.classList.remove('hidden');
 }
 
 // ==================== VIEW SWITCHING ====================
@@ -1158,10 +1198,10 @@ function switchView(viewId) {
     upload: 'Upload Notes',
     'my-uploads': 'My Uploads',
     storage: 'Storage',
-    'quiz-browse': 'Browse Quizzes',
-    'quiz-create': 'Create Quiz',
-    'quiz-take': 'Quiz',
-    'quiz-results': 'Quiz Results',
+    'quiz-browse': 'Problem Sets',
+    'quiz-create': 'Create Problem Set',
+    'quiz-take': 'Problem Set',
+    'quiz-results': 'Results',
   };
   
   document.getElementById('view-title').textContent = titles[viewId] || 'OpenNotes';
@@ -1601,6 +1641,7 @@ async function init() {
   
   // Initialize quiz system
   initQuizListeners();
+  initSvgBuilder();
   console.log('[INIT] Quiz system initialized');
   
   // Navigation
@@ -1652,11 +1693,17 @@ async function init() {
     }
   });
   
-  // Modal open external (opens in system default app)
+  // Modal open external (opens in system default editor)
   document.getElementById('modal-open-external')?.addEventListener('click', async () => {
     if (state.currentNote) {
       await openNoteExternal(state.currentNote);
     }
+  });
+  
+  // Modal full view (expand preview to fill the overlay)
+  document.getElementById('modal-view-full')?.addEventListener('click', () => {
+    const overlay = document.getElementById('note-modal');
+    if (overlay) overlay.classList.toggle('fullview');
   });
   
   // Modal share
@@ -1816,10 +1863,12 @@ const quizState = {
   currentQuiz: null,
   currentQuestionIndex: 0,
   answers: {},
+  submittedQuestions: {},
   creatorQuestions: [],
   timerInterval: null,
   timerSeconds: 0,
   reviewMode: false,
+  _matchingSelected: undefined,
 };
 
 // Quiz API Client
@@ -1984,9 +2033,9 @@ function toggleQuizSelection(quizId) {
   const shuffleBtn = document.getElementById('quiz-shuffle-btn');
   if (shuffleBtn) {
     shuffleBtn.disabled = quizState.selectedQuizIds.size < 2;
-    shuffleBtn.textContent = quizState.selectedQuizIds.size > 0 
-      ? `Shuffle Selected (${quizState.selectedQuizIds.size})`
-      : 'Shuffle Selected';
+    shuffleBtn.innerHTML = quizState.selectedQuizIds.size > 0 
+      ? `<span class="material-symbols-rounded">shuffle</span> Shuffle Selected (${quizState.selectedQuizIds.size})`
+      : '<span class="material-symbols-rounded">shuffle</span> Shuffle Selected';
   }
 }
 
@@ -1998,6 +2047,9 @@ async function startQuiz(quizId) {
     quizState.currentQuiz = quiz;
     quizState.currentQuestionIndex = 0;
     quizState.answers = {};
+    quizState.submittedQuestions = {};
+    quizState.reviewMode = false;
+    quizState._matchingSelected = undefined;
     
     // Start timer
     quizState.timerSeconds = 0;
@@ -2032,6 +2084,9 @@ async function shuffleAndStartQuizzes() {
     quizState.currentQuiz = combined;
     quizState.currentQuestionIndex = 0;
     quizState.answers = {};
+    quizState.submittedQuestions = {};
+    quizState.reviewMode = false;
+    quizState._matchingSelected = undefined;
     quizState.selectedQuizIds.clear();
     
     // Start timer
@@ -2060,9 +2115,11 @@ function renderQuizQuestion() {
   const progressEl = document.getElementById('quiz-player-progress');
   const prevBtn = document.getElementById('quiz-prev-btn');
   const nextBtn = document.getElementById('quiz-next-btn');
-  const submitBtn = document.getElementById('quiz-submit-btn');
+  const submitAnswerBtn = document.getElementById('quiz-submit-answer-btn');
+  const finishBtn = document.getElementById('quiz-submit-btn');
   const progressFill = document.getElementById('quiz-progress-fill');
   const dotsContainer = document.getElementById('quiz-dots');
+  const feedbackEl = document.getElementById('quiz-feedback');
   
   if (!container || !quizState.currentQuiz) return;
   
@@ -2070,23 +2127,35 @@ function renderQuizQuestion() {
   const question = quiz.questions[quizState.currentQuestionIndex];
   const totalQuestions = quiz.questions.length;
   const currentNum = quizState.currentQuestionIndex + 1;
+  const isSubmitted = quizState.submittedQuestions?.[question.id];
+  const isReview = quizState.reviewMode;
   
   titleEl.textContent = quiz.title;
   progressEl.textContent = `Question ${currentNum} of ${totalQuestions}`;
   
   // Update progress bar
   if (progressFill) {
-    progressFill.style.width = `${(currentNum / totalQuestions) * 100}%`;
+    const answeredCount = Object.keys(quizState.submittedQuestions || {}).length;
+    progressFill.style.width = `${(answeredCount / totalQuestions) * 100}%`;
   }
   
   // Update question dots
   if (dotsContainer) {
     dotsContainer.innerHTML = quiz.questions.map((q, i) => {
       const isCurrent = i === quizState.currentQuestionIndex;
-      const isAnswered = quizState.answers[q.id] !== undefined && 
-        (Array.isArray(quizState.answers[q.id]) ? quizState.answers[q.id].length > 0 : quizState.answers[q.id] !== '');
-      return `<button class="quiz-dot ${isCurrent ? 'current' : ''} ${isAnswered ? 'answered' : ''}" 
-        data-index="${i}" title="Question ${i + 1}"></button>`;
+      const sub = quizState.submittedQuestions?.[q.id];
+      let classes = 'quiz-dot';
+      if (isCurrent) classes += ' current';
+      if (sub) {
+        classes += ' submitted';
+        if (sub.correct) classes += ' correct-dot';
+        else if (sub.correct === false) classes += ' incorrect-dot';
+      } else {
+        const isAnswered = quizState.answers[q.id] !== undefined && 
+          (Array.isArray(quizState.answers[q.id]) ? quizState.answers[q.id].length > 0 : quizState.answers[q.id] !== '');
+        if (isAnswered) classes += ' answered';
+      }
+      return `<button class="${classes}" data-index="${i}" title="Question ${i + 1}"></button>`;
     }).join('');
     
     dotsContainer.querySelectorAll('.quiz-dot').forEach(dot => {
@@ -2097,54 +2166,77 @@ function renderQuizQuestion() {
     });
   }
   
-  // Update navigation buttons
+  // Navigation buttons
   prevBtn.disabled = quizState.currentQuestionIndex === 0;
-  nextBtn.classList.toggle('hidden', quizState.currentQuestionIndex === totalQuestions - 1);
-  submitBtn.classList.toggle('hidden', quizState.currentQuestionIndex !== totalQuestions - 1 || quizState.reviewMode);
   
-  // Hide submit in review mode, show "Back to Results" instead
-  if (quizState.reviewMode) {
-    nextBtn.classList.toggle('hidden', quizState.currentQuestionIndex === totalQuestions - 1);
-    if (quizState.currentQuestionIndex === totalQuestions - 1) {
-      submitBtn.classList.remove('hidden');
-      submitBtn.innerHTML = '<span class="material-symbols-rounded">arrow_back</span> Back to Results';
-      submitBtn.onclick = () => { quizState.reviewMode = false; showView('quiz-results'); };
+  // Hide feedback initially
+  if (feedbackEl) feedbackEl.classList.add('hidden');
+  
+  // Show feedback if already submitted
+  if (isSubmitted && feedbackEl) {
+    showQuestionFeedback(question, isSubmitted);
+  }
+  
+  // Button visibility: Submit if not yet submitted, Next if submitted, Finish at end
+  const allSubmitted = quiz.questions.every(q => quizState.submittedQuestions?.[q.id]);
+  const isLast = quizState.currentQuestionIndex === totalQuestions - 1;
+  
+  if (isReview) {
+    submitAnswerBtn.classList.add('hidden');
+    nextBtn.classList.toggle('hidden', isLast);
+    finishBtn.classList.toggle('hidden', !isLast);
+    finishBtn.innerHTML = '<span class="material-symbols-rounded">arrow_back</span> Back to Results';
+    finishBtn.onclick = () => { quizState.reviewMode = false; showView('quiz-results'); };
+  } else if (isSubmitted) {
+    submitAnswerBtn.classList.add('hidden');
+    if (isLast && allSubmitted) {
+      nextBtn.classList.add('hidden');
+      finishBtn.classList.remove('hidden');
+      finishBtn.innerHTML = '<span class="material-symbols-rounded">done_all</span> Finish';
+      finishBtn.onclick = submitQuiz;
+    } else {
+      nextBtn.classList.remove('hidden');
+      finishBtn.classList.add('hidden');
     }
+  } else {
+    submitAnswerBtn.classList.remove('hidden');
+    nextBtn.classList.add('hidden');
+    finishBtn.classList.add('hidden');
   }
   
   // Get current answer
   const currentAnswer = quizState.answers[question.id];
-  const isReview = quizState.reviewMode;
+  const showCorrect = isSubmitted || isReview;
   
   if (question.type === 'mcq') {
     container.innerHTML = `
       <div class="quiz-question-text">${renderLatex(question.question)}</div>
+      ${question.svg ? `<div class="quiz-question-svg">${question.svg}</div>` : ''}
       <div class="quiz-options">
         ${question.options.map((opt, i) => {
           const isSelected = currentAnswer?.includes(i);
           const isCorrect = question.correctAnswers.includes(i);
           let classes = 'quiz-option';
-          if (isReview) {
+          if (showCorrect) {
             if (isCorrect) classes += ' correct';
             else if (isSelected && !isCorrect) classes += ' incorrect';
           } else {
             if (isSelected) classes += ' selected';
           }
           return `
-          <div class="${classes}" data-index="${i}">
+          <div class="${classes}" data-index="${i}" tabindex="-1">
             <div class="quiz-option-marker">
-              <span class="material-symbols-rounded" style="font-size:14px;">${isReview ? (isCorrect ? 'check' : (isSelected ? 'close' : '')) : 'check'}</span>
+              <span class="material-symbols-rounded" style="font-size:14px;">${showCorrect ? (isCorrect ? 'check' : (isSelected ? 'close' : '')) : (isSelected ? 'check' : '')}</span>
             </div>
             <div class="quiz-option-text">${renderLatex(opt)}</div>
           </div>`;
         }).join('')}
       </div>
-      ${!isReview && question.correctAnswers.length > 1 ? '<p style="margin-top:12px;font-size:0.85rem;color:var(--text-muted);">Select all that apply</p>' : ''}
-      ${isReview && question.explanation ? `<div class="quiz-explanation"><span class="material-symbols-rounded">lightbulb</span> ${renderLatex(question.explanation)}</div>` : ''}
+      ${!showCorrect && question.correctAnswers.length > 1 ? '<p style="margin-top:12px;font-size:0.85rem;color:var(--text-muted);">Select all that apply</p>' : ''}
+      ${showCorrect && question.explanation ? `<div class="quiz-explanation"><span class="material-symbols-rounded">lightbulb</span> ${renderLatex(question.explanation)}</div>` : ''}
     `;
     
-    // Add click handlers (only if not in review mode)
-    if (!isReview) {
+    if (!showCorrect) {
       container.querySelectorAll('.quiz-option').forEach(opt => {
         opt.addEventListener('click', () => {
           const idx = parseInt(opt.dataset.index);
@@ -2152,29 +2244,258 @@ function renderQuizQuestion() {
         });
       });
     }
-  } else if (question.type === 'frq') {
-    const userAnswer = currentAnswer || '';
-    const isCorrectFRQ = isReview && question.correctAnswers.some(a => 
-      a.toLowerCase().trim() === userAnswer.toLowerCase().trim()
-    );
+  } else if (question.type === 'tf') {
+    const userVal = currentAnswer;
+    container.innerHTML = `
+      <div class="quiz-question-text">${renderLatex(question.question)}</div>
+      ${question.svg ? `<div class="quiz-question-svg">${question.svg}</div>` : ''}
+      <div class="quiz-tf-options">
+        ${['True', 'False'].map(val => {
+          const boolVal = val === 'True';
+          const isSelected = userVal === boolVal;
+          const isCorrectAnswer = question.correctAnswer === boolVal;
+          let classes = 'quiz-tf-option';
+          if (showCorrect) {
+            if (isCorrectAnswer) classes += ' correct';
+            else if (isSelected && !isCorrectAnswer) classes += ' incorrect';
+          } else {
+            if (isSelected) classes += ' selected';
+          }
+          return `<div class="${classes}" data-value="${boolVal}" tabindex="-1">${val}</div>`;
+        }).join('')}
+      </div>
+      ${showCorrect && question.explanation ? `<div class="quiz-explanation"><span class="material-symbols-rounded">lightbulb</span> ${renderLatex(question.explanation)}</div>` : ''}
+    `;
+    
+    if (!showCorrect) {
+      container.querySelectorAll('.quiz-tf-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+          quizState.answers[question.id] = opt.dataset.value === 'true';
+          container.querySelectorAll('.quiz-tf-option').forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected');
+        });
+      });
+    }
+  } else if (question.type === 'fitb') {
+    // Fill in the blank — render question with blank inputs
+    let questionHtml = renderLatex(question.question);
+    const blanks = question.blanks || question.correctAnswers || [];
+    blanks.forEach((_, i) => {
+      const val = (currentAnswer && currentAnswer[i]) || '';
+      const extraClass = showCorrect ? (val.toLowerCase().trim() === blanks[i].toLowerCase().trim() ? 'correct' : 'incorrect') : '';
+      questionHtml = questionHtml.replace('___', `<input type="text" class="quiz-fitb-input ${extraClass}" data-blank="${i}" value="${val}" ${showCorrect ? 'disabled' : ''} placeholder="...">`);
+    });
+    container.innerHTML = `
+      <div class="quiz-question-text">${questionHtml}</div>
+      ${question.svg ? `<div class="quiz-question-svg">${question.svg}</div>` : ''}
+      ${showCorrect ? `<p style="margin-top:12px;font-size:0.85rem;color:var(--text-muted);">Answers: ${blanks.join(', ')}</p>` : ''}
+      ${showCorrect && question.explanation ? `<div class="quiz-explanation"><span class="material-symbols-rounded">lightbulb</span> ${renderLatex(question.explanation)}</div>` : ''}
+    `;
+    
+    if (!showCorrect) {
+      container.querySelectorAll('.quiz-fitb-input').forEach(input => {
+        input.addEventListener('input', () => {
+          if (!quizState.answers[question.id]) quizState.answers[question.id] = [];
+          quizState.answers[question.id][parseInt(input.dataset.blank)] = input.value;
+        });
+      });
+      // Focus first blank
+      const firstBlank = container.querySelector('.quiz-fitb-input');
+      if (firstBlank) firstBlank.focus();
+    }
+  } else if (question.type === 'matching') {
+    // Matching: user pairs items from left column with right column
+    const pairs = currentAnswer || {};
+    const leftItems = question.leftItems || [];
+    const rightItems = question.rightItems || [];
     
     container.innerHTML = `
       <div class="quiz-question-text">${renderLatex(question.question)}</div>
-      <input type="text" class="quiz-frq-input ${isReview ? (isCorrectFRQ ? 'correct' : 'incorrect') : ''}" 
-        placeholder="Enter your answer..." value="${userAnswer}" ${isReview ? 'disabled' : ''}>
-      ${!isReview ? '<p style="margin-top:8px;font-size:0.85rem;color:var(--text-muted);">Type your answer and press Next</p>' : ''}
-      ${isReview ? `<p style="margin-top:8px;font-size:0.85rem;color:var(--text-muted);">Accepted: ${question.correctAnswers.join(', ')}</p>` : ''}
-      ${isReview && question.explanation ? `<div class="quiz-explanation"><span class="material-symbols-rounded">lightbulb</span> ${renderLatex(question.explanation)}</div>` : ''}
+      ${question.svg ? `<div class="quiz-question-svg">${question.svg}</div>` : ''}
+      <div class="quiz-matching-container">
+        <div class="quiz-matching-column">
+          <h4>Terms</h4>
+          ${leftItems.map((item, i) => {
+            const isPaired = pairs[i] !== undefined;
+            let classes = 'quiz-matching-item';
+            if (isPaired) classes += ' matched';
+            if (quizState._matchingSelected === i) classes += ' selected-match';
+            if (showCorrect) {
+              classes = 'quiz-matching-item';
+              if (pairs[i] === question.correctPairs[i]) classes += ' correct';
+              else classes += ' incorrect';
+            }
+            return `<div class="${classes}" data-left="${i}">${renderLatex(item)}</div>`;
+          }).join('')}
+        </div>
+        <div class="quiz-matching-column">
+          <h4>Definitions</h4>
+          ${rightItems.map((item, i) => {
+            const isPaired = Object.values(pairs).includes(i);
+            let classes = 'quiz-matching-item';
+            if (isPaired) classes += ' matched';
+            return `<div class="${classes}" data-right="${i}">${renderLatex(item)}</div>`;
+          }).join('')}
+        </div>
+      </div>
+      ${Object.keys(pairs).length > 0 ? `
+        <div class="quiz-matching-pairs">
+          ${Object.entries(pairs).map(([l, r]) => `
+            <div class="quiz-matching-pair">
+              <span>${renderLatex(leftItems[l])}</span>
+              <span class="material-symbols-rounded" style="font-size:16px;">arrow_forward</span>
+              <span>${renderLatex(rightItems[r])}</span>
+              ${!showCorrect ? `<span class="material-symbols-rounded remove-pair" data-left="${l}" style="cursor:pointer;">close</span>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+      ${showCorrect && question.explanation ? `<div class="quiz-explanation"><span class="material-symbols-rounded">lightbulb</span> ${renderLatex(question.explanation)}</div>` : ''}
     `;
     
-    if (!isReview) {
-      const input = container.querySelector('.quiz-frq-input');
-      input.addEventListener('input', (e) => {
+    if (!showCorrect) {
+      container.querySelectorAll('.quiz-matching-item[data-left]').forEach(el => {
+        el.addEventListener('click', () => {
+          quizState._matchingSelected = parseInt(el.dataset.left);
+          renderQuizQuestion();
+        });
+      });
+      container.querySelectorAll('.quiz-matching-item[data-right]').forEach(el => {
+        el.addEventListener('click', () => {
+          if (quizState._matchingSelected !== undefined) {
+            if (!quizState.answers[question.id]) quizState.answers[question.id] = {};
+            quizState.answers[question.id][quizState._matchingSelected] = parseInt(el.dataset.right);
+            quizState._matchingSelected = undefined;
+            renderQuizQuestion();
+          }
+        });
+      });
+      container.querySelectorAll('.remove-pair').forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          delete quizState.answers[question.id][el.dataset.left];
+          renderQuizQuestion();
+        });
+      });
+    }
+  } else if (question.type === 'frq') {
+    const userAnswer = currentAnswer || '';
+    container.innerHTML = `
+      <div class="quiz-question-text">${renderLatex(question.question)}</div>
+      ${question.svg ? `<div class="quiz-question-svg">${question.svg}</div>` : ''}
+      <textarea class="quiz-frq-input" placeholder="Write your answer..." ${showCorrect ? 'disabled' : ''} rows="4">${userAnswer}</textarea>
+      ${!showCorrect ? '<p style="margin-top:8px;font-size:0.85rem;color:var(--text-muted);">Free response — you\'ll self-evaluate after submitting</p>' : ''}
+      ${showCorrect && question.explanation ? `<div class="quiz-explanation"><span class="material-symbols-rounded">lightbulb</span> ${renderLatex(question.explanation)}</div>` : ''}
+    `;
+    
+    if (!showCorrect) {
+      const textarea = container.querySelector('.quiz-frq-input');
+      textarea.addEventListener('input', (e) => {
         quizState.answers[question.id] = e.target.value;
       });
-      input.focus();
+      textarea.focus();
     }
   }
+}
+
+function showQuestionFeedback(question, result) {
+  const feedbackEl = document.getElementById('quiz-feedback');
+  if (!feedbackEl) return;
+  
+  feedbackEl.classList.remove('hidden', 'correct', 'incorrect', 'self-eval');
+  
+  if (question.type === 'frq' && result.selfEval) {
+    feedbackEl.classList.add('self-eval');
+    feedbackEl.innerHTML = `
+      <div class="quiz-feedback-header">
+        <span class="material-symbols-rounded">rate_review</span>
+        <span>Self Evaluation</span>
+      </div>
+      <div>
+        ${question.correctAnswers?.length ? `<p><strong>Model answer:</strong> ${renderLatex(question.correctAnswers.join(' / '))}</p>` : ''}
+        ${question.explanation ? `<p>${renderLatex(question.explanation)}</p>` : ''}
+      </div>
+      <div class="self-eval-buttons">
+        <button class="self-eval-btn ${result.correct === true ? 'selected' : ''}" data-eval="correct">
+          <span class="material-symbols-rounded" style="font-size:16px;vertical-align:middle;">check_circle</span> I got it right
+        </button>
+        <button class="self-eval-btn ${result.correct === false ? 'selected' : ''}" data-eval="incorrect">
+          <span class="material-symbols-rounded" style="font-size:16px;vertical-align:middle;">cancel</span> I got it wrong
+        </button>
+      </div>
+    `;
+    feedbackEl.querySelectorAll('.self-eval-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const isCorrect = btn.dataset.eval === 'correct';
+        quizState.submittedQuestions[question.id].correct = isCorrect;
+        feedbackEl.querySelectorAll('.self-eval-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        // Refresh dots
+        renderQuizQuestion();
+      });
+    });
+  } else {
+    const isCorrect = result.correct;
+    feedbackEl.classList.add(isCorrect ? 'correct' : 'incorrect');
+    feedbackEl.innerHTML = `
+      <div class="quiz-feedback-header">
+        <span class="material-symbols-rounded">${isCorrect ? 'check_circle' : 'cancel'}</span>
+        <span>${isCorrect ? 'Correct!' : 'Incorrect'}</span>
+      </div>
+      ${!isCorrect && result.correctAnswer ? `<p><strong>Correct answer:</strong> ${renderLatex(result.correctAnswer)}</p>` : ''}
+      ${question.explanation ? `<p>${renderLatex(question.explanation)}</p>` : ''}
+    `;
+  }
+}
+
+function submitCurrentAnswer() {
+  const quiz = quizState.currentQuiz;
+  if (!quiz) return;
+  const question = quiz.questions[quizState.currentQuestionIndex];
+  if (!question) return;
+  
+  // Already submitted?
+  if (quizState.submittedQuestions[question.id]) return;
+  
+  const userAnswer = quizState.answers[question.id];
+  let isCorrect = false;
+  let correctAnswer = '';
+  let isSelfEval = false;
+  
+  if (question.type === 'mcq') {
+    const userSet = new Set(userAnswer || []);
+    const correctSet = new Set(question.correctAnswers);
+    isCorrect = userSet.size === correctSet.size && [...userSet].every(x => correctSet.has(x));
+    correctAnswer = question.correctAnswers.map(i => question.options[i]).join(', ');
+  } else if (question.type === 'tf') {
+    isCorrect = userAnswer === question.correctAnswer;
+    correctAnswer = question.correctAnswer ? 'True' : 'False';
+  } else if (question.type === 'fitb') {
+    const blanks = question.blanks || question.correctAnswers || [];
+    isCorrect = blanks.every((ans, i) => 
+      (userAnswer?.[i] || '').toLowerCase().trim() === ans.toLowerCase().trim()
+    );
+    correctAnswer = blanks.join(', ');
+  } else if (question.type === 'matching') {
+    const pairs = userAnswer || {};
+    const correctPairs = question.correctPairs || {};
+    isCorrect = Object.keys(correctPairs).every(k => pairs[k] === correctPairs[k]);
+    correctAnswer = '';
+  } else if (question.type === 'frq') {
+    // FRQ is self-evaluated
+    isSelfEval = true;
+    isCorrect = null; // unknown until user rates
+  }
+  
+  quizState.submittedQuestions[question.id] = {
+    correct: isCorrect,
+    correctAnswer,
+    selfEval: isSelfEval,
+    userAnswer,
+  };
+  
+  // Re-render to show feedback and update buttons
+  renderQuizQuestion();
 }
 
 function selectMCQOption(questionId, optionIndex, multiSelect) {
@@ -2208,8 +2529,7 @@ function navigateQuiz(direction) {
 
 function submitQuiz() {
   const quiz = quizState.currentQuiz;
-  let correct = 0;
-  const breakdown = [];
+  if (!quiz) return;
   
   // Stop timer
   clearInterval(quizState.timerInterval);
@@ -2217,30 +2537,45 @@ function submitQuiz() {
   const mins = Math.floor(totalTime / 60);
   const secs = totalTime % 60;
   
-  quiz.questions.forEach(question => {
+  // Tally results from submitted answers
+  let correct = 0;
+  const breakdown = [];
+  
+  quiz.questions.forEach((question, i) => {
+    const sub = quizState.submittedQuestions[question.id];
+    const isCorrect = sub?.correct === true;
+    if (isCorrect) correct++;
+    
     const userAnswer = quizState.answers[question.id];
-    let isCorrect = false;
+    let userAnswerDisplay = '';
+    let correctAnswerDisplay = '';
     
     if (question.type === 'mcq') {
-      const userSet = new Set(userAnswer || []);
-      const correctSet = new Set(question.correctAnswers);
-      isCorrect = userSet.size === correctSet.size && [...userSet].every(x => correctSet.has(x));
+      userAnswerDisplay = (userAnswer || []).map(idx => question.options[idx]).join(', ') || '(no answer)';
+      correctAnswerDisplay = question.correctAnswers.map(idx => question.options[idx]).join(', ');
+    } else if (question.type === 'tf') {
+      userAnswerDisplay = userAnswer === true ? 'True' : userAnswer === false ? 'False' : '(no answer)';
+      correctAnswerDisplay = question.correctAnswer ? 'True' : 'False';
+    } else if (question.type === 'fitb') {
+      userAnswerDisplay = (userAnswer || []).join(', ') || '(no answer)';
+      correctAnswerDisplay = (question.blanks || question.correctAnswers || []).join(', ');
+    } else if (question.type === 'matching') {
+      userAnswerDisplay = '(matching)';
+      correctAnswerDisplay = '';
     } else if (question.type === 'frq') {
-      const answer = (userAnswer || '').toLowerCase().trim();
-      isCorrect = question.correctAnswers.some(a => 
-        a.toLowerCase().trim() === answer
-      );
+      userAnswerDisplay = userAnswer || '(no answer)';
+      correctAnswerDisplay = question.correctAnswers?.join(' / ') || 'Self-evaluated';
     }
-    
-    if (isCorrect) correct++;
     
     breakdown.push({
       question: question.question,
+      type: question.type,
       correct: isCorrect,
-      userAnswer,
-      correctAnswer: question.type === 'mcq' 
-        ? question.correctAnswers.map(i => question.options[i]).join(', ')
-        : question.correctAnswers.join(' or '),
+      selfEval: sub?.selfEval,
+      selfEvalResult: sub?.correct,
+      userAnswer: userAnswerDisplay,
+      correctAnswer: correctAnswerDisplay,
+      explanation: question.explanation,
     });
   });
   
@@ -2250,7 +2585,6 @@ function submitQuiz() {
   document.getElementById('results-total').textContent = quiz.questions.length;
   document.getElementById('results-percent').textContent = Math.round((correct / quiz.questions.length) * 100) + '%';
   
-  // Show time taken
   const timeEl = document.getElementById('results-time');
   if (timeEl) {
     timeEl.textContent = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
@@ -2263,10 +2597,16 @@ function submitQuiz() {
         ${item.correct ? 'check_circle' : 'cancel'}
       </span>
       <div class="results-breakdown-content">
-        <div class="results-breakdown-question">Q${i + 1}: ${item.question.substring(0, 100)}${item.question.length > 100 ? '...' : ''}</div>
+        <div class="results-breakdown-question">Q${i + 1}: ${renderLatex(item.question)}</div>
         <div class="results-breakdown-answer">
-          ${item.correct ? 'Correct!' : `Your answer: ${Array.isArray(item.userAnswer) ? item.userAnswer.join(', ') : item.userAnswer || '(no answer)'} | Correct: ${item.correctAnswer}`}
+          ${item.selfEval 
+            ? `Self-evaluated: ${item.selfEvalResult === true ? '✓ Correct' : item.selfEvalResult === false ? '✗ Incorrect' : 'Not rated'}`
+            : item.correct 
+              ? '<span style="color:var(--success);">Correct!</span>' 
+              : `Your answer: ${renderLatex(item.userAnswer)} | Correct: ${renderLatex(item.correctAnswer)}`
+          }
         </div>
+        ${item.explanation ? `<div class="quiz-explanation" style="margin-top:8px;"><span class="material-symbols-rounded">lightbulb</span> ${renderLatex(item.explanation)}</div>` : ''}
       </div>
     </div>
   `).join('');
@@ -2275,14 +2615,19 @@ function submitQuiz() {
 // Quiz Creator Functions
 function addQuestion(type) {
   const id = `q${Date.now()}`;
-  const question = {
-    id,
-    type,
-    question: '',
-    options: type === 'mcq' ? ['', '', '', ''] : null,
-    correctAnswers: type === 'mcq' ? [] : [''],
-    explanation: '',
-  };
+  let question;
+  
+  if (type === 'mcq') {
+    question = { id, type, question: '', options: ['', '', '', ''], correctAnswers: [], explanation: '', svg: '' };
+  } else if (type === 'tf') {
+    question = { id, type, question: '', correctAnswer: true, explanation: '', svg: '' };
+  } else if (type === 'fitb') {
+    question = { id, type, question: '', blanks: [''], explanation: '', svg: '' };
+  } else if (type === 'matching') {
+    question = { id, type, question: '', leftItems: ['', ''], rightItems: ['', ''], correctPairs: {0: 0, 1: 1}, explanation: '', svg: '' };
+  } else if (type === 'frq') {
+    question = { id, type, question: '', correctAnswers: [''], explanation: '', svg: '' };
+  }
   
   quizState.creatorQuestions.push(question);
   renderQuestionsList();
@@ -2307,8 +2652,11 @@ function renderQuestionsList() {
     <div class="question-item" data-question-id="${q.id}">
       <div class="question-item-header">
         <span class="question-number">Question ${i + 1}</span>
-        <span class="question-type-badge">${q.type.toUpperCase()}</span>
+        <span class="question-type-badge ${q.type}">${q.type.toUpperCase()}</span>
         <div class="question-actions">
+          <button class="icon-btn" onclick="openSvgBuilder('${q.id}')" title="Add Shape">
+            <span class="material-symbols-rounded">draw</span>
+          </button>
           <button class="icon-btn" onclick="moveQuestion('${q.id}', -1)" title="Move up">
             <span class="material-symbols-rounded">arrow_upward</span>
           </button>
@@ -2326,7 +2674,8 @@ function renderQuestionsList() {
           onchange="updateQuestion('${q.id}', 'question', this.value)">${q.question}</textarea>
         <span class="latex-hint">Example: What is $\\int x^2 dx$?</span>
       </div>
-      ${q.type === 'mcq' ? renderMCQOptions(q) : renderFRQAnswers(q)}
+      ${q.svg ? `<div class="question-svg-preview" style="margin:8px 0;padding:8px;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border);">${q.svg}<button class="btn btn-text" onclick="updateQuestion('${q.id}', 'svg', ''); renderQuestionsList();" style="margin-top:4px;">Remove Shape</button></div>` : ''}
+      ${renderQuestionTypeEditor(q)}
       <div class="explanation-container">
         <div class="form-group">
           <label>Explanation (optional)</label>
@@ -2336,6 +2685,79 @@ function renderQuestionsList() {
       </div>
     </div>
   `).join('');
+}
+
+function renderQuestionTypeEditor(q) {
+  if (q.type === 'mcq') return renderMCQOptions(q);
+  if (q.type === 'tf') return renderTFEditor(q);
+  if (q.type === 'fitb') return renderFITBEditor(q);
+  if (q.type === 'matching') return renderMatchingEditor(q);
+  if (q.type === 'frq') return renderFRQAnswers(q);
+  return '';
+}
+
+function renderTFEditor(question) {
+  return `
+    <div class="form-group">
+      <label>Correct Answer</label>
+      <div style="display:flex;gap:12px;margin-top:8px;">
+        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
+          <input type="radio" name="tf-${question.id}" value="true" ${question.correctAnswer === true ? 'checked' : ''}
+            onchange="updateQuestion('${question.id}', 'correctAnswer', true)"> True
+        </label>
+        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
+          <input type="radio" name="tf-${question.id}" value="false" ${question.correctAnswer === false ? 'checked' : ''}
+            onchange="updateQuestion('${question.id}', 'correctAnswer', false)"> False
+        </label>
+      </div>
+    </div>
+  `;
+}
+
+function renderFITBEditor(question) {
+  return `
+    <div class="form-group">
+      <label>Blanks (use ___ in question text for each blank)</label>
+      ${(question.blanks || []).map((b, i) => `
+        <div class="answer-row" style="margin-bottom:4px;">
+          <span style="min-width:60px;font-size:0.85rem;color:var(--text-muted);">Blank ${i + 1}:</span>
+          <input type="text" class="answer-input form-group" placeholder="Correct answer for blank ${i + 1}"
+            value="${b}" onchange="updateBlank('${question.id}', ${i}, this.value)">
+          <button class="icon-btn" onclick="removeBlank('${question.id}', ${i})" title="Remove">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </div>
+      `).join('')}
+      <button class="btn btn-text add-option-btn" onclick="addBlank('${question.id}')">
+        <span class="material-symbols-rounded">add</span> Add Blank
+      </button>
+    </div>
+  `;
+}
+
+function renderMatchingEditor(question) {
+  return `
+    <div class="form-group">
+      <label>Matching Pairs (left → right)</label>
+      <div class="matching-pairs-editor">
+        ${(question.leftItems || []).map((l, i) => `
+          <div class="matching-pair-row">
+            <input type="text" class="form-group" placeholder="Term ${i + 1}" value="${l}"
+              onchange="updateMatchingItem('${question.id}', 'left', ${i}, this.value)">
+            <span class="pair-arrow material-symbols-rounded">arrow_forward</span>
+            <input type="text" class="form-group" placeholder="Definition ${i + 1}" value="${question.rightItems?.[i] || ''}"
+              onchange="updateMatchingItem('${question.id}', 'right', ${i}, this.value)">
+            <button class="icon-btn" onclick="removeMatchingPair('${question.id}', ${i})" title="Remove">
+              <span class="material-symbols-rounded">close</span>
+            </button>
+          </div>
+        `).join('')}
+        <button class="btn btn-text add-option-btn" onclick="addMatchingPair('${question.id}')">
+          <span class="material-symbols-rounded">add</span> Add Pair
+        </button>
+      </div>
+    </div>
+  `;
 }
 
 function renderMCQOptions(question) {
@@ -2465,6 +2887,169 @@ function removeQuestion(id) {
   renderQuestionsList();
 }
 
+// FITB helpers
+function updateBlank(questionId, index, value) {
+  const q = quizState.creatorQuestions.find(q => q.id === questionId);
+  if (q && q.blanks) q.blanks[index] = value;
+}
+
+function addBlank(questionId) {
+  const q = quizState.creatorQuestions.find(q => q.id === questionId);
+  if (q) { if (!q.blanks) q.blanks = []; q.blanks.push(''); renderQuestionsList(); }
+}
+
+function removeBlank(questionId, index) {
+  const q = quizState.creatorQuestions.find(q => q.id === questionId);
+  if (q && q.blanks && q.blanks.length > 1) { q.blanks.splice(index, 1); renderQuestionsList(); }
+}
+
+// Matching helpers
+function updateMatchingItem(questionId, side, index, value) {
+  const q = quizState.creatorQuestions.find(q => q.id === questionId);
+  if (!q) return;
+  if (side === 'left') q.leftItems[index] = value;
+  else q.rightItems[index] = value;
+}
+
+function addMatchingPair(questionId) {
+  const q = quizState.creatorQuestions.find(q => q.id === questionId);
+  if (q) {
+    const n = q.leftItems.length;
+    q.leftItems.push('');
+    q.rightItems.push('');
+    q.correctPairs[n] = n;
+    renderQuestionsList();
+  }
+}
+
+function removeMatchingPair(questionId, index) {
+  const q = quizState.creatorQuestions.find(q => q.id === questionId);
+  if (q && q.leftItems.length > 2) {
+    q.leftItems.splice(index, 1);
+    q.rightItems.splice(index, 1);
+    // Rebuild correctPairs
+    const newPairs = {};
+    q.leftItems.forEach((_, i) => { newPairs[i] = i; });
+    q.correctPairs = newPairs;
+    renderQuestionsList();
+  }
+}
+
+// SVG Shape Builder
+let svgBuilderState = { tool: 'rect', elements: [], drawing: false, startX: 0, startY: 0, targetQuestionId: null };
+
+function openSvgBuilder(questionId) {
+  svgBuilderState.targetQuestionId = questionId;
+  svgBuilderState.elements = [];
+  const container = document.getElementById('svg-builder-container');
+  if (container) {
+    container.classList.remove('hidden');
+    clearSvgCanvas();
+  }
+}
+
+function initSvgBuilder() {
+  const canvas = document.getElementById('svg-canvas');
+  if (!canvas) return;
+  
+  // Tool selection
+  document.querySelectorAll('.svg-tool[data-tool]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.svg-tool[data-tool]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      svgBuilderState.tool = btn.dataset.tool;
+    });
+  });
+  
+  canvas.addEventListener('mousedown', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = 400 / rect.width;
+    const scaleY = 300 / rect.height;
+    svgBuilderState.drawing = true;
+    svgBuilderState.startX = (e.clientX - rect.left) * scaleX;
+    svgBuilderState.startY = (e.clientY - rect.top) * scaleY;
+  });
+  
+  canvas.addEventListener('mouseup', (e) => {
+    if (!svgBuilderState.drawing) return;
+    svgBuilderState.drawing = false;
+    
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = 400 / rect.width;
+    const scaleY = 300 / rect.height;
+    const endX = (e.clientX - rect.left) * scaleX;
+    const endY = (e.clientY - rect.top) * scaleY;
+    const fill = document.getElementById('svg-fill-color')?.value || '#3b82f6';
+    const stroke = document.getElementById('svg-stroke-color')?.value || '#1e293b';
+    const tool = svgBuilderState.tool;
+    
+    let el;
+    const x = Math.min(svgBuilderState.startX, endX);
+    const y = Math.min(svgBuilderState.startY, endY);
+    const w = Math.abs(endX - svgBuilderState.startX);
+    const h = Math.abs(endY - svgBuilderState.startY);
+    
+    if (tool === 'rect') {
+      el = `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" stroke="${stroke}" stroke-width="2" rx="2"/>`;
+    } else if (tool === 'circle') {
+      const cx = (svgBuilderState.startX + endX) / 2;
+      const cy = (svgBuilderState.startY + endY) / 2;
+      const r = Math.max(w, h) / 2;
+      el = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+    } else if (tool === 'line') {
+      el = `<line x1="${svgBuilderState.startX}" y1="${svgBuilderState.startY}" x2="${endX}" y2="${endY}" stroke="${stroke}" stroke-width="2"/>`;
+    } else if (tool === 'arrow') {
+      el = `<defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="${stroke}"/></marker></defs>`;
+      el += `<line x1="${svgBuilderState.startX}" y1="${svgBuilderState.startY}" x2="${endX}" y2="${endY}" stroke="${stroke}" stroke-width="2" marker-end="url(#arrowhead)"/>`;
+    } else if (tool === 'text') {
+      const text = prompt('Enter text:');
+      if (text) {
+        el = `<text x="${svgBuilderState.startX}" y="${svgBuilderState.startY}" fill="${stroke}" font-size="14" font-family="Inter,sans-serif">${text}</text>`;
+      }
+    }
+    
+    if (el) {
+      svgBuilderState.elements.push(el);
+      redrawSvgCanvas();
+    }
+  });
+  
+  document.getElementById('svg-undo')?.addEventListener('click', () => {
+    svgBuilderState.elements.pop();
+    redrawSvgCanvas();
+  });
+  
+  document.getElementById('svg-clear')?.addEventListener('click', clearSvgCanvas);
+  
+  document.getElementById('svg-cancel')?.addEventListener('click', () => {
+    document.getElementById('svg-builder-container')?.classList.add('hidden');
+  });
+  
+  document.getElementById('svg-insert')?.addEventListener('click', () => {
+    const qId = svgBuilderState.targetQuestionId;
+    if (qId && svgBuilderState.elements.length > 0) {
+      const svgStr = `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-height:200px;">${svgBuilderState.elements.join('')}</svg>`;
+      updateQuestion(qId, 'svg', svgStr);
+      renderQuestionsList();
+    }
+    document.getElementById('svg-builder-container')?.classList.add('hidden');
+  });
+  
+  document.getElementById('svg-builder-close')?.addEventListener('click', () => {
+    document.getElementById('svg-builder-container')?.classList.add('hidden');
+  });
+}
+
+function redrawSvgCanvas() {
+  const canvas = document.getElementById('svg-canvas');
+  if (canvas) canvas.innerHTML = svgBuilderState.elements.join('');
+}
+
+function clearSvgCanvas() {
+  svgBuilderState.elements = [];
+  redrawSvgCanvas();
+}
+
 async function saveQuiz() {
   const title = document.getElementById('quiz-title')?.value?.trim();
   const subject = document.getElementById('quiz-subject')?.value?.trim();
@@ -2503,6 +3088,16 @@ async function saveQuiz() {
     } else if (q.type === 'frq') {
       if (q.correctAnswers.filter(a => a.trim()).length === 0) {
         showToast(`Question ${i + 1} needs at least 1 accepted answer`, 'error');
+        return;
+      }
+    } else if (q.type === 'fitb') {
+      if (!q.blanks || q.blanks.filter(b => b.trim()).length === 0) {
+        showToast(`Question ${i + 1} needs at least 1 blank answer`, 'error');
+        return;
+      }
+    } else if (q.type === 'matching') {
+      if (!q.leftItems || q.leftItems.filter(l => l.trim()).length < 2) {
+        showToast(`Question ${i + 1} needs at least 2 matching pairs`, 'error');
         return;
       }
     }
@@ -2561,12 +3156,16 @@ function initQuizListeners() {
   
   // Quiz creator
   document.getElementById('add-mcq-btn')?.addEventListener('click', () => addQuestion('mcq'));
+  document.getElementById('add-tf-btn')?.addEventListener('click', () => addQuestion('tf'));
+  document.getElementById('add-fitb-btn')?.addEventListener('click', () => addQuestion('fitb'));
+  document.getElementById('add-matching-btn')?.addEventListener('click', () => addQuestion('matching'));
   document.getElementById('add-frq-btn')?.addEventListener('click', () => addQuestion('frq'));
   document.getElementById('save-quiz-btn')?.addEventListener('click', saveQuiz);
   
   // Quiz navigation
   document.getElementById('quiz-prev-btn')?.addEventListener('click', () => navigateQuiz(-1));
   document.getElementById('quiz-next-btn')?.addEventListener('click', () => navigateQuiz(1));
+  document.getElementById('quiz-submit-answer-btn')?.addEventListener('click', submitCurrentAnswer);
   document.getElementById('quiz-submit-btn')?.addEventListener('click', submitQuiz);
   document.getElementById('quit-quiz-btn')?.addEventListener('click', () => {
     clearInterval(quizState.timerInterval);
@@ -2578,7 +3177,9 @@ function initQuizListeners() {
   document.getElementById('retake-quiz-btn')?.addEventListener('click', () => {
     quizState.currentQuestionIndex = 0;
     quizState.answers = {};
+    quizState.submittedQuestions = {};
     quizState.reviewMode = false;
+    quizState._matchingSelected = undefined;
     
     // Restart timer
     quizState.timerSeconds = 0;
@@ -2618,6 +3219,14 @@ window.moveQuestion = moveQuestion;
 window.removeQuestion = removeQuestion;
 window.loadQuizzes = loadQuizzes;
 window.initQuizListeners = initQuizListeners;
+window.openSvgBuilder = openSvgBuilder;
+window.updateBlank = updateBlank;
+window.addBlank = addBlank;
+window.removeBlank = removeBlank;
+window.updateMatchingItem = updateMatchingItem;
+window.addMatchingPair = addMatchingPair;
+window.removeMatchingPair = removeMatchingPair;
+window.renderQuestionsList = renderQuestionsList;
 
 // Start app when DOM is ready
 if (document.readyState === 'loading') {
