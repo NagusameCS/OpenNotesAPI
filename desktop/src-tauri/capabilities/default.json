@@ -36,6 +36,13 @@
     {
       "identifier": "fs:allow-app-data-dir",
       "allow": [{}]
-    }
+    },
+    {
+      "identifier": "fs:allow-read-file",
+      "allow": [
+        { "path": "$TEMP/opennotes/**" }
+      ]
+    },
+    "fs:allow-temp-dir"
   ]
 }

@@ -77,10 +77,6 @@
         
         <div class="nav-section">
           <span class="nav-label">Manage</span>
-          <a href="#" class="nav-item" data-view="my-uploads">
-            <span class="material-symbols-rounded">folder_managed</span>
-            My Uploads
-          </a>
           <a href="#" class="nav-item" data-view="storage">
             <span class="material-symbols-rounded">hard_drive</span>
             Storage
@@ -260,26 +256,13 @@
           </div>
         </section>
         
-        <!-- Upload View (redirects to web client) -->
+        <!-- Upload View -->
         <section id="view-upload" class="view">
           <div class="empty-state">
             <span class="material-symbols-rounded">cloud_upload</span>
             <h3>Upload via Web Client</h3>
             <p>Note uploads are handled through the OpenNotes web client</p>
-            <button class="btn btn-web-client" id="open-web-upload">
-              <span class="material-symbols-rounded">language</span>
-              Open Web Client
-            </button>
-          </div>
-        </section>
-        
-        <!-- My Uploads View (redirects to web client) -->
-        <section id="view-my-uploads" class="view">
-          <div class="empty-state">
-            <span class="material-symbols-rounded">cloud_upload</span>
-            <h3>Manage Uploads on the Web</h3>
-            <p>View and manage your uploads through the OpenNotes web client</p>
-            <button class="btn btn-web-client" id="open-web-uploads">
+            <button class="btn btn-secondary btn-small" id="open-web-upload">
               <span class="material-symbols-rounded">language</span>
               Open Web Client
             </button>
@@ -379,13 +362,20 @@
         <section id="view-quiz-create" class="view">
           <div class="quiz-creator">
             <div class="quiz-meta">
+              <div class="quiz-meta-header">
+                <span class="material-symbols-rounded" style="font-size:28px;color:var(--accent);">quiz</span>
+                <div>
+                  <h3 style="margin:0;font-size:1.1rem;">Problem Set Details</h3>
+                  <p style="margin:0;font-size:0.8rem;color:var(--text-muted);">Fill in the info below, then add questions</p>
+                </div>
+              </div>
               <div class="form-row">
                 <div class="form-group">
-                  <label for="quiz-title">Title</label>
+                  <label for="quiz-title">Title *</label>
                   <input type="text" id="quiz-title" placeholder="e.g., Calculus Integration Practice">
                 </div>
                 <div class="form-group">
-                  <label for="quiz-subject">Subject</label>
+                  <label for="quiz-subject">Subject *</label>
                   <input type="text" id="quiz-subject" list="quiz-subject-suggestions" placeholder="e.g., IB Math AA HL" autocomplete="off">
                   <datalist id="quiz-subject-suggestions">
                     <option value="IB Math AA HL">
@@ -411,10 +401,14 @@
                   <label for="quiz-topic">Topic</label>
                   <input type="text" id="quiz-topic" placeholder="e.g., Integration by Parts">
                 </div>
+                <div class="form-group">
+                  <label for="quiz-tags">Tags (comma-separated)</label>
+                  <input type="text" id="quiz-tags" placeholder="e.g., calculus, integration, ib">
+                </div>
               </div>
               <div class="form-group">
-                <label for="quiz-tags">Tags (comma-separated)</label>
-                <input type="text" id="quiz-tags" placeholder="e.g., calculus, integration, ib">
+                <label for="quiz-description">Description (optional)</label>
+                <textarea id="quiz-description" placeholder="Briefly describe what this problem set covers..." rows="2" style="resize:vertical;"></textarea>
               </div>
             </div>
             
@@ -422,23 +416,23 @@
               <div class="questions-header">
                 <h3>Questions</h3>
                 <div class="question-add-btns">
-                  <button class="btn btn-secondary" id="add-mcq-btn">
+                  <button class="btn btn-secondary" id="add-mcq-btn" title="Multiple Choice">
                     <span class="material-symbols-rounded">radio_button_checked</span>
                     MCQ
                   </button>
-                  <button class="btn btn-secondary" id="add-tf-btn">
+                  <button class="btn btn-secondary" id="add-tf-btn" title="True or False">
                     <span class="material-symbols-rounded">check_circle</span>
-                    True / False
+                    T/F
                   </button>
-                  <button class="btn btn-secondary" id="add-fitb-btn">
+                  <button class="btn btn-secondary" id="add-fitb-btn" title="Fill in the Blank">
                     <span class="material-symbols-rounded">text_fields</span>
-                    Fill in Blank
+                    Fill Blank
                   </button>
-                  <button class="btn btn-secondary" id="add-matching-btn">
+                  <button class="btn btn-secondary" id="add-matching-btn" title="Matching Pairs">
                     <span class="material-symbols-rounded">compare_arrows</span>
-                    Matching
+                    Match
                   </button>
-                  <button class="btn btn-secondary" id="add-frq-btn">
+                  <button class="btn btn-secondary" id="add-frq-btn" title="Free Response">
                     <span class="material-symbols-rounded">edit</span>
                     FRQ
                   </button>

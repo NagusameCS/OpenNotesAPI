@@ -387,18 +387,17 @@ input, select, textarea {
 
 .btn-web-client {
   margin-top: 16px;
-  background: linear-gradient(135deg, var(--accent), #8b5cf6);
-  color: white;
-  padding: 12px 24px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border-radius: var(--radius);
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+  padding: 8px 16px;
+  font-size: 0.8rem;
+}
+
+.btn-small {
+  padding: 8px 16px;
+  font-size: 0.8rem;
 }
 
 .btn-web-client:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4);
+  transform: translateY(-1px);
 }
 
 .btn-danger {
@@ -2041,6 +2040,15 @@ input, select, textarea {
   border: 1px solid var(--border);
 }
 
+.quiz-meta-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2106,6 +2114,12 @@ input, select, textarea {
 .question-add-btns {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+.question-add-btns .btn {
+  font-size: 0.8rem;
+  padding: 6px 12px;
 }
 
 .questions-list {
@@ -2174,6 +2188,68 @@ input, select, textarea {
   font-size: 0.75rem;
   color: var(--text-muted);
   margin-top: 4px;
+}
+
+/* Rich Field Editor (inline WYSIWYG for question/explanation fields) */
+.rich-field {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.rich-field:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.rich-field-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.rich-field-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.rich-field-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.rich-field-editor {
+  min-height: 60px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+}
+
+.rich-field-editor:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.rich-field-editor math-field {
+  font-size: 1rem;
+  vertical-align: middle;
 }
 
 .options-container {

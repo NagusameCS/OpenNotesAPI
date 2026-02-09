@@ -922,7 +922,8 @@ async function openNoteModal(noteId) {
   formatEl.className = `viewer-pill ${format}`;
   document.getElementById('modal-views').textContent = formatNumber(views);
   document.getElementById('modal-downloads').textContent = formatNumber(downloads);
-  document.getElementById('modal-size').textContent = note.size ? formatBytes(parseInt(note.size)) : '--';
+  // Size field from API is a human-readable string like '4.73 MiB'
+  document.getElementById('modal-size').textContent = note.size || (note.fileSize ? formatBytes(note.fileSize) : '--');
   
   // Update download button state
   const downloadBtn = document.getElementById('modal-download');
@@ -932,6 +933,11 @@ async function openNoteModal(noteId) {
       <span class="material-symbols-rounded">${isSaved ? 'download_done' : 'download'}</span>
       ${isSaved ? 'Downloaded' : 'Download'}
     `;
+  }
+  
+  // Construct dl fallback if missing
+  if (!note.dl && note.name) {
+    note.dl = `${CONFIG.NOTES_RAW_BASE}/${encodeURIComponent(note.name)}`;
   }
   
   // Load document preview
@@ -947,31 +953,52 @@ async function openNoteModal(noteId) {
     const lowerName = note.name.toLowerCase();
     
     if (lowerName.endsWith('.pdf')) {
-      // Fetch PDF as blob via Tauri HTTP plugin and render via blob URL
-      // This bypasses WebKit's third-party cookie blocking that breaks Google Docs viewer
+      // Fetch PDF and render via Tauri asset protocol (WebKit can't render blob: PDFs)
       try {
-        let blob;
+        let pdfData; // Uint8Array
         // Check if we have an offline copy first
         const offlineCopy = state.savedNotes.find(n => n.name === note.name);
         if (offlineCopy && offlineCopy.cachedFile) {
-          blob = storage.base64ToBlob(offlineCopy.cachedFile);
+          const blob = storage.base64ToBlob(offlineCopy.cachedFile);
+          pdfData = new Uint8Array(await blob.arrayBuffer());
         } else if (window.__TAURI__) {
           const { fetch: tauriFetch } = await import('@tauri-apps/plugin-http');
           const response = await tauriFetch(previewUrl, { method: 'GET' });
-          const ab = await response.arrayBuffer();
-          blob = new Blob([ab], { type: 'application/pdf' });
+          pdfData = new Uint8Array(await response.arrayBuffer());
         } else {
+          // Browser fallback — use blob URL
           const response = await fetch(previewUrl);
-          blob = await response.blob();
+          const blob = await response.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          previewFrame.src = blobUrl;
+          previewFrame.classList.remove('hidden');
+          fallback.classList.add('hidden');
+          if (viewerLoading) viewerLoading.classList.add('hidden');
+          state._previewBlobUrl = blobUrl;
+          // Skip Tauri path below
+          pdfData = null;
         }
-        const blobUrl = URL.createObjectURL(blob);
-        previewFrame.src = blobUrl;
-        previewFrame.classList.remove('hidden');
-        fallback.classList.add('hidden');
-        // Hide loading immediately — blob is already in memory, WebKit won't fire onload for blob: iframes
-        if (viewerLoading) viewerLoading.classList.add('hidden');
-        // Clean up blob URL when modal closes
-        state._previewBlobUrl = blobUrl;
+
+        if (pdfData) {
+          // Write to temp file and load via asset protocol (works in WebKit)
+          const { writeFile, mkdir } = await import('@tauri-apps/plugin-fs');
+          const { tempDir, join } = await import('@tauri-apps/api/path');
+          const { convertFileSrc } = await import('@tauri-apps/api/core');
+
+          const tmp = await tempDir();
+          const previewDir = await join(tmp, 'opennotes');
+          await mkdir(previewDir, { recursive: true });
+          const safeFileName = note.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+          const filePath = await join(previewDir, `preview_${safeFileName}`);
+          await writeFile(filePath, pdfData);
+
+          const assetUrl = convertFileSrc(filePath);
+          previewFrame.src = assetUrl;
+          previewFrame.classList.remove('hidden');
+          fallback.classList.add('hidden');
+          if (viewerLoading) viewerLoading.classList.add('hidden');
+          state._previewTempFile = filePath;
+        }
       } catch (err) {
         console.error('[PREVIEW] Failed to load PDF:', err);
         if (viewerLoading) viewerLoading.classList.add('hidden');
@@ -1041,6 +1068,13 @@ function closeNoteModal() {
     if (state._previewBlobUrl) {
       URL.revokeObjectURL(state._previewBlobUrl);
       state._previewBlobUrl = null;
+    }
+    // Clean up temp preview file (fire-and-forget)
+    if (state._previewTempFile && window.__TAURI__) {
+      import('@tauri-apps/plugin-fs').then(({ remove }) => {
+        if (remove) remove(state._previewTempFile).catch(() => {});
+      }).catch(() => {});
+      state._previewTempFile = null;
     }
   }
   state.currentNote = null;
@@ -1216,13 +1250,40 @@ async function openOfflineNote(name) {
   
   if (note.cachedFile) {
     const blob = storage.base64ToBlob(note.cachedFile);
-    const blobUrl = URL.createObjectURL(blob);
-    previewFrame.src = blobUrl;
-    previewFrame.classList.remove('hidden');
-    fallback.classList.add('hidden');
-    // Hide loading immediately — blob is already in memory
-    if (viewerLoading) viewerLoading.classList.add('hidden');
-    state._previewBlobUrl = blobUrl;
+    if (window.__TAURI__ && note.name.toLowerCase().endsWith('.pdf')) {
+      // Write to temp file and use asset protocol (WebKit can't render blob: PDFs)
+      try {
+        const pdfData = new Uint8Array(await blob.arrayBuffer());
+        const { writeFile, mkdir } = await import('@tauri-apps/plugin-fs');
+        const { tempDir, join } = await import('@tauri-apps/api/path');
+        const { convertFileSrc } = await import('@tauri-apps/api/core');
+        const tmp = await tempDir();
+        const previewDir = await join(tmp, 'opennotes');
+        await mkdir(previewDir, { recursive: true });
+        const safeFileName = note.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const filePath = await join(previewDir, `preview_${safeFileName}`);
+        await writeFile(filePath, pdfData);
+        previewFrame.src = convertFileSrc(filePath);
+        previewFrame.classList.remove('hidden');
+        fallback.classList.add('hidden');
+        if (viewerLoading) viewerLoading.classList.add('hidden');
+        state._previewTempFile = filePath;
+      } catch (e) {
+        console.error('[OFFLINE PREVIEW] Failed:', e);
+        if (viewerLoading) viewerLoading.classList.add('hidden');
+        previewFrame.classList.add('hidden');
+        fallback.classList.remove('hidden');
+        fallback.innerHTML = '<span class="material-symbols-rounded">error_outline</span><p>Failed to load preview</p>';
+      }
+    } else {
+      // Non-Tauri or non-PDF: use blob URL
+      const blobUrl = URL.createObjectURL(blob);
+      previewFrame.src = blobUrl;
+      previewFrame.classList.remove('hidden');
+      fallback.classList.add('hidden');
+      if (viewerLoading) viewerLoading.classList.add('hidden');
+      state._previewBlobUrl = blobUrl;
+    }
   } else {
     if (viewerLoading) viewerLoading.classList.add('hidden');
     previewFrame.classList.add('hidden');
@@ -1254,7 +1315,6 @@ function switchView(viewId) {
     downloads: 'Downloads',
     editor: 'New Document',
     upload: 'Upload Notes',
-    'my-uploads': 'My Uploads',
     storage: 'Storage',
     'quiz-browse': 'Problem Sets',
     'quiz-create': 'Create Problem Set',
@@ -1396,11 +1456,37 @@ const editor = {
   },
   
   insertMath() {
-    const latex = prompt('Enter LaTeX expression:');
-    if (latex) {
-      document.execCommand('insertHTML', false, 
-        `<math-field read-only>${latex}</math-field>&nbsp;`);
-    }
+    // Insert a live editable math-field so the user never types raw LaTeX
+    const id = 'mf-' + Date.now();
+    document.execCommand('insertHTML', false,
+      `<math-field id="${id}" style="display:inline-block;vertical-align:middle;min-width:60px;border:1.5px solid var(--accent);border-radius:6px;padding:2px 6px;font-size:1rem;"></math-field>&nbsp;`);
+    // Focus the new math-field so user can start typing immediately
+    requestAnimationFrame(() => {
+      const mf = document.getElementById(id);
+      if (mf) {
+        mf.focus();
+        // When focus leaves, lock it to read-only and remove the editing border
+        const finalize = () => {
+          mf.removeEventListener('focusout', finalize);
+          if (!mf.value || !mf.value.trim()) {
+            mf.remove(); // Remove empty math fields
+          } else {
+            mf.setAttribute('read-only', '');
+            mf.style.border = 'none';
+            mf.style.padding = '0';
+            // Double-click to re-edit
+            mf.addEventListener('dblclick', () => {
+              mf.removeAttribute('read-only');
+              mf.style.border = '1.5px solid var(--accent)';
+              mf.style.padding = '2px 6px';
+              mf.focus();
+              mf.addEventListener('focusout', finalize, { once: true });
+            });
+          }
+        };
+        mf.addEventListener('focusout', finalize, { once: true });
+      }
+    });
   },
   
   insertCodeBlock() {
@@ -1693,9 +1779,8 @@ async function init() {
   // Initialize editor
   editor.init();
   
-  // Set up web client buttons for upload/my-uploads views
+  // Set up web client button for upload view
   document.getElementById('open-web-upload')?.addEventListener('click', () => openWebClient());
-  document.getElementById('open-web-uploads')?.addEventListener('click', () => openWebClient());
   
   // Initialize quiz system
   initQuizListeners();
@@ -2675,6 +2760,105 @@ function submitQuiz() {
 }
 
 // Quiz Creator Functions
+
+// -- Rich text editor helper for question fields --
+function createRichFieldHTML(id, placeholder, value, onChangeExpr) {
+  // Creates a contenteditable mini-editor with a math insert button
+  return `
+    <div class="rich-field" data-field-id="${id}">
+      <div class="rich-field-toolbar">
+        <button class="rich-field-btn" onclick="richFieldBold('${id}')" title="Bold">
+          <span class="material-symbols-rounded" style="font-size:16px;">format_bold</span>
+        </button>
+        <button class="rich-field-btn" onclick="richFieldItalic('${id}')" title="Italic">
+          <span class="material-symbols-rounded" style="font-size:16px;">format_italic</span>
+        </button>
+        <button class="rich-field-btn" onclick="richFieldInsertMath('${id}')" title="Insert Math">
+          <span class="material-symbols-rounded" style="font-size:16px;">function</span>
+        </button>
+      </div>
+      <div class="rich-field-editor" id="${id}" contenteditable="true"
+        data-placeholder="${placeholder}"
+        oninput="richFieldChanged('${id}', ${onChangeExpr})"
+        onfocusout="richFieldChanged('${id}', ${onChangeExpr})">${value || ''}</div>
+    </div>`;
+}
+
+// Serialize a rich field editor to a string with $...$ LaTeX delimiters
+function serializeRichField(editorEl) {
+  if (!editorEl) return '';
+  // Clone so we don't mutate the live DOM
+  const clone = editorEl.cloneNode(true);
+  // Convert math-field elements back to $...$
+  clone.querySelectorAll('math-field').forEach(mf => {
+    const latex = mf.value || mf.textContent || '';
+    const textNode = document.createTextNode('$' + latex + '$');
+    mf.replaceWith(textNode);
+  });
+  return clone.innerText || clone.textContent || '';
+}
+
+// Deserialize a stored string (with $...$) to HTML for the rich field
+function deserializeToRichHTML(text) {
+  if (!text) return '';
+  // Convert $...$ LaTeX to inline math-field elements, $$...$$ for block
+  return text
+    .replace(/\$\$([^$]+)\$\$/g, '<math-field read-only style="display:block;margin:8px 0;">$1</math-field>')
+    .replace(/\$([^$]+)\$/g, '<math-field read-only style="display:inline-block;vertical-align:middle;">$1</math-field>');
+}
+
+function richFieldBold(id) {
+  const el = document.getElementById(id);
+  if (el) { el.focus(); document.execCommand('bold'); }
+}
+function richFieldItalic(id) {
+  const el = document.getElementById(id);
+  if (el) { el.focus(); document.execCommand('italic'); }
+}
+
+function richFieldInsertMath(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.focus();
+  const mfId = 'mf-' + Date.now();
+  document.execCommand('insertHTML', false,
+    `<math-field id="${mfId}" style="display:inline-block;vertical-align:middle;min-width:40px;border:1.5px solid var(--accent);border-radius:6px;padding:2px 6px;font-size:0.95rem;"></math-field>&nbsp;`);
+  requestAnimationFrame(() => {
+    const mf = document.getElementById(mfId);
+    if (mf) {
+      mf.focus();
+      const finalize = () => {
+        mf.removeEventListener('focusout', finalize);
+        if (!mf.value || !mf.value.trim()) {
+          mf.remove();
+        } else {
+          mf.setAttribute('read-only', '');
+          mf.style.border = 'none';
+          mf.style.padding = '0';
+          mf.addEventListener('dblclick', () => {
+            mf.removeAttribute('read-only');
+            mf.style.border = '1.5px solid var(--accent)';
+            mf.style.padding = '2px 6px';
+            mf.focus();
+            mf.addEventListener('focusout', finalize, { once: true });
+          });
+        }
+        // Sync to data model
+        const container = mf.closest('.rich-field-editor');
+        if (container) container.dispatchEvent(new Event('input'));
+      };
+      mf.addEventListener('focusout', finalize, { once: true });
+    }
+  });
+}
+
+function richFieldChanged(id, questionId, field) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const value = serializeRichField(el);
+  updateQuestion(questionId, field, value);
+}
+
 function addQuestion(type) {
   const id = `q${Date.now()}`;
   let question;
@@ -2702,9 +2886,9 @@ function renderQuestionsList() {
   if (quizState.creatorQuestions.length === 0) {
     list.innerHTML = `
       <div class="empty-state">
-        <span class="material-symbols-rounded">help_outline</span>
+        <span class="material-symbols-rounded">library_add</span>
         <h3>No questions yet</h3>
-        <p>Click "Add MCQ" or "Add FRQ" to add questions to your quiz</p>
+        <p>Click one of the buttons above to add your first question. Use the math button <span class="material-symbols-rounded" style="font-size:16px;vertical-align:middle;">function</span> in any text field to insert equations visually.</p>
       </div>
     `;
     return;
@@ -2731,18 +2915,15 @@ function renderQuestionsList() {
         </div>
       </div>
       <div class="form-group">
-        <label>Question Text (LaTeX supported: use $...$ for inline, $$...$$ for block)</label>
-        <textarea class="question-text-input latex-enabled" placeholder="Enter your question..."
-          onchange="updateQuestion('${q.id}', 'question', this.value)">${q.question}</textarea>
-        <span class="latex-hint">Example: What is $\\int x^2 dx$?</span>
+        <label>Question Text</label>
+        ${createRichFieldHTML('qtext-' + q.id, 'Enter your question...', deserializeToRichHTML(q.question), `'${q.id}', 'question'`)}
       </div>
       ${q.svg ? `<div class="question-svg-preview" style="margin:8px 0;padding:8px;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border);">${q.svg}<button class="btn btn-text" onclick="updateQuestion('${q.id}', 'svg', ''); renderQuestionsList();" style="margin-top:4px;">Remove Shape</button></div>` : ''}
       ${renderQuestionTypeEditor(q)}
       <div class="explanation-container">
         <div class="form-group">
           <label>Explanation (optional)</label>
-          <textarea placeholder="Explain the correct answer..."
-            onchange="updateQuestion('${q.id}', 'explanation', this.value)">${q.explanation || ''}</textarea>
+          ${createRichFieldHTML('qexpl-' + q.id, 'Explain the correct answer...', deserializeToRichHTML(q.explanation), `'${q.id}', 'explanation'`)}
         </div>
       </div>
     </div>
@@ -3116,6 +3297,7 @@ async function saveQuiz() {
   const title = document.getElementById('quiz-title')?.value?.trim();
   const subject = document.getElementById('quiz-subject')?.value?.trim();
   const topic = document.getElementById('quiz-topic')?.value?.trim();
+  const description = document.getElementById('quiz-description')?.value?.trim();
   const tags = document.getElementById('quiz-tags')?.value?.split(',').map(t => t.trim()).filter(t => t);
   
   if (!title) {
@@ -3170,6 +3352,7 @@ async function saveQuiz() {
       title,
       subject,
       topic,
+      description,
       tags,
       questions: quizState.creatorQuestions,
     };
@@ -3182,6 +3365,7 @@ async function saveQuiz() {
     document.getElementById('quiz-title').value = '';
     document.getElementById('quiz-topic').value = '';
     document.getElementById('quiz-tags').value = '';
+    if (document.getElementById('quiz-description')) document.getElementById('quiz-description').value = '';
     renderQuestionsList();
     
     // Go to browse view
